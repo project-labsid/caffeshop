@@ -1165,7 +1165,7 @@ function TrafficTab() {
 
   const monthLabel = useMemo(() => now.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }), []);
 
-  const getExportData = useCallback(() => {
+  const getExportData = () => {
     const columns = ['Tanggal', 'Transaksi', 'Pendapatan'];
     const rows = dailyMonthlyData
       .filter((d) => d.transaksi > 0)
@@ -1178,22 +1178,22 @@ function TrafficTab() {
       'Pendapatan Bulan Ini': formatRupiah(monthTotalRevenue),
     };
     return { title: 'Traffic Report', subtitle: 'Bulan ' + monthLabel, columns, rows, summary: summaryObj };
-  }, [dailyMonthlyData, todayTotalTx, todayTotalRevenue, peakHour, monthTotalTx, monthTotalRevenue, monthLabel]);
+  };
 
-  const handleExcel = useCallback(() => {
+  const handleExcel = () => {
     const { title, columns, rows } = getExportData();
     exportToExcel({ sheetName: title, columns, rows });
-  }, [getExportData]);
+  };
 
-  const handlePrintA4 = useCallback(() => {
+  const handlePrintA4 = () => {
     const { title, subtitle, columns, rows, summary } = getExportData();
     printReport({ title, subtitle, columns, rows, summary });
-  }, [getExportData]);
+  };
 
-  const handlePrintThermal = useCallback(() => {
+  const handlePrintThermal = () => {
     const { title, columns, rows, summary } = getExportData();
     printThermal({ storeName: STORE_NAME, title, columns, rows, summary });
-  }, [getExportData]);
+  };
 
   return (
     <div className="space-y-4">
