@@ -61,3 +61,28 @@ Work Log:
 Stage Summary:
 - All fixes verified working
 - User needs to pull changes and push to GitHub for Vercel deployment
+
+---
+Task ID: 5
+Agent: Main
+Task: Fix Vercel build failure (missing HelpSettings, PaymentMethodSettings) and Laporan timezone bug
+
+Work Log:
+- User reported Vercel build error: Module not found for ./HelpSettings and ./PaymentMethodSettings
+- User's SettingsPage uses `dynamic()` imports for 11 sub-components in menu-grid layout
+- Original kasir.zip was missing HelpSettings.tsx and PaymentMethodSettings.tsx
+- Created HelpSettings.tsx: FAQ accordion + support links, default export
+- Created PaymentMethodSettings.tsx: Payment method management UI (cash/QRIS/transfer/ewallet), default export
+- Found critical timezone bug in ReportsPage.tsx: 6 occurrences of `toISOString().split('T')[0]`
+  - `toISOString()` returns UTC date, which differs from user's local date in Jakarta (UTC+7)
+  - Before fix: frontend sends wrong date to API → API queries wrong date range → zero data
+  - Fix: Created `toLocalDateStr()` helper using getFullYear()/getMonth()/getDate() (local time)
+  - Replaced all 6 `toISOString().split('T')[0]` with `toLocalDateStr()`
+- Applied fixes to user's original kasir.zip and created kasir-fixed-v2.zip
+- Verified via Agent Browser: Laporan shows data (4 tx, Rp329.670), Pengaturan shows all sections
+
+Stage Summary:
+- Created: `src/features/settings/HelpSettings.tsx` (5.6KB)
+- Created: `src/features/settings/PaymentMethodSettings.tsx` (8.7KB)
+- Modified: `src/features/reports/ReportsPage.tsx` (timezone fix: toLocalDateStr helper)
+- Output: `/upload/kasir-fixed-v2.zip` with all 3 fixes applied to user's original code
