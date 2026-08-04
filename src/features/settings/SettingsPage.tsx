@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
@@ -767,6 +767,51 @@ function ResetDataSection() {
   );
 }
 
+// ─── Lazy-loaded heavy sections ────────────────────────────────────────────
+const PrinterSettings = lazy(() => import('./PrinterSettings'));
+const AIAssistantSettings = lazy(() => import('./AIAssistantSettings'));
+const BackupSettings = lazy(() => import('./BackupSettings'));
+
+function SectionSkeleton() {
+  return (
+    <Card>
+      <CardHeader>
+        <Skeleton className="h-5 w-48" />
+        <Skeleton className="h-4 w-72" />
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+      </CardContent>
+    </Card>
+  );
+}
+
+function PrinterSection() {
+  return (
+    <Suspense fallback={<SectionSkeleton />}>
+      <PrinterSettings />
+    </Suspense>
+  );
+}
+
+function AISection() {
+  return (
+    <Suspense fallback={<SectionSkeleton />}>
+      <AIAssistantSettings />
+    </Suspense>
+  );
+}
+
+function BackupSection() {
+  return (
+    <Suspense fallback={<SectionSkeleton />}>
+      <BackupSettings />
+    </Suspense>
+  );
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function SettingsPage() {
@@ -778,14 +823,17 @@ export default function SettingsPage() {
           Pengaturan
         </h1>
         <p className="text-muted-foreground">
-          Kelola pengaturan toko, pajak, dan service charge
+          Kelola pengaturan toko, printer, AI, backup, pajak, dan service charge
         </p>
       </div>
 
       <div className="space-y-6">
         <StoreInfoSection />
+        <PrinterSection />
         <TaxSection />
         <ServiceChargeSection />
+        <AISection />
+        <BackupSection />
         <ResetDataSection />
       </div>
     </div>

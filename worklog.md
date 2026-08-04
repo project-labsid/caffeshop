@@ -992,3 +992,225 @@ Stage Summary:
 - Connection: session mode pooler at aws-0-ap-southeast-1.pooler.supabase.com:5432
 - All existing data preserved (users, products, transactions, activity logs)
 - App fully functional with Supabase as the database backend
+---
+Task ID: 3-a
+Agent: Main Agent
+Task: Create Printer Settings backend API and frontend component
+
+Work Log:
+- Created `/src/app/api/settings/printer/route.ts` (backend API):
+  - GET handler: reads all 6 printer-related keys from StoreSetting table, merges with defaults, returns as `{ data: { key: value } }`
+  - PUT handler: validates with Zod schema (printer_paper_width, printer_auto_print, printer_copies, printer_header_text, printer_footer_text, printer_show_logo), upserts each key-value pair into StoreSetting table
+  - Uses `db.storeSetting.upsert()` pattern consistent with existing `/api/settings/route.ts`
+  - Printer keys stored: printer_paper_width (58/80mm), printer_auto_print (true/false), printer_copies (1-10), printer_header_text, printer_footer_text, printer_show_logo (true/false)
+- Created `/src/features/settings/PrinterSettings.tsx` (frontend component):
+  - `'use client'` component with `export default function PrinterSettings()`
+  - Uses `useQuery` to fetch from `/api/settings/printer`, `useMutation` to PUT save settings
+  - Uses `react-hook-form` + `zod` resolver for form handling
+  - Zod schema converts string values from API to proper types (boolean, number)
+  - UI: Card with Printer icon, "Pengaturan Printer" title, "Konfigurasi cetak struk dan thermal printer" description
+  - Form fields: Select (Lebar Kertas 58mm/80mm), Switch (Auto Cetak with description), Input number (Jumlah Salinan min 1 max 10), Textarea (Teks Header Struk with description), Textarea (Teks Footer Struk with description), Switch (Tampilkan Logo with description)
+  - Save button with Loader2 spinner during mutation
+  - Toast notifications via sonner on success/error
+  - Framer Motion fadeIn animation
+  - Skeleton loading state
+  - Follows exact same patterns as StoreInfoSection/TaxSection in SettingsPage.tsx
+
+Stage Summary:
+- Backend API at `/api/settings/printer` fully functional with GET/PUT handlers
+- Frontend PrinterSettings component ready to be integrated into SettingsPage
+- 0 new lint errors (only pre-existing warnings from other files)
+- All printer settings stored as key-value pairs in StoreSetting table for consistency
+
+---
+
+## Task ID: 3-b — AI Assistant Settings (Backend API + Frontend Component)
+**Agent:** Main Agent
+**Date:** 2025-07-03
+
+### What was done:
+
+1. **Created backend API route** (`/api/settings/ai`):
+   - **GET** handler reads AI settings (`ai_api_key`, `ai_model`, `ai_enabled_features`) from `StoreSetting` table with defaults. API key is masked (first 8 chars + `****`).
+   - **PUT** handler accepts JSON body validated with Zod, upserts each setting into `StoreSetting`. Validates `ai_model` against enum (`gpt-4o`, `gpt-4o-mini`, `gpt-4-turbo`) and `ai_enabled_features` as a JSON array of valid feature keys.
+   - Pattern consistent with existing `/api/settings/printer` route.
+
+2. **Created frontend component** (`AIAssistantSettings.tsx`):
+   - Uses `useQuery` to fetch from `/api/settings/ai`, `useMutation` to save via PUT.
+   - Card with Brain icon, title "Asisten AI", description in Indonesian.
+   - **API Key** field: password input with Eye/EyeOff toggle, smart placeholder that indicates if key is stored, only sends new key when typed.
+   - **Model AI** Select: GPT-4o (Recommended), GPT-4o Mini (Fast & Cheap), GPT-4 Turbo.
+   - **5 Feature Toggles** using Switch: Saran Produk, Analisis Penjualan, Prediksi Stok, Kategorisasi Otomatis, Insight Pelanggan — each with label and description.
+   - **Test Koneksi** button that calls POST `/api/ai` with `{ action: 'test' }`, shows success/error toast.
+   - Save button with loading state.
+   - Uses react-hook-form + zod, framer-motion fadeIn, toast from sonner.
+
+3. **Lint**: 0 new errors/warnings in created files. Pre-existing error in `ReportsPage.tsx` is unrelated.
+
+### Files created:
+- `src/app/api/settings/ai/route.ts`
+- `src/features/settings/AIAssistantSettings.tsx`
+
+## Task ID: 3-c — Backup & Restore API + UI
+**Agent:** Main Agent
+**Date:** 2025-07-03
+
+### What was done:
+
+1. **Created `/src/app/api/backup/route.ts`** — Full backup/restore API with three modes:
+   - **GET `?stats=true`** — Returns record counts for all tables (products, transactions, customers, purchases, categories, suppliers, branches, users, stockAdjustments) plus a `dbSize: 'estimated'` field.
+   - **GET (no params)** — Full export of all 12 tables in dependency order. Users' passwords are excluded for security. Transactions and Purchases include their nested items via Prisma `include`. Returns `{ data: { exportedAt, version: '1.0', tables: { branches, categories, ... } } }`.
+   - **POST** — Import/restore from a JSON backup file. Validates payload with Zod (checks `version` + all 12 table keys). Uses `db.$transaction()` for full atomicity:
+     1. Deletes all existing data in reverse FK order (activityLogs → stockAdjustments → transactionItems → transactions → purchaseItems → purchases → products → customers → suppliers → categories → branches → users → serviceChargeSettings → taxSettings → storeSettings).
+     2. Inserts base entities (branches, categories, suppliers, customers, users, products). Users get a default password `changeme123` since passwords are not exported.
+     3. Inserts settings (taxSettings, serviceChargeSettings, storeSettings).
+     4. Inserts transactions with nested items, purchases with nested items, stockAdjustments.
+     5. Returns `{ data: { message, counts: { branches: N, ... } } }`.
+
+2. **Created `/src/features/settings/BackupSettings.tsx`** — `'use client'` component with three sections:
+   - **DB Stats Card**: Uses `useQuery` to fetch `/api/backup?stats=true`. Displays 9 stat items in a responsive 2/3/4-column grid with tabular number formatting. Shows skeletons while loading.
+   - **Export Card**: Button "Ekspor Data" triggers full GET `/api/backup`, creates a Blob, and triggers download as `backup-YYYY-MM-DD_HH-mmss.json`. Shows `Loader2` spinner during export. Info text explains passwords are excluded.
+   - **Import Card**: Hidden `<input accept=.json>`, button "Impor Data" triggers file picker. On file select, parses JSON, opens a confirmation `Dialog` showing table counts (via `Badge` components), export timestamp, and version. On confirm, POSTs to `/api/backup`. On success: toast + invalidate all queries + delayed toast suggesting page reload with a "Muat Ulang" action button. Warning callout with `AlertTriangle` explains data will be replaced and passwords reset.
+   - Uses: Card, Button, Dialog, Badge, Separator, Skeleton from shadcn/ui; Database, Download, Upload, Loader2, AlertTriangle, HardDrive from lucide-react; framer-motion fadeIn; toast from sonner; useQuery/useQueryClient from TanStack Query.
+
+3. **Lint**: 0 new errors/warnings in created files. Pre-existing warnings in other files are unrelated.
+
+### Files created:
+- `src/app/api/backup/route.ts`
+- `src/features/settings/BackupSettings.tsx`
+
+---
+
+## Task ID: 3-d — AI Features API Endpoint
+**Agent:** Main Agent
+**Date:** 2025-07-03
+
+### What was done:
+
+Created `/api/ai` endpoint that provides AI-powered features for the POS system using OpenAI-compatible API via direct `fetch`.
+
+#### Helper utilities:
+- `getSetting(key, fallback)` — reads a single StoreSetting by key from the database.
+- `callOpenAI(apiKey, model, systemPrompt, userPrompt)` — calls `https://api.openai.com/v1/chat/completions` with proper headers and error handling. Returns the assistant reply string or throws.
+- `isFeatureEnabled(feature)` — parses the `ai_enabled_features` JSON array from StoreSetting and checks if a specific feature string is present.
+- `ensureAIConfigured()` — reads `ai_api_key` and `ai_model`, throws if no API key is set.
+
+#### POST handler — 4 actions via Zod-validated `action` field:
+
+1. **`test`** — Reads `ai_api_key` and `ai_model` from StoreSetting. If no API key, returns 400 error. Sends a simple `Hi` message to OpenAI. Returns `{ data: { success: true, model, reply } }`.
+
+2. **`smart_suggestion`** — Checks `smart_suggestion` is in enabled features. Queries the last 5 completed transactions with their items. Formats into a prompt asking AI to suggest complementary products as a JSON array `{ name, reason }`. Parses AI response, with fallback to raw text if JSON parsing fails. Returns `{ data: { suggestions: [...] } }`.
+
+3. **`sales_analysis`** — Checks `sales_analysis` is enabled. Queries today's completed transactions (count, total revenue, top 5 products by quantity) and last 7 days' transactions (count, total revenue, avg revenue per transaction, payment method distribution). Formats into a prompt asking for Indonesian-language analysis covering performance, trends, payment methods, and recommendations. Returns `{ data: { analysis: '...' } }`.
+
+4. **`stock_prediction`** — Checks `stock_prediction` is enabled. Queries up to 20 active products with stock ≤ 100, plus last 200 transaction items from the past 30 days. Computes daily average sales and estimated days-left for each product. Sends structured JSON data to AI asking for restock predictions as `{ productName, urgency, suggestedOrderQty, reason }`. Returns `{ data: { predictions: [...] } }`.
+
+#### Error handling:
+- All non-test actions check AI configuration and feature enablement before proceeding.
+- Zod validation on the `action` field with clear error messages in Indonesian.
+- OpenAI API errors propagated with status code and body details.
+- JSON parse failures from AI responses handled gracefully with fallback wrappers.
+
+#### Lint:
+- 0 new errors/warnings. The 1 pre-existing error in `ReportsPage.tsx` is unrelated.
+
+### Files created:
+- `src/app/api/ai/route.ts`
+---
+Task ID: 1
+Agent: Main Agent
+Task: Explore project structure and plan implementation
+
+Work Log:
+- Explored full project structure via subagent
+- Read Prisma schema (12 models, no Report model - computed from Transaction)
+- Mapped all 30 API routes
+- Found that SettingsPage only has StoreInfo, Tax, ServiceCharge, Reset sections
+- Found PrinterSettings.tsx, AIAssistantSettings.tsx, BackupSettings.tsx do NOT exist
+- Confirmed report API queries Transaction table directly (auto-flow already built-in)
+- Read POSPage receipt printing logic (window.open + window.print approach)
+
+Stage Summary:
+- Transaction → Laporan auto-flow is architecturally already working (reports query Transaction table)
+- Need to add query invalidation in POSPage for fresh report data
+- Need to create 3 new settings components, 4 API routes, and integrate printer into POSPage
+
+---
+Task ID: 2-a, 3-a
+Agent: full-stack-developer
+Task: Create PrinterSettings UI + /api/settings/printer API
+
+Work Log:
+- Created /src/app/api/settings/printer/route.ts (GET/PUT, stores in StoreSetting table)
+- Created /src/features/settings/PrinterSettings.tsx (paper width, auto-print, copies, header/footer, logo toggle)
+
+Stage Summary:
+- 6 printer settings stored as key-value pairs in StoreSetting table
+- UI uses react-hook-form + zod + shadcn/ui + framer-motion
+- 0 lint errors
+
+---
+Task ID: 2-b, 3-b
+Agent: full-stack-developer
+Task: Create AIAssistantSettings UI + /api/settings/ai API
+
+Work Log:
+- Created /src/app/api/settings/ai/route.ts (GET/PUT, API key masked in GET response)
+- Created /src/features/settings/AIAssistantSettings.tsx (API key, model select, 5 feature toggles, test button)
+
+Stage Summary:
+- AI settings: api_key, model (gpt-4o/4o-mini/4-turbo), enabled_features JSON
+- API key is masked (first 8 chars + ****) in GET response
+- Test Koneksi button calls /api/ai with action='test'
+- 0 lint errors
+
+---
+Task ID: 2-c, 3-c
+Agent: full-stack-developer
+Task: Create BackupSettings UI + /api/backup API
+
+Work Log:
+- Created /src/app/api/backup/route.ts (GET export, POST import, GET ?stats=true)
+- Created /src/features/settings/BackupSettings.tsx (DB stats, export JSON, import JSON with confirmation)
+
+Stage Summary:
+- Full database export of 12 tables in dependency order
+- Import uses db.$transaction() for atomicity
+- Users get default password 'changeme123' on import (passwords not exported for security)
+- UI shows 9 DB stat cards, export download, import with confirmation dialog
+- 0 lint errors
+
+---
+Task ID: 3-d
+Agent: full-stack-developer
+Task: Create /api/ai/route.ts for AI features
+
+Work Log:
+- Created /src/app/api/ai/route.ts (POST with 4 actions: test, smart_suggestion, sales_analysis, stock_prediction)
+
+Stage Summary:
+- Calls OpenAI API directly with stored API key
+- Feature-gated: checks if specific feature is enabled before processing
+- Returns structured JSON responses
+- 0 lint errors
+
+---
+Task ID: 2-d, 4, 5
+Agent: Main Agent
+Task: Update SettingsPage, integrate printer into POSPage, add query invalidation
+
+Work Log:
+- Updated SettingsPage.tsx to include PrinterSection, AISection, BackupSection with lazy loading + Suspense
+- Added printer config state and useQuery in POSPage
+- Added AutoPrinter component for auto-print on receipt dialog open
+- Modified handlePrintReceipt to use printerConfig (paper width, copies)
+- Updated receipt template to use printerConfig (showLogo, headerText, footerText)
+- Added query invalidation for ['reports'], ['dashboard'], ['transactions'] on transaction success
+
+Stage Summary:
+- SettingsPage now shows 7 sections: Store Info, Printer, Tax, Service Charge, AI, Backup, Reset
+- POSPage reads printer settings and applies them to receipt generation
+- Auto-print fires 800ms after receipt dialog opens (if enabled)
+- Multiple copies supported (recursive doPrint with 500ms delay)
+- Report query invalidation ensures Laporan always shows latest data
+- Pre-existing lint error in ReportsPage.tsx (unrelated to changes)
