@@ -769,9 +769,7 @@ function ResetDataSection() {
 
 // ─── Lazy-loaded heavy sections ────────────────────────────────────────────
 const PrinterSettings = lazy(() => import('./PrinterSettings'));
-const AIAssistantSettings = lazy(() => import('./AIAssistantSettings'));
 const BackupSettings = lazy(() => import('./BackupSettings'));
-const SubscriptionSettings = lazy(() => import('./SubscriptionSettings'));
 const PaymentMethodSettings = lazy(() => import('./PaymentMethodSettings'));
 
 function SectionSkeleton() {
@@ -798,14 +796,6 @@ function PrinterSection() {
   );
 }
 
-function AISection() {
-  return (
-    <Suspense fallback={<SectionSkeleton />}>
-      <AIAssistantSettings />
-    </Suspense>
-  );
-}
-
 function BackupSection() {
   return (
     <Suspense fallback={<SectionSkeleton />}>
@@ -822,14 +812,6 @@ function PaymentMethodSection() {
   );
 }
 
-function SubscriptionSection() {
-  return (
-    <Suspense fallback={<SectionSkeleton />}>
-      <SubscriptionSettings />
-    </Suspense>
-  );
-}
-
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function SettingsPage() {
@@ -841,7 +823,7 @@ export default function SettingsPage() {
           Pengaturan
         </h1>
         <p className="text-muted-foreground">
-          Kelola pengaturan toko, printer, AI, backup, pajak, dan service charge
+          Kelola pengaturan toko, printer, metode pembayaran, pajak, backup, dan service charge
         </p>
       </div>
 
@@ -850,9 +832,7 @@ export default function SettingsPage() {
         <PrinterSection />
         <TaxSection />
         <ServiceChargeSection />
-        <AISection />
         <PaymentMethodSection />
-        <SubscriptionSection />
         <BackupSection />
         <ResetDataSection />
       </div>
