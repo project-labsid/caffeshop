@@ -190,6 +190,38 @@ export async function PUT(request: NextRequest) {
   }
 }
 
+// PATCH /api/payment-methods - Batch reorder
+export async function PATCH(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { orders } = body as { orders: { id: string; sortOrder: number }[] }
+
+    if (!Array.isArray(orders) || orders.length === 0) {
+      return NextResponse.json(
+        { error: 'Data order tidak valid' },
+        { status: 400 }
+      )
+    }
+
+    await Promise.all(
+      orders.map((item) =>
+        db.paymentMethod.update({
+          where: { id: item.id },
+          data: { sortOrder: item.sortOrder },
+        })
+      )
+    )
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Reorder payment methods error:', error)
+    return NextResponse.json(
+      { error: 'Terjadi kesalahan server' },
+      { status: 500 }
+    )
+  }
+}
+
 // DELETE /api/payment-methods - Soft-delete payment method
 export async function DELETE(request: NextRequest) {
   try {

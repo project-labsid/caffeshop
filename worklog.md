@@ -188,3 +188,33 @@ Stage Summary:
 - Created: `src/app/api/payment-methods/route.ts` (~210 lines) - Full CRUD payment methods with soft-delete
 - Agent context saved to `agent-ctx/3-api.md`
 - Ready for frontend integration (SubscriptionSettings, AIAssistantSettings, PaymentMethodSettings pages)
+
+---
+Task ID: 2
+Agent: full-stack-developer
+Task: Rewrite PaymentMethodSettings.tsx
+
+Work Log:
+- Read existing project structure, API route (`/api/payment-methods`), and worklog for context
+- Analyzed API: GET (with type/status/search filters), POST, PUT, PATCH (reorder), DELETE (soft delete)
+- Mapped API type values (cash/qris/transfer/virtual_account/ewallet/debit/credit/manual/other) to UI labels and color coding
+- Complete rewrite of PaymentMethodSettings.tsx replacing mock data with real API integration via @tanstack/react-query
+- Implemented useQuery for fetching with search + type + status filters
+- Implemented 5 useMutation hooks: create, update, delete, toggleStatus, setDefault, duplicate
+- Built dynamic form per payment type: common fields + type-specific fields (transfer bank, QRIS, e-wallet, virtual account, debit, credit, manual, other)
+- Image upload with base64 conversion, file type/size validation (5MB max, PNG/JPG/JPEG/SVG/WEBP)
+- Form validation per type with toast error messages
+- Loading skeleton cards (3), empty state with contextual messaging, delete confirmation AlertDialog
+- Color-coded type icons/badges, status badges, default badge
+- Detail chips showing type-specific info (bank account, phone, merchant, card provider, etc.)
+- Framer Motion staggered fade-in animations with AnimatePresence
+- Responsive mobile-first design, dark mode support, rounded-2xl cards
+- All text in Bahasa Indonesia
+- Lint: 0 errors, 12 pre-existing warnings
+
+Stage Summary:
+- Produced: `/home/z/my-project/src/features/settings/PaymentMethodSettings.tsx` (~680 lines)
+- Full rewrite with real API integration, no mock data
+- Dynamic forms per payment type with image upload
+- Search, filter, CRUD, duplicate, toggle status, set default
+- Uses shadcn/ui components, Framer Motion, TanStack Query, sonner toasts
