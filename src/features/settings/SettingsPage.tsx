@@ -771,6 +771,8 @@ function ResetDataSection() {
 const PrinterSettings = lazy(() => import('./PrinterSettings'));
 const AIAssistantSettings = lazy(() => import('./AIAssistantSettings'));
 const BackupSettings = lazy(() => import('./BackupSettings'));
+const SubscriptionSettings = lazy(() => import('./SubscriptionSettings'));
+const PaymentMethodSettings = lazy(() => import('./PaymentMethodSettings'));
 
 function SectionSkeleton() {
   return (
@@ -812,6 +814,22 @@ function BackupSection() {
   );
 }
 
+function PaymentMethodSection() {
+  return (
+    <Suspense fallback={<SectionSkeleton />}>
+      <PaymentMethodSettings />
+    </Suspense>
+  );
+}
+
+function SubscriptionSection() {
+  return (
+    <Suspense fallback={<SectionSkeleton />}>
+      <SubscriptionSettings />
+    </Suspense>
+  );
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function SettingsPage() {
@@ -833,6 +851,8 @@ export default function SettingsPage() {
         <TaxSection />
         <ServiceChargeSection />
         <AISection />
+        <PaymentMethodSection />
+        <SubscriptionSection />
         <BackupSection />
         <ResetDataSection />
       </div>

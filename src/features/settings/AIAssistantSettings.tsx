@@ -1,328 +1,533 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
-import { Brain, Save, Loader2, Eye, EyeOff, Zap } from 'lucide-react';
+import {
+  Brain,
+  Check,
+  Clock,
+  RefreshCw,
+  History,
+  Crown,
+  MessageSquare,
+  Zap,
+  Sparkles,
+  TrendingUp,
+  BarChart3,
+  Users,
+  Package,
+  ShoppingBag,
+  Lightbulb,
+  Bot,
+  ChevronRight,
+  AlertTriangle,
+  FileBarChart,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Separator } from '@/components/ui/separator';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// ─── Types ──────────────────────────────────────────────────────────────────
 
-const fadeIn = {
-  initial: { opacity: 0, y: 12 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.3 },
+interface AIAssistantSettingsProps {
+  onBack?: () => void;
+}
+
+// ─── Mock Data ──────────────────────────────────────────────────────────────
+
+const MOCK_STATUS = {
+  isActive: true,
+  provider: 'AI Cloud Dkriuk',
+  model: 'GPT-5',
+  mode: 'Cloud AI',
+  plan: 'Starter',
+};
+
+const MOCK_USAGE = {
+  chatToday: 8,
+  chatTodayLimit: 10,
+  chatMonth: 126,
 };
 
 const AI_FEATURES = [
-  {
-    key: 'smart_suggestion',
-    label: 'Saran Produk',
-    description: 'Rekomendasi produk berdasarkan riwayat transaksi',
-  },
-  {
-    key: 'sales_analysis',
-    label: 'Analisis Penjualan',
-    description: 'Ringkasan dan analisis penjualan otomatis',
-  },
-  {
-    key: 'stock_prediction',
-    label: 'Prediksi Stok',
-    description: 'Peringatan stok berdasarkan tren penjualan',
-  },
-  {
-    key: 'auto_categorize',
-    label: 'Kategorisasi Otomatis',
-    description: 'Klasifikasi produk ke kategori yang tepat',
-  },
-  {
-    key: 'customer_insight',
-    label: 'Insight Pelanggan',
-    description: 'Analisis pola belanja pelanggan',
-  },
-] as const;
+  { label: 'Chat AI', icon: MessageSquare, enabled: true },
+  { label: 'Ringkasan Penjualan', icon: BarChart3, enabled: true },
+  { label: 'Analisis Laporan', icon: FileBarChart, enabled: true },
+  { label: 'Prediksi Restock', icon: TrendingUp, enabled: true },
+  { label: 'Analisis Produk Terlaris', icon: ShoppingBag, enabled: true },
+  { label: 'Analisis Pelanggan', icon: Users, enabled: true },
+  { label: 'Insight Bisnis', icon: Lightbulb, enabled: true },
+  { label: 'Ringkasan Stok', icon: Package, enabled: true },
+  { label: 'Rekomendasi Pembelian', icon: Sparkles, enabled: true },
+  { label: 'Tanya AI', icon: Bot, enabled: true },
+];
 
-type AIFeature = (typeof AI_FEATURES)[number]['key'];
+// ─── Helpers ────────────────────────────────────────────────────────────────
 
-// ─── Schema & Types ───────────────────────────────────────────────────────────
+function getTimeUntilMidnight(): string {
+  const now = new Date();
+  // WIB = UTC+7
+  const wibOffset = 7 * 60;
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const wib = new Date(utc + wibOffset * 60000);
 
-const aiSettingsSchema = z.object({
-  ai_api_key: z.string().default(''),
-  ai_model: z.enum(['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo']).default('gpt-4o-mini'),
-  smart_suggestion: z.boolean().default(false),
-  sales_analysis: z.boolean().default(false),
-  stock_prediction: z.boolean().default(false),
-  auto_categorize: z.boolean().default(false),
-  customer_insight: z.boolean().default(false),
-});
+  const midnight = new Date(wib);
+  midnight.setHours(24, 0, 0, 0);
 
-type AISettingsForm = z.infer<typeof aiSettingsSchema>;
+  const diff = midnight.getTime() - wib.getTime();
+  if (diff <= 0) return '00:00:00';
 
-// ─── Component ─────────────────────────────────────────────────────────────────
+  const hours = Math.floor(diff / 3600000);
+  const minutes = Math.floor((diff % 3600000) / 60000);
+  const seconds = Math.floor((diff % 60000) / 1000);
 
-export default function AIAssistantSettings() {
-  const queryClient = useQueryClient();
-  const [showApiKey, setShowApiKey] = useState(false);
-  const [apiKeyInput, setApiKeyInput] = useState('');
-
-  const { data, isLoading } = useQuery({
-    queryKey: ['settings-ai'],
-    queryFn: async () => {
-      const res = await fetch('/api/settings/ai');
-      if (!res.ok) throw new Error('Gagal memuat pengaturan AI');
-      const json = await res.json();
-      return json.data as Record<string, string>;
-    },
-  });
-
-  const form = useForm<AISettingsForm>({
-    resolver: zodResolver(aiSettingsSchema),
-    defaultValues: {
-      ai_api_key: '',
-      ai_model: 'gpt-4o-mini',
-      smart_suggestion: false,
-      sales_analysis: false,
-      stock_prediction: false,
-      auto_categorize: false,
-      customer_insight: false,
-    },
-    values: data
-      ? {
-          ai_api_key: '',
-          ai_model: (data.ai_model as AISettingsForm['ai_model']) || 'gpt-4o-mini',
-          smart_suggestion: parseFeatures(data.ai_enabled_features).includes('smart_suggestion'),
-          sales_analysis: parseFeatures(data.ai_enabled_features).includes('sales_analysis'),
-          stock_prediction: parseFeatures(data.ai_enabled_features).includes('stock_prediction'),
-          auto_categorize: parseFeatures(data.ai_enabled_features).includes('auto_categorize'),
-          customer_insight: parseFeatures(data.ai_enabled_features).includes('customer_insight'),
-        }
-      : undefined,
-  });
-
-  // Track whether the user has a stored API key
-  const hasApiKey = !!data?.ai_api_key && data.ai_api_key.length > 0;
-
-  const mutation = useMutation({
-    mutationFn: async (values: AISettingsForm) => {
-      const enabledFeatures: string[] = [];
-      for (const feature of AI_FEATURES) {
-        if (values[feature.key]) {
-          enabledFeatures.push(feature.key);
-        }
-      }
-
-      const payload: Record<string, string> = {
-        ai_model: values.ai_model,
-        ai_enabled_features: JSON.stringify(enabledFeatures),
-      };
-
-      // Only send API key if the user typed something new
-      if (apiKeyInput.length > 0) {
-        payload.ai_api_key = apiKeyInput;
-      }
-
-      const res = await fetch('/api/settings/ai', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || 'Gagal menyimpan pengaturan AI');
-      return json;
-    },
-    onSuccess: () => {
-      toast.success('Pengaturan AI berhasil disimpan');
-      setApiKeyInput('');
-      queryClient.invalidateQueries({ queryKey: ['settings-ai'] });
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const testMutation = useMutation({
-    mutationFn: async () => {
-      const res = await fetch('/api/ai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'test' }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || 'Koneksi gagal');
-      return json;
-    },
-    onSuccess: () => toast.success('Koneksi API berhasil!'),
-    onError: (err) => toast.error(err.message),
-  });
-
-  const onSubmit = (values: AISettingsForm) => mutation.mutate(values);
-
-  return (
-    <motion.div {...fadeIn}>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Brain className="h-5 w-5" />
-            Asisten AI
-          </CardTitle>
-          <CardDescription>
-            Konfigurasi asisten AI untuk fitur cerdas di POS
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="space-y-4">
-              {Array.from({ length: 7 }).map((_, i) => (
-                <div key={i} className="space-y-1.5">
-                  <Skeleton className="h-4 w-32" />
-                  <Skeleton className="h-9 w-full" />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-                {/* API Key */}
-                <FormField
-                  control={form.control}
-                  name="ai_api_key"
-                  render={() => (
-                    <FormItem>
-                      <FormLabel>API Key</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Input
-                            type={showApiKey ? 'text' : 'password'}
-                            placeholder={hasApiKey ? 'Kunci tersimpan — biarkan kosong untuk tetap' : 'sk-...'}
-                            value={apiKeyInput}
-                            onChange={(e) => setApiKeyInput(e.target.value)}
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                            onClick={() => setShowApiKey(!showApiKey)}
-                          >
-                            {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          </Button>
-                        </div>
-                      </FormControl>
-                      <FormDescription>
-                        {hasApiKey
-                          ? 'API key tersimpan. Ketik key baru untuk mengganti.'
-                          : 'Masukkan OpenAI API key Anda.'}
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Model AI */}
-                <FormField
-                  control={form.control}
-                  name="ai_model"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Model AI</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Pilih model AI" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="gpt-4o">GPT-4o (Recommended)</SelectItem>
-                          <SelectItem value="gpt-4o-mini">GPT-4o Mini (Fast &amp; Cheap)</SelectItem>
-                          <SelectItem value="gpt-4-turbo">GPT-4 Turbo</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Feature Toggles */}
-                <div className="space-y-3">
-                  <Label className="text-sm font-medium">Fitur AI</Label>
-                  {AI_FEATURES.map((feature) => (
-                    <FormField
-                      key={feature.key}
-                      control={form.control}
-                      name={feature.key}
-                      render={({ field }) => (
-                        <FormItem className="flex items-center justify-between rounded-lg border p-3">
-                          <div className="space-y-0.5">
-                            <FormLabel className="text-sm">{feature.label}</FormLabel>
-                            <FormDescription>{feature.description}</FormDescription>
-                          </div>
-                          <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  ))}
-                </div>
-
-                {/* Actions */}
-                <div className="flex flex-col gap-3 pt-2 sm:flex-row">
-                  <Button type="submit" disabled={mutation.isPending}>
-                    {mutation.isPending ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <Save className="mr-2 h-4 w-4" />
-                    )}
-                    Simpan Pengaturan
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    disabled={testMutation.isPending}
-                    onClick={() => testMutation.mutate()}
-                  >
-                    {testMutation.isPending ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <Zap className="mr-2 h-4 w-4" />
-                    )}
-                    Test Koneksi
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          )}
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
 
-// ─── Utilities ─────────────────────────────────────────────────────────────────
+// ─── Animation Variants ─────────────────────────────────────────────────────
 
-function parseFeatures(jsonString: string | undefined): AIFeature[] {
-  if (!jsonString) return [];
-  try {
-    const parsed = JSON.parse(jsonString);
-    if (Array.isArray(parsed)) {
-      return parsed.filter((f: string) =>
-        (AI_FEATURES.map((feat) => feat.key) as readonly string[]).includes(f)
-      ) as AIFeature[];
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.06, delayChildren: 0.1 },
+  },
+};
+
+const item = {
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' } },
+};
+
+// ─── Component ──────────────────────────────────────────────────────────────
+
+export default function AIAssistantSettings({ onBack }: AIAssistantSettingsProps) {
+  const [countdown, setCountdown] = useState(() => getTimeUntilMidnight());
+  const [showQuotaDialog, setShowQuotaDialog] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const countdownRef = useRef<ReturnType<typeof setInterval>>();
+
+  const usagePercent = Math.min(
+    (MOCK_USAGE.chatToday / MOCK_USAGE.chatTodayLimit) * 100,
+    100
+  );
+  const isQuotaLow = MOCK_USAGE.chatToday >= MOCK_USAGE.chatTodayLimit * 0.8;
+  const isQuotaExceeded = MOCK_USAGE.chatToday >= MOCK_USAGE.chatTodayLimit;
+
+  // Countdown timer — uses interval callback only (no synchronous setState in effect body)
+  useEffect(() => {
+    countdownRef.current = setInterval(() => {
+      setCountdown(getTimeUntilMidnight());
+    }, 1000);
+    return () => {
+      if (countdownRef.current) clearInterval(countdownRef.current);
+    };
+  }, []);
+
+  const handleResetQuota = useCallback(() => {
+    if (isQuotaExceeded) {
+      setShowQuotaDialog(true);
+      return;
     }
-    return [];
-  } catch {
-    return [];
-  }
+    setIsResetting(true);
+    // Simulate reset
+    setTimeout(() => setIsResetting(false), 1500);
+  }, [isQuotaExceeded]);
+
+  return (
+    <motion.div
+      variants={container}
+      initial="hidden"
+      animate="show"
+      className="space-y-4"
+    >
+      {/* ── AI Status Dashboard ──────────────────────────────────────── */}
+      <motion.div variants={item}>
+        <Card className="rounded-2xl border-0 shadow-sm bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/20 overflow-hidden relative">
+          {/* Decorative glow */}
+          <div className="absolute -top-20 -right-20 h-40 w-40 rounded-full bg-emerald-400/10 dark:bg-emerald-400/5 blur-3xl pointer-events-none" />
+          <CardContent className="p-5 sm:p-6 relative">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              {/* Left: Status info */}
+              <div className="flex items-start gap-4">
+                <div className="relative mt-0.5">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500 shadow-lg shadow-emerald-500/20">
+                    <Brain className="h-6 w-6 text-white" />
+                  </div>
+                  <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex h-4 w-4 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-background" />
+                  </span>
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-semibold text-foreground">
+                      Asisten AI
+                    </h3>
+                    <Badge
+                      variant="secondary"
+                      className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 border-0 text-xs font-medium px-2 py-0.5"
+                    >
+                      Active
+                    </Badge>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                    <span className="flex items-center gap-1.5">
+                      <Zap className="h-3.5 w-3.5 text-emerald-500" />
+                      {MOCK_STATUS.provider}
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <Bot className="h-3.5 w-3.5 text-emerald-500" />
+                      {MOCK_STATUS.model}
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <Sparkles className="h-3.5 w-3.5 text-emerald-500" />
+                      {MOCK_STATUS.mode}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right: Plan badge */}
+              <div className="flex items-center gap-2 sm:flex-col sm:items-end sm:gap-1">
+                <Badge
+                  variant="outline"
+                  className="border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-600 dark:bg-amber-950/40 dark:text-amber-300 px-3 py-1 text-xs font-semibold uppercase tracking-wider rounded-full"
+                >
+                  <Crown className="mr-1.5 h-3 w-3" />
+                  {MOCK_STATUS.plan}
+                </Badge>
+                <span className="text-xs text-muted-foreground">
+                  Pakai saat ini
+                </span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* ── Two Column Grid: Features + Usage ──────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* ── AI Features ─────────────────────────────────────────────── */}
+        <motion.div variants={item}>
+          <Card className="rounded-2xl border-0 shadow-sm">
+            <CardContent className="p-5 sm:p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/40">
+                  <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <h3 className="text-sm font-semibold text-foreground">
+                  Fitur AI Tersedia
+                </h3>
+                <Badge
+                  variant="secondary"
+                  className="ml-auto bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 border-0 text-xs"
+                >
+                  {AI_FEATURES.filter((f) => f.enabled).length}/{AI_FEATURES.length} Aktif
+                </Badge>
+              </div>
+
+              <div className="space-y-1 max-h-[360px] overflow-y-auto pr-1">
+                {AI_FEATURES.map((feature, i) => (
+                  <motion.div
+                    key={feature.label}
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 + i * 0.04, duration: 0.25 }}
+                    className={`flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors ${
+                      feature.enabled
+                        ? 'hover:bg-muted/50'
+                        : 'opacity-40'
+                    }`}
+                  >
+                    <div
+                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors ${
+                        feature.enabled
+                          ? 'bg-emerald-100 dark:bg-emerald-900/40'
+                          : 'bg-muted'
+                      }`}
+                    >
+                      {feature.enabled ? (
+                        <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                      ) : (
+                        <feature.icon className="h-3.5 w-3.5 text-muted-foreground" />
+                      )}
+                    </div>
+                    <span className="text-sm font-medium text-foreground">
+                      {feature.label}
+                    </span>
+                    {feature.enabled && (
+                      <ChevronRight className="ml-auto h-3.5 w-3.5 text-muted-foreground/50" />
+                    )}
+                  </motion.div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* ── AI Usage ────────────────────────────────────────────────── */}
+        <motion.div variants={item}>
+          <Card className="rounded-2xl border-0 shadow-sm">
+            <CardContent className="p-5 sm:p-6">
+              <div className="flex items-center gap-2 mb-5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/40">
+                  <BarChart3 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <h3 className="text-sm font-semibold text-foreground">
+                  Penggunaan AI
+                </h3>
+              </div>
+
+              <div className="space-y-5">
+                {/* Daily Quota */}
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-foreground">
+                      Chat Hari Ini
+                    </span>
+                    <span
+                      className={`text-sm font-semibold tabular-nums ${
+                        isQuotaExceeded
+                          ? 'text-red-600 dark:text-red-400'
+                          : isQuotaLow
+                            ? 'text-amber-600 dark:text-amber-400'
+                            : 'text-emerald-600 dark:text-emerald-400'
+                      }`}
+                    >
+                      {MOCK_USAGE.chatToday}/{MOCK_USAGE.chatTodayLimit}
+                    </span>
+                  </div>
+                  <div className="relative">
+                    <Progress
+                      value={usagePercent}
+                      className={`h-2.5 rounded-full ${
+                        isQuotaExceeded
+                          ? '[&>div]:bg-red-500 [&>div]:shadow-red-500/30 [&>div]:shadow-sm'
+                          : isQuotaLow
+                            ? '[&>div]:bg-amber-500 [&>div]:shadow-amber-500/30 [&>div]:shadow-sm'
+                            : '[&>div]:bg-emerald-500 [&>div]:shadow-emerald-500/30 [&>div]:shadow-sm'
+                      } [&>div]:rounded-full`}
+                    />
+                  </div>
+                  {isQuotaLow && !isQuotaExceeded && (
+                    <p className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
+                      <AlertTriangle className="h-3 w-3" />
+                      Kuota hampir habis. Pertimbangkan untuk upgrade.
+                    </p>
+                  )}
+                  {isQuotaExceeded && (
+                    <p className="flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400">
+                      <AlertTriangle className="h-3 w-3" />
+                      Kuota harian telah habis. Upgrade untuk melanjutkan.
+                    </p>
+                  )}
+                </div>
+
+                <Separator />
+
+                {/* Monthly Usage */}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-foreground">
+                    Chat Bulan Ini
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      variant="secondary"
+                      className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 border-0 text-xs font-medium"
+                    >
+                      Normal
+                    </Badge>
+                    <span className="text-sm font-semibold text-foreground tabular-nums">
+                      {MOCK_USAGE.chatMonth}
+                    </span>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Countdown & Reset */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium text-foreground">
+                        Reset Kuota
+                      </span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      00:00 WIB
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between rounded-xl bg-muted/50 px-4 py-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-0.5">
+                        Sisa waktu reset
+                      </p>
+                      <p className="text-lg font-bold tabular-nums tracking-wide text-foreground">
+                        {countdown}
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl text-xs"
+                      onClick={handleResetQuota}
+                      disabled={isResetting}
+                    >
+                      {isResetting ? (
+                        <>
+                          <RefreshCw className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                          Mereset...
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
+                          Reset Kuota
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+
+      {/* ── Action Buttons ─────────────────────────────────────────────── */}
+      <motion.div
+        variants={item}
+        className="flex flex-col sm:flex-row gap-3"
+      >
+        <Button
+          variant="outline"
+          className="rounded-2xl flex-1 h-11 text-sm font-medium"
+          onClick={onBack}
+        >
+          <History className="mr-2 h-4 w-4" />
+          Riwayat AI
+          <ChevronRight className="ml-auto h-4 w-4" />
+        </Button>
+
+        <Button
+          className="rounded-2xl flex-1 h-11 text-sm font-medium bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg shadow-emerald-500/20 transition-all hover:shadow-xl hover:shadow-emerald-500/30"
+          onClick={() => setShowQuotaDialog(true)}
+        >
+          <Crown className="mr-2 h-4 w-4" />
+          Upgrade AI
+          <ChevronRight className="ml-auto h-4 w-4" />
+        </Button>
+      </motion.div>
+
+      {/* ── Quota Exceeded Dialog ──────────────────────────────────────── */}
+      <Dialog open={showQuotaDialog} onOpenChange={setShowQuotaDialog}>
+        <DialogContent className="rounded-2xl sm:max-w-md">
+          <DialogHeader>
+            <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 shadow-lg shadow-emerald-500/25">
+              <Crown className="h-7 w-7 text-white" />
+            </div>
+            <DialogTitle className="text-center text-lg">
+              Upgrade Paket AI
+            </DialogTitle>
+            <DialogDescription className="text-center">
+              {isQuotaExceeded
+                ? 'Kuota harian Anda telah habis. Upgrade ke paket yang lebih tinggi untuk melanjutkan menggunakan fitur AI tanpa batas.'
+                : 'Dapatkan lebih banyak kuota dan fitur premium dengan upgrade paket AI Anda.'}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-2">
+            {/* Pro Plan Card */}
+            <div className="rounded-xl border-2 border-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-950/20 p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-sm text-foreground">
+                  Pro Plan
+                </span>
+                <Badge className="bg-emerald-500 text-white border-0 text-xs">
+                  Populer
+                </Badge>
+              </div>
+              <p className="text-2xl font-bold text-foreground">
+                Rp99K
+                <span className="text-sm font-normal text-muted-foreground">
+                  /bulan
+                </span>
+              </p>
+              <div className="flex flex-wrap gap-2 pt-1">
+                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                  <Check className="h-3 w-3 text-emerald-500" /> 50 chat/hari
+                </span>
+                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                  <Check className="h-3 w-3 text-emerald-500" /> Semua fitur AI
+                </span>
+                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                  <Check className="h-3 w-3 text-emerald-500" /> Prioritas respons
+                </span>
+              </div>
+            </div>
+
+            {/* Enterprise Plan Card */}
+            <div className="rounded-xl border border-border p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-sm text-foreground">
+                  Enterprise
+                </span>
+                <Badge variant="secondary" className="text-xs">
+                  Unlimited
+                </Badge>
+              </div>
+              <p className="text-2xl font-bold text-foreground">
+                Rp249K
+                <span className="text-sm font-normal text-muted-foreground">
+                  /bulan
+                </span>
+              </p>
+              <div className="flex flex-wrap gap-2 pt-1">
+                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                  <Check className="h-3 w-3 text-emerald-500" /> Unlimited chat
+                </span>
+                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                  <Check className="h-3 w-3 text-emerald-500" /> AI khusus
+                </span>
+                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                  <Check className="h-3 w-3 text-emerald-500" /> Support 24/7
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="flex-col gap-2 sm:flex-col">
+            <Button
+              className="w-full rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg shadow-emerald-500/20"
+              onClick={() => setShowQuotaDialog(false)}
+            >
+              <Crown className="mr-2 h-4 w-4" />
+              Upgrade Sekarang
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full rounded-xl"
+              onClick={() => setShowQuotaDialog(false)}
+            >
+              Nanti Saja
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </motion.div>
+  );
 }
