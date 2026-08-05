@@ -12,7 +12,16 @@ export async function GET() {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29)
     thirtyDaysAgo.setHours(0, 0, 0, 0)
 
-    // Run all independent queries in parallel
+    // Helper: safe query with fallback
+    async function safeQuery<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
+      try {
+        return await fn()
+      } catch {
+        return fallback
+      }
+    }
+
+    // Run all queries in parallel, each with its own fallback
     const [
       todaySalesResult,
       monthSalesResult,
@@ -26,97 +35,81 @@ export async function GET() {
       lowStockProducts,
       salesChartData,
     ] = await Promise.all([
-      // Today's sales (sum of today's completed transactions)
-      db.transaction.aggregate({
-        where: {
-          status: 'completed',
-          type: 'sale',
-          createdAt: { gte: today },
-        },
-        _sum: { grandTotal: true },
-        _count: true,
-      }),
+      safeQuery(
+        () => db.transaction.aggregate({
+          where: { status: 'completed', type: 'sale', createdAt: { gte: today } },
+          _sum: { grandTotal: true },
+          _count: true,
+        }),
+        { _sum: { grandTotal: 0 }, _count: 0 }
+      ),
 
-      // Month's sales
-      db.transaction.aggregate({
-        where: {
-          status: 'completed',
-          type: 'sale',
-          createdAt: { gte: startOfMonth },
-        },
-        _sum: { grandTotal: true },
-        _count: true,
-      }),
+      safeQuery(
+        () => db.transaction.aggregate({
+          where: { status: 'completed', type: 'sale', createdAt: { gte: startOfMonth } },
+          _sum: { grandTotal: true },
+          _count: true,
+        }),
+        { _sum: { grandTotal: 0 }, _count: 0 }
+      ),
 
-      // Total revenue (all completed sales)
-      db.transaction.aggregate({
-        where: {
-          status: 'completed',
-          type: 'sale',
-        },
-        _sum: { grandTotal: true },
-      }),
+      safeQuery(
+        () => db.transaction.aggregate({
+          where: { status: 'completed', type: 'sale' },
+          _sum: { grandTotal: true },
+        }),
+        { _sum: { grandTotal: 0 } }
+      ),
 
-      // Total active products
-      db.product.count({ where: { isActive: true } }),
+      safeQuery(() => db.product.count({ where: { isActive: true } }), 0),
+      safeQuery(() => db.customer.count({ where: { isActive: true } }), 0),
+      safeQuery(() => db.supplier.count({ where: { isActive: true } }), 0),
+      safeQuery(() => db.transaction.count(), 0),
 
-      // Total active customers
-      db.customer.count({ where: { isActive: true } }),
+      safeQuery(
+        () => db.transactionItem.groupBy({
+          by: ['productId', 'productName'],
+          _sum: { quantity: true },
+          orderBy: { _sum: { quantity: 'desc' } },
+          take: 5,
+        }),
+        []
+      ),
 
-      // Total active suppliers
-      db.supplier.count({ where: { isActive: true } }),
+      safeQuery(
+        () => db.transaction.findMany({
+          take: 10,
+          orderBy: { createdAt: 'desc' },
+          include: {
+            user: { select: { id: true, name: true } },
+            customer: { select: { id: true, name: true } },
+          },
+        }),
+        []
+      ),
 
-      // Total transactions
-      db.transaction.count(),
+      safeQuery(
+        () => db.product.findMany({
+          where: { isActive: true },
+          take: 50,
+          orderBy: { stock: 'asc' },
+          include: { category: true },
+        }),
+        []
+      ),
 
-      // Top 5 selling products by quantity
-      db.transactionItem.groupBy({
-        by: ['productId', 'productName'],
-        _sum: { quantity: true },
-        orderBy: { _sum: { quantity: 'desc' } },
-        take: 5,
-      }),
-
-      // Recent 10 transactions
-      db.transaction.findMany({
-        take: 10,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          user: { select: { id: true, name: true } },
-          customer: { select: { id: true, name: true } },
-        },
-      }),
-
-      // Low stock products (preliminary filter, refined in JS for stock <= minStock)
-      db.product.findMany({
-        where: {
-          isActive: true,
-        },
-        take: 50,
-        orderBy: { stock: 'asc' },
-        include: { category: true },
-      }),
-
-      // Sales chart data - daily sales for last 30 days
-      db.transaction.findMany({
-        where: {
-          status: 'completed',
-          type: 'sale',
-          createdAt: { gte: thirtyDaysAgo },
-        },
-        select: {
-          createdAt: true,
-          grandTotal: true,
-        },
-      }),
-
+      safeQuery(
+        () => db.transaction.findMany({
+          where: { status: 'completed', type: 'sale', createdAt: { gte: thirtyDaysAgo } },
+          select: { createdAt: true, grandTotal: true },
+        }),
+        []
+      ),
     ])
 
-    // Process sales/revenue chart data - group by date
+    // Process sales chart data
     const dailyMap = new Map<string, { total: number; count: number }>()
-    const transactionsForChart = salesChartData
-
-    for (const tx of transactionsForChart) {
+    for (const tx of salesChartData) {
       const dateStr = tx.createdAt.toISOString().split('T')[0]
       const existing = dailyMap.get(dateStr)
       if (existing) {
@@ -133,25 +126,19 @@ export async function GET() {
     while (forDate <= today) {
       const dateStr = forDate.toISOString().split('T')[0]
       const dayData = dailyMap.get(dateStr)
-      chartData.push({
-        date: dateStr,
-        total: dayData?.total ?? 0,
-      })
+      chartData.push({ date: dateStr, total: dayData?.total ?? 0 })
       forDate.setDate(forDate.getDate() + 1)
     }
 
-    // Filter low stock products where stock <= minStock (do in JS since SQLite limitation)
-    const filteredLowStock = lowStockProducts.filter(
-      (p) => p.stock <= p.minStock
-    )
+    const filteredLowStock = lowStockProducts.filter((p) => p.stock <= p.minStock)
 
     return NextResponse.json({
       data: {
-        todaySales: todaySalesResult._sum.grandTotal ?? 0,
-        todayTransactions: todaySalesResult._count,
-        monthSales: monthSalesResult._sum.grandTotal ?? 0,
-        monthTransactions: monthSalesResult._count,
-        totalRevenue: totalRevenueResult._sum.grandTotal ?? 0,
+        todaySales: (todaySalesResult as any)._sum?.grandTotal ?? 0,
+        todayTransactions: (todaySalesResult as any)._count ?? 0,
+        monthSales: (monthSalesResult as any)._sum?.grandTotal ?? 0,
+        monthTransactions: (monthSalesResult as any)._count ?? 0,
+        totalRevenue: (totalRevenueResult as any)._sum?.grandTotal ?? 0,
         totalProducts,
         totalCustomers,
         totalSuppliers,
