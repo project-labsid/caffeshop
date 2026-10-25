@@ -24,7 +24,7 @@ import {
   CheckCircle2,
   X,
 } from 'lucide-react';
-import { cn, formatRupiah } from '@/lib/utils';
+import { cn, formatRupiah, apiFetch } from '@/lib/utils';
 import type { StockAdjustment, Product, PaginatedResponse } from '@/types';
 
 import { Button } from '@/components/ui/button';
@@ -118,7 +118,7 @@ function ProductSearchSelect({
     queryFn: async () => {
       const params = new URLSearchParams({ perPage: '20' });
       if (search) params.set('search', search);
-      const res = await fetch(`/api/products?${params}`);
+      const res = await apiFetch(`/api/products?${params}`);
       if (!res.ok) throw new Error('Gagal memuat produk');
       const json = (await res.json()) as PaginatedResponse<Product>;
       return json.data;
@@ -222,7 +222,7 @@ function RiwayatStokTab() {
       if (search) params.set('search', search);
       if (startDate) params.set('startDate', startDate);
       if (endDate) params.set('endDate', endDate);
-      const res = await fetch(`/api/stock?${params}`);
+      const res = await apiFetch(`/api/stock?${params}`);
       if (!res.ok) throw new Error('Gagal memuat riwayat stok');
       return res.json() as Promise<PaginatedResponse<StockAdjustment & { user?: { id: string; name: string; email: string } }>>;
     },
@@ -441,7 +441,7 @@ function StokMasukTab() {
     queryKey: ['product', selectedProductId],
     queryFn: async () => {
       if (!selectedProductId) return null;
-      const res = await fetch(`/api/products/${selectedProductId}`);
+      const res = await apiFetch(`/api/products/${selectedProductId}`);
       if (!res.ok) return null;
       const json = await res.json();
       return json.data as Product;
@@ -451,7 +451,7 @@ function StokMasukTab() {
 
   const mutation = useMutation({
     mutationFn: async (values: StockInForm) => {
-      const res = await fetch('/api/stock', {
+      const res = await apiFetch('/api/stock', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...values, type: 'in', userId: '' }),
@@ -587,7 +587,7 @@ function StokKeluarTab() {
     queryKey: ['product', selectedProductId],
     queryFn: async () => {
       if (!selectedProductId) return null;
-      const res = await fetch(`/api/products/${selectedProductId}`);
+      const res = await apiFetch(`/api/products/${selectedProductId}`);
       if (!res.ok) return null;
       const json = await res.json();
       return json.data as Product;
@@ -597,7 +597,7 @@ function StokKeluarTab() {
 
   const mutation = useMutation({
     mutationFn: async (values: StockOutForm) => {
-      const res = await fetch('/api/stock', {
+      const res = await apiFetch('/api/stock', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...values, type: 'out', userId: '' }),
@@ -744,7 +744,7 @@ function StockOpnameTab() {
     queryKey: ['product', selectedProductId],
     queryFn: async () => {
       if (!selectedProductId) return null;
-      const res = await fetch(`/api/products/${selectedProductId}`);
+      const res = await apiFetch(`/api/products/${selectedProductId}`);
       if (!res.ok) return null;
       const json = await res.json();
       return json.data as Product;
@@ -754,7 +754,7 @@ function StockOpnameTab() {
 
   const mutation = useMutation({
     mutationFn: async (values: StockOpnameForm) => {
-      const res = await fetch('/api/stock/opname', {
+      const res = await apiFetch('/api/stock/opname', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...values, userId: '' }),

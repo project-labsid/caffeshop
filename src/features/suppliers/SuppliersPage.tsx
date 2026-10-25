@@ -29,6 +29,7 @@ import {
   Truck,
 } from 'lucide-react';
 import type { Supplier, PaginatedResponse } from '@/types';
+import { apiFetch } from '@/lib/utils';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -176,7 +177,7 @@ export default function SuppliersPage() {
         perPage: String(perPage),
       });
       if (search) params.set('search', search);
-      const res = await fetch(`/api/suppliers?${params.toString()}`);
+      const res = await apiFetch(`/api/suppliers?${params.toString()}`);
       if (!res.ok) throw new Error('Gagal memuat supplier');
       return res.json();
     },
@@ -190,7 +191,7 @@ export default function SuppliersPage() {
       if (!payload.phone) delete payload.phone;
       if (!payload.email) delete payload.email;
       if (!payload.address) delete payload.address;
-      const res = await fetch('/api/suppliers', {
+      const res = await apiFetch('/api/suppliers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -218,7 +219,7 @@ export default function SuppliersPage() {
       if (!payload.phone) payload.phone = null;
       if (!payload.email) payload.email = null;
       if (!payload.address) payload.address = null;
-      const res = await fetch(`/api/suppliers/${editingSupplier.id}`, {
+      const res = await apiFetch(`/api/suppliers/${editingSupplier.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -241,7 +242,7 @@ export default function SuppliersPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`/api/suppliers/${id}`, {
+      const res = await apiFetch(`/api/suppliers/${id}`, {
         method: 'DELETE',
       });
       if (!res.ok) {

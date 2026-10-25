@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, Eye, EyeOff, Shield } from 'lucide-react';
+import { Loader2, Eye, EyeOff, Shield, Coffee, Store } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,24 +26,58 @@ type LoginFormData = {
   remember: boolean;
 };
 
+type RegisterFormData = {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  accountName: string;
+  phone: string;
+};
+
 const loginSchema = z.object({
   email: z.string().email('Format email tidak valid'),
   password: z.string().min(1, 'Password wajib diisi'),
   remember: z.boolean().optional().default(false),
 });
 
+const registerSchema = z.object({
+  name: z.string().min(2, 'Nama minimal 2 karakter'),
+  email: z.string().email('Format email tidak valid'),
+  password: z.string().min(6, 'Password minimal 6 karakter'),
+  confirmPassword: z.string().min(6, 'Konfirmasi password wajib diisi'),
+  accountName: z.string().min(2, 'Nama toko minimal 2 karakter'),
+  phone: z.string().optional().default(''),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: 'Password tidak cocok',
+  path: ['confirmPassword'],
+});
+
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSetup, setIsSetup] = useState(false);
+  const [showRegister, setShowRegister] = useState(false);
   const { login } = useAuthStore();
 
-  const form = useForm<LoginFormData>({
+  const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: '',
       password: '',
       remember: false,
+    },
+  });
+
+  const registerForm = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      accountName: '',
+      phone: '',
     },
   });
 
@@ -55,6 +89,7 @@ export default function LoginPage() {
           const json = await res.json();
           if (json.total === 0) {
             setIsSetup(true);
+            setShowRegister(true);
           }
         }
       } catch {
@@ -64,7 +99,7 @@ export default function LoginPage() {
     checkSetup();
   }, []);
 
-  async function onSubmit(data: LoginFormData) {
+  async function onLogin(data: LoginFormData) {
     setIsLoading(true);
     try {
       const res = await fetch('/api/auth/login', {
@@ -97,13 +132,45 @@ export default function LoginPage() {
     }
   }
 
+  async function onRegister(data: RegisterFormData) {
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          password: data.password,
+          phone: data.phone,
+          accountName: data.accountName,
+          createAccount: true,
+        }),
+      });
+      const result = await res.json();
+
+      if (!res.ok) {
+        toast.error(result.error || 'Registrasi gagal');
+        return;
+      }
+
+      // Auto-login after registration
+      login(result.user);
+      toast.success(`Selamat datang, ${result.user.name}! Akun "${data.accountName}" berhasil dibuat.`);
+    } catch {
+      toast.error('Terjadi kesalahan koneksi. Silakan coba lagi.');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   useEffect(() => {
     const saved = localStorage.getItem('pos_remember');
     if (saved) {
-      form.setValue('email', saved);
-      form.setValue('remember', true);
+      loginForm.setValue('email', saved);
+      loginForm.setValue('remember', true);
     }
-  }, [form]);
+  }, [loginForm]);
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
@@ -124,13 +191,13 @@ export default function LoginPage() {
             className="flex flex-col items-center text-center max-w-md"
           >
             <div className="w-20 h-20 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-8 border border-white/20 overflow-hidden">
-              <img src="/logo.png" alt="Dkriuk" className="w-full h-full object-cover" />
+              <img src="/logo.png" alt="Kasir Kopi Shop" className="w-full h-full object-cover" />
             </div>
             <h1 className="text-4xl xl:text-5xl font-bold tracking-tight mb-4">
-              Dkriuk
+              Kasir Kopi Shop
             </h1>
             <p className="text-emerald-100 text-lg leading-relaxed">
-              Sistem Point of Sale modern untuk mengelola transaksi, stok, dan laporan bisnis Anda dengan mudah dan efisien.
+              Sistem Kasir Coffee Shop modern untuk mengelola transaksi, stok, dan laporan bisnis kopi Anda dengan mudah dan efisien.
             </p>
             <div className="mt-12 grid grid-cols-3 gap-6 text-center">
               {[
@@ -143,6 +210,11 @@ export default function LoginPage() {
                   <div className="text-sm text-emerald-200 mt-1">{item.label}</div>
                 </div>
               ))}
+            </div>
+            <div className="mt-8 p-4 bg-white/10 rounded-xl border border-white/20">
+              <p className="text-sm text-emerald-100">
+                ☕ Buat akun terpisah untuk setiap coffee shop Anda. Data antar toko tidak saling terhubung.
+              </p>
             </div>
           </motion.div>
         </div>
@@ -158,14 +230,14 @@ export default function LoginPage() {
           className="relative z-10 flex flex-col items-center justify-center h-full text-white"
         >
           <div className="w-14 h-14 bg-white/15 backdrop-blur-sm rounded-xl flex items-center justify-center mb-3 border border-white/20 overflow-hidden">
-            <img src="/logo.png" alt="Dkriuk" className="w-full h-full object-cover" />
+            <img src="/logo.png" alt="Kasir Kopi Shop" className="w-full h-full object-cover" />
           </div>
-          <h1 className="text-2xl font-bold">Dkriuk</h1>
-          <p className="text-emerald-100 text-sm mt-1">Point of Sale</p>
+          <h1 className="text-2xl font-bold">Kasir Kopi Shop</h1>
+          <p className="text-emerald-100 text-sm mt-1">Coffee Shop POS</p>
         </motion.div>
       </div>
 
-      {/* Right login form */}
+      {/* Right form area */}
       <motion.div
         initial={{ opacity: 0, x: 40 }}
         animate={{ opacity: 1, x: 0 }}
@@ -173,115 +245,301 @@ export default function LoginPage() {
         className="flex-1 flex items-center justify-center p-6 sm:p-8 lg:p-12"
       >
         <div className="w-full max-w-md space-y-8">
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Masuk ke Akun</h2>
-            <p className="text-muted-foreground mt-2">
-              Masukkan email dan password Anda untuk melanjutkan
-            </p>
-          </div>
+          <AnimatePresence mode="wait">
+            {!showRegister ? (
+              <motion.div key="login" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-8">
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Masuk ke Akun</h2>
+                  <p className="text-muted-foreground mt-2">
+                    Masukkan email dan password Anda untuk melanjutkan
+                  </p>
+                </div>
 
-          {isSetup && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-3 p-3 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 rounded-lg"
-            >
-              <Shield className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <p className="text-sm text-emerald-700 dark:text-emerald-300">
-                Pertama kali menggunakan sistem? Silakan buat akun Super Admin terlebih dahulu.
-              </p>
-            </motion.div>
-          )}
-
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="nama@contoh.com"
-                        autoComplete="email"
-                        disabled={isLoading}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+                {isSetup && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center gap-3 p-3 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 rounded-lg"
+                  >
+                    <Shield className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <p className="text-sm text-emerald-700 dark:text-emerald-300">
+                      Pertama kali menggunakan sistem? Silakan buat akun Coffee Shop terlebih dahulu.
+                    </p>
+                  </motion.div>
                 )}
-              />
 
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <div className="relative">
-                      <FormControl>
-                        <Input
-                          type={showPassword ? 'text' : 'password'}
-                          placeholder="Masukkan password"
-                          autoComplete="current-password"
-                          disabled={isLoading}
-                          className="pr-10"
-                          {...field}
-                        />
-                      </FormControl>
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                        tabIndex={-1}
-                      >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
+                <Form {...loginForm}>
+                  <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-5">
+                    <FormField
+                      control={loginForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="email"
+                              placeholder="nama@coffeeshop.com"
+                              autoComplete="email"
+                              disabled={isLoading}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={loginForm.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password</FormLabel>
+                          <div className="relative">
+                            <FormControl>
+                              <Input
+                                type={showPassword ? 'text' : 'password'}
+                                placeholder="Masukkan password"
+                                autoComplete="current-password"
+                                disabled={isLoading}
+                                className="pr-10"
+                                {...field}
+                              />
+                            </FormControl>
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                              tabIndex={-1}
+                            >
+                              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={loginForm.control}
+                      name="remember"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center gap-2 space-y-0">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                              disabled={isLoading}
+                            />
+                          </FormControl>
+                          <FormLabel className="text-sm font-normal cursor-pointer select-none">
+                            Ingat saya
+                          </FormLabel>
+                        </FormItem>
+                      )}
+                    />
+
+                    <Button
+                      type="submit"
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white h-11 text-base font-semibold"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Memproses...
+                        </>
+                      ) : (
+                        'Masuk'
+                      )}
+                    </Button>
+                  </form>
+                </Form>
+
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowRegister(true)}
+                    className="text-sm text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 font-medium transition-colors"
+                  >
+                    ☕ Buat Akun Coffee Shop Baru
+                  </button>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div key="register" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Buat Akun Baru</h2>
+                  <p className="text-muted-foreground mt-2">
+                    Daftar untuk membuat akun Coffee Shop Anda. Setiap toko memiliki data terpisah.
+                  </p>
+                </div>
+
+                <Form {...registerForm}>
+                  <form onSubmit={registerForm.handleSubmit(onRegister)} className="space-y-4">
+                    {/* Account Info Section */}
+                    <div className="space-y-4 p-4 bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-800/50 rounded-xl">
+                      <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
+                        <Store className="w-4 h-4" />
+                        <span className="text-sm font-semibold">Informasi Coffee Shop</span>
+                      </div>
+
+                      <FormField
+                        control={registerForm.control}
+                        name="accountName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nama Coffee Shop</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="contoh: Kopi Kenangan, Blue Bottle"
+                                disabled={isLoading}
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
-              <FormField
-                control={form.control}
-                name="remember"
-                render={({ field }) => (
-                  <FormItem className="flex items-center gap-2 space-y-0">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        disabled={isLoading}
+                    {/* User Info Section */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Coffee className="w-4 h-4" />
+                        <span className="text-sm font-semibold">Informasi Pemilik</span>
+                      </div>
+
+                      <FormField
+                        control={registerForm.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nama Lengkap</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Nama Anda"
+                                disabled={isLoading}
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
-                    </FormControl>
-                    <FormLabel className="text-sm font-normal cursor-pointer select-none">
-                      Ingat saya
-                    </FormLabel>
-                  </FormItem>
-                )}
-              />
 
-              <Button
-                type="submit"
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white h-11 text-base font-semibold"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Memproses...
-                  </>
-                ) : (
-                  'Masuk'
-                )}
-              </Button>
-            </form>
-          </Form>
+                      <FormField
+                        control={registerForm.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Email</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="email"
+                                placeholder="nama@coffeeshop.com"
+                                autoComplete="email"
+                                disabled={isLoading}
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
+                      <FormField
+                        control={registerForm.control}
+                        name="phone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>No. Telepon (opsional)</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="tel"
+                                placeholder="08xxxxxxxxxx"
+                                disabled={isLoading}
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <FormField
+                          control={registerForm.control}
+                          name="password"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Password</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="password"
+                                  placeholder="Min. 6 karakter"
+                                  autoComplete="new-password"
+                                  disabled={isLoading}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={registerForm.control}
+                          name="confirmPassword"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Konfirmasi</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="password"
+                                  placeholder="Ulangi password"
+                                  autoComplete="new-password"
+                                  disabled={isLoading}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    <Button
+                      type="submit"
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white h-11 text-base font-semibold"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Membuat akun...
+                        </>
+                      ) : (
+                        '☕ Buat Akun Coffee Shop'
+                      )}
+                    </Button>
+                  </form>
+                </Form>
+
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => { setShowRegister(false); setIsSetup(false); }}
+                    className="text-sm text-muted-foreground hover:text-foreground font-medium transition-colors"
+                  >
+                    Sudah punya akun? Masuk di sini
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </motion.div>
     </div>

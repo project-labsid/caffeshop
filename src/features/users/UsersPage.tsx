@@ -29,6 +29,7 @@ import {
   UserCog,
 } from 'lucide-react';
 import type { User, Branch, UserRole } from '@/types';
+import { apiFetch } from '@/lib/utils';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -243,7 +244,7 @@ export default function UsersPage() {
         limit: String(pageSize),
       });
       if (debouncedSearch) params.set('search', debouncedSearch);
-      const res = await fetch(`/api/users?${params}`);
+      const res = await apiFetch(`/api/users?${params}`);
       if (!res.ok) throw new Error('Gagal memuat pengguna');
       return res.json();
     },
@@ -252,7 +253,7 @@ export default function UsersPage() {
   const branchesQuery = useQuery<{ data: Branch[] }>({
     queryKey: ['branches-select'],
     queryFn: async () => {
-      const res = await fetch('/api/branches');
+      const res = await apiFetch('/api/branches');
       if (!res.ok) throw new Error('Gagal memuat cabang');
       return res.json();
     },
@@ -265,7 +266,7 @@ export default function UsersPage() {
       const payload: Record<string, unknown> = { ...data };
       if (!payload.phone) delete payload.phone;
       if (!payload.branchId) delete payload.branchId;
-      const res = await fetch('/api/auth/register', {
+      const res = await apiFetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -298,7 +299,7 @@ export default function UsersPage() {
       if (!payload.phone) payload.phone = null;
       // Send null for branchId if empty string
       if (!payload.branchId) payload.branchId = null;
-      const res = await fetch(`/api/auth/${editingUser.id}`, {
+      const res = await apiFetch(`/api/auth/${editingUser.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -324,7 +325,7 @@ export default function UsersPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`/api/auth/${id}`, {
+      const res = await apiFetch(`/api/auth/${id}`, {
         method: 'DELETE',
         headers: {
           'x-user-role': 'super_admin',

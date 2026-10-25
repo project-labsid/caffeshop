@@ -7,29 +7,65 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ===================== ACCOUNT (Multi-Tenancy) =====================
+
+model Account {
+  id          String    @id @default(cuid())
+  name        String    // e.g. "Kopi Shop A", "Kopi Shop B"
+  slug        String    @unique  // URL-friendly identifier
+  ownerEmail  String    // Email of the account creator
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  users              User[]
+  branches           Branch[]
+  categories         Category[]
+  suppliers          Supplier[]
+  customers          Customer[]
+  products           Product[]
+  transactions       Transaction[]
+  purchases          Purchase[]
+  stockAdjustments   StockAdjustment[]
+  storeSettings      StoreSetting[]
+  taxSettings        TaxSetting[]
+  serviceChargeSettings ServiceChargeSetting[]
+  activityLogs       ActivityLog[]
+  paymentMethods     PaymentMethod[]
+  subscriptionPlans  SubscriptionPlan[]
+  subscriptions      Subscription[]
+  aiUsages           AiUsage[]
+  aiChatLogs         AiChatLog[]
+  aiProviderConfigs  AiProviderConfig[]
+}
+
 // ===================== USER & AUTH =====================
 
 model User {
   id            String    @id @default(cuid())
   name          String
-  email         String    @unique
+  email         String
   password      String
   phone         String?
   avatar        String?
   role          String    @default("cashier") // super_admin, admin, cashier
   branchId      String?
+  accountId     String
   isActive      Boolean   @default(true)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  branch        Branch?   @relation(fields: [branchId], references: [id])
-  transactions  Transaction[]
-  activityLogs  ActivityLog[]
-  purchases     Purchase[]
+  @@unique([email, accountId])  // Email unique per account, not globally
+
+  account         Account   @relation(fields: [accountId], references: [id])
+  branch          Branch?   @relation(fields: [branchId], references: [id])
+  transactions    Transaction[]
+  activityLogs    ActivityLog[]
+  purchases       Purchase[]
   stockAdjustments StockAdjustment[]
   subscriptions  Subscription[]
-  aiUsages      AiUsage[]
-  aiChatLogs    AiChatLog[]
+  aiUsages        AiUsage[]
+  aiChatLogs      AiChatLog[]
 }
 
 // ===================== BRANCH =====================
@@ -41,27 +77,31 @@ model Branch {
   phone     String?
   email     String?
   isActive  Boolean  @default(true)
+  accountId String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  users       User[]
-  products          Product[]
-  transactions      Transaction[]
-  purchases         Purchase[]
-  stockAdjustments  StockAdjustment[]
+  account          Account  @relation(fields: [accountId], references: [id])
+  users            User[]
+  products         Product[]
+  transactions     Transaction[]
+  purchases        Purchase[]
+  stockAdjustments StockAdjustment[]
 }
 
 // ===================== CATEGORY =====================
 
 model Category {
-  id        String   @id @default(cuid())
-  name      String
+  id          String   @id @default(cuid())
+  name        String
   description String?
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  isActive    Boolean  @default(true)
+  accountId   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  products   Product[]
+  account     Account    @relation(fields: [accountId], references: [id])
+  products    Product[]
   taxSettings TaxSetting[]
 }
 
@@ -74,9 +114,11 @@ model Supplier {
   email     String?
   address   String?
   isActive  Boolean  @default(true)
+  accountId String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  account   Account   @relation(fields: [accountId], references: [id])
   purchases Purchase[]
 }
 
@@ -90,9 +132,11 @@ model Customer {
   address     String?
   memberPoint Int      @default(0)
   isActive    Boolean  @default(true)
+  accountId   String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  account      Account      @relation(fields: [accountId], references: [id])
   transactions Transaction[]
 }
 
@@ -101,7 +145,7 @@ model Customer {
 model Product {
   id            String   @id @default(cuid())
   name          String
-  barcode       String?  @unique
+  barcode       String?
   sku           String?
   categoryId    String?
   unit          String   @default("pcs")
@@ -112,11 +156,13 @@ model Product {
   image         String?
   isActive      Boolean  @default(true)
   branchId      String?
+  accountId     String
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  category      Category?  @relation(fields: [categoryId], references: [id])
-  branch        Branch?    @relation(fields: [branchId], references: [id])
+  account           Account            @relation(fields: [accountId], references: [id])
+  category          Category?          @relation(fields: [categoryId], references: [id])
+  branch            Branch?            @relation(fields: [branchId], references: [id])
   transactionItems  TransactionItem[]
   purchaseItems     PurchaseItem[]
   stockAdjustments  StockAdjustment[]
@@ -142,15 +188,17 @@ model Transaction {
   paymentMethod   String   @default("cash")
   paymentDetails  String?  // JSON string for multi-payment
   notes           String?
-  heldAt         DateTime?
+  accountId       String
+  heldAt          DateTime?
   completedAt     DateTime?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  user            User      @relation(fields: [userId], references: [id])
-  customer        Customer? @relation(fields: [customerId], references: [id])
-  branch          Branch?   @relation(fields: [branchId], references: [id])
-  items           TransactionItem[]
+  account        Account    @relation(fields: [accountId], references: [id])
+  user           User       @relation(fields: [userId], references: [id])
+  customer       Customer?  @relation(fields: [customerId], references: [id])
+  branch         Branch?    @relation(fields: [branchId], references: [id])
+  items          TransactionItem[]
 }
 
 // ===================== TRANSACTION ITEM =====================
@@ -183,9 +231,11 @@ model Purchase {
   totalAmount   Float    @default(0)
   status        String   @default("received") // pending, received, cancelled
   notes         String?
+  accountId     String
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
+  account       Account   @relation(fields: [accountId], references: [id])
   supplier      Supplier  @relation(fields: [supplierId], references: [id])
   user          User      @relation(fields: [userId], references: [id])
   branch        Branch?   @relation(fields: [branchId], references: [id])
@@ -219,21 +269,28 @@ model StockAdjustment {
   previousStock Int
   newStock      Int
   reason        String?
+  accountId     String
   createdAt     DateTime @default(now())
 
-  product       Product  @relation(fields: [productId], references: [id])
-  user          User      @relation(fields: [userId], references: [id])
-  branch        Branch?   @relation(fields: [branchId], references: [id])
+  account      Account  @relation(fields: [accountId], references: [id])
+  product      Product  @relation(fields: [productId], references: [id])
+  user         User     @relation(fields: [userId], references: [id])
+  branch       Branch?  @relation(fields: [branchId], references: [id])
 }
 
 // ===================== STORE SETTINGS =====================
 
 model StoreSetting {
   id          String   @id @default(cuid())
-  key         String   @unique
+  key         String
   value       String
   description String?
+  accountId   String
   updatedAt   DateTime @updatedAt
+
+  @@unique([key, accountId])
+
+  account     Account  @relation(fields: [accountId], references: [id])
 }
 
 // ===================== TAX SETTING =====================
@@ -245,9 +302,11 @@ model TaxSetting {
   mode          String   @default("exclude") // include, exclude
   applyToAll    Boolean  @default(true)
   categoryId    String?
+  accountId     String
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
+  account       Account   @relation(fields: [accountId], references: [id])
   category      Category? @relation(fields: [categoryId], references: [id])
 }
 
@@ -257,8 +316,11 @@ model ServiceChargeSetting {
   id          String   @id @default(cuid())
   isEnabled   Boolean  @default(false)
   percentage  Float    @default(5)
+  accountId   String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  account     Account  @relation(fields: [accountId], references: [id])
 }
 
 // ===================== ACTIVITY LOG =====================
@@ -270,30 +332,34 @@ model ActivityLog {
   module    String
   details   String?  // JSON
   ipAddress String?
+  accountId String
   createdAt DateTime @default(now())
 
+  account   Account  @relation(fields: [accountId], references: [id])
   user      User?    @relation(fields: [userId], references: [id])
 }
 
 // ===================== SUBSCRIPTION PLANS =====================
 
 model SubscriptionPlan {
-  id          String   @id @default(cuid())
-  name        String              // Gratis, Pro, Enterprise
-  price       Float    @default(0)
-  period      String   @default("monthly") // monthly, yearly
-  maxProducts Int      @default(200)
-  maxBranches Int      @default(1)
-  maxUsers    Int      @default(2)
-  maxStorage  Int      @default(500)  // MB
-  aiChatDaily Int      @default(10)
-  aiChatMonthly Int    @default(300)
-  features    String              // JSON array of feature strings
-  isActive    Boolean  @default(true)
-  sortOrder   Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(cuid())
+  name          String              // Gratis, Pro, Enterprise
+  price         Float    @default(0)
+  period        String   @default("monthly") // monthly, yearly
+  maxProducts   Int      @default(200)
+  maxBranches   Int      @default(1)
+  maxUsers      Int      @default(2)
+  maxStorage    Int      @default(500)  // MB
+  aiChatDaily   Int      @default(10)
+  aiChatMonthly Int      @default(300)
+  features      String              // JSON array of feature strings
+  isActive      Boolean  @default(true)
+  sortOrder     Int      @default(0)
+  accountId     String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
+  account        Account        @relation(fields: [accountId], references: [id])
   subscriptions Subscription[]
 }
 
@@ -306,25 +372,27 @@ model Subscription {
   status          String           @default("active") // active, cancelled, expired
   startDate       DateTime         @default(now())
   endDate         DateTime?
+  accountId       String
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 
-  user            User             @relation(fields: [userId], references: [id])
-  plan            SubscriptionPlan @relation(fields: [planId], references: [id])
+  account         Account           @relation(fields: [accountId], references: [id])
+  user            User              @relation(fields: [userId], references: [id])
+  plan            SubscriptionPlan  @relation(fields: [planId], references: [id])
   usages          SubscriptionUsage[]
 }
 
 // ===================== SUBSCRIPTION USAGE =====================
 
 model SubscriptionUsage {
-  id            String   @id @default(cuid())
+  id             String   @id @default(cuid())
   subscriptionId String
-  metric        String               // products, branches, users, storage, ai_daily, ai_monthly
-  currentValue  Int      @default(0)
- maxValue      Int      @default(0)
- resetAt       DateTime?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  metric         String               // products, branches, users, storage, ai_daily, ai_monthly
+  currentValue   Int      @default(0)
+  maxValue       Int      @default(0)
+  resetAt        DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
 }
@@ -354,9 +422,12 @@ model PaymentMethod {
   instructions    String?
   paymentGateway  String?              // stripe, midtrans, xendit
   cardProvider    String?              // visa, mastercard, jcb, amex
+  accountId       String
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   deletedAt       DateTime?
+
+  account         Account  @relation(fields: [accountId], references: [id])
 }
 
 // ===================== AI USAGE =====================
@@ -366,11 +437,13 @@ model AiUsage {
   userId        String
   type          String               // chat, summary, analysis, prediction, restock, insight
   tokensUsed    Int      @default(0)
- modelUsed     String?
+  modelUsed     String?
   provider      String?
   cost          Float    @default(0)
- createdAt     DateTime @default(now())
+  accountId     String
+  createdAt     DateTime @default(now())
 
+  account       Account  @relation(fields: [accountId], references: [id])
   user          User     @relation(fields: [userId], references: [id])
 }
 
@@ -383,8 +456,10 @@ model AiChatLog {
   content       String
   tokensUsed    Int      @default(0)
   modelUsed     String?
+  accountId     String
   createdAt     DateTime @default(now())
 
+  account       Account  @relation(fields: [accountId], references: [id])
   user          User     @relation(fields: [userId], references: [id])
 }
 
@@ -397,7 +472,10 @@ model AiProviderConfig {
   modelDefault  String
   modelFallback String?
   maxTokens     Int      @default(4096)
- isActive      Boolean  @default(true)
+  isActive      Boolean  @default(true)
+  accountId     String
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  account       Account  @relation(fields: [accountId], references: [id])
 }

@@ -15,6 +15,7 @@ import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { apiFetch } from '@/lib/utils';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -58,7 +59,7 @@ export default function StoreInfoSettings({ onBack }: StoreInfoSettingsProps) {
   const { data, isLoading } = useQuery({
     queryKey: ['settings'],
     queryFn: async () => {
-      const res = await fetch('/api/settings');
+      const res = await apiFetch('/api/settings');
       if (!res.ok) throw new Error('Gagal memuat pengaturan');
       const json = await res.json();
       return json.data as Record<string, string>;
@@ -91,7 +92,7 @@ export default function StoreInfoSettings({ onBack }: StoreInfoSettingsProps) {
 
   const mutation = useMutation({
     mutationFn: async (values: StoreInfoForm) => {
-      const res = await fetch('/api/settings', {
+      const res = await apiFetch('/api/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ settings: values }),

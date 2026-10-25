@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { apiFetch } from '@/lib/utils';
 import { useAuthStore, useNavStore, useSettingsStore } from '@/store';
 import LoginPage from '@/features/auth/LoginPage';
 import AppLayout from '@/components/layout/AppLayout';
@@ -143,7 +144,7 @@ export default function Home() {
     let cancelled = false;
     async function loadSettings() {
       try {
-        const res = await fetch('/api/settings');
+        const res = await apiFetch('/api/settings');
         if (res.ok && !cancelled) {
           const json = await res.json();
           const settingsMap = json.data || json;

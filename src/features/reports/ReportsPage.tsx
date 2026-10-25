@@ -19,7 +19,7 @@ import {
   Printer,
   FileText,
 } from 'lucide-react';
-import { cn, formatRupiah } from '@/lib/utils';
+import { cn, formatRupiah, apiFetch } from '@/lib/utils';
 import { exportToExcel, printReport, printThermal } from '@/lib/report-export';
 
 import { Button } from '@/components/ui/button';
@@ -221,7 +221,7 @@ function PenjualanTab() {
       const params = new URLSearchParams({ type: 'daily' });
       if (startDate) params.set('startDate', startDate);
       if (endDate) params.set('endDate', endDate);
-      const res = await fetch(`/api/reports?${params}`);
+      const res = await apiFetch(`/api/reports?${params}`);
       if (!res.ok) throw new Error('Gagal memuat laporan');
       const json = await res.json();
       return json.data;
@@ -460,7 +460,7 @@ function ProdukTerlarisTab() {
       const params = new URLSearchParams({ type: 'best_selling' });
       if (startDate) params.set('startDate', startDate);
       if (endDate) params.set('endDate', endDate);
-      const res = await fetch(`/api/reports?${params}`);
+      const res = await apiFetch(`/api/reports?${params}`);
       if (!res.ok) throw new Error('Gagal memuat data');
       const json = await res.json();
       return json.data;
@@ -640,7 +640,7 @@ function LabaRugiTab() {
       const params = new URLSearchParams({ type: 'profit_loss' });
       if (startDate) params.set('startDate', startDate);
       if (endDate) params.set('endDate', endDate);
-      const res = await fetch(`/api/reports?${params}`);
+      const res = await apiFetch(`/api/reports?${params}`);
       if (!res.ok) throw new Error('Gagal memuat data');
       const json = await res.json();
       return json.data;
@@ -654,7 +654,7 @@ function LabaRugiTab() {
       const params = new URLSearchParams({ type: 'daily' });
       if (startDate) params.set('startDate', startDate);
       if (endDate) params.set('endDate', endDate);
-      const res = await fetch(`/api/reports?${params}`);
+      const res = await apiFetch(`/api/reports?${params}`);
       if (!res.ok) return null;
       const json = await res.json();
       return json.data;
@@ -836,7 +836,7 @@ function PelangganTab() {
       const params = new URLSearchParams({ type: 'customer' });
       if (startDate) params.set('startDate', startDate);
       if (endDate) params.set('endDate', endDate);
-      const res = await fetch(`/api/reports?${params}`);
+      const res = await apiFetch(`/api/reports?${params}`);
       if (!res.ok) throw new Error('Gagal memuat data');
       const json = await res.json();
       return json.data;
@@ -847,7 +847,7 @@ function PelangganTab() {
   const { data: allCustomers } = useQuery({
     queryKey: ['customers-list'],
     queryFn: async () => {
-      const res = await fetch('/api/customers?perPage=100');
+      const res = await apiFetch('/api/customers?perPage=100');
       if (!res.ok) return [];
       const json = await res.json();
       return json.data;
@@ -938,7 +938,7 @@ function StokTab() {
     queryKey: ['report-stock'],
     queryFn: async () => {
       const params = new URLSearchParams({ type: 'stock' });
-      const res = await fetch(`/api/reports?${params}`);
+      const res = await apiFetch(`/api/reports?${params}`);
       if (!res.ok) throw new Error('Gagal memuat data');
       const json = await res.json();
       return json.data;
@@ -1083,7 +1083,7 @@ function TrafficTab() {
     queryKey: ['traffic-daily', todayStr],
     queryFn: async () => {
       const params = new URLSearchParams({ type: 'daily', startDate: todayStr, endDate: todayStr });
-      const res = await fetch(`/api/reports?${params}`);
+      const res = await apiFetch(`/api/reports?${params}`);
       if (!res.ok) return null;
       const json = await res.json();
       return json.data;
@@ -1096,7 +1096,7 @@ function TrafficTab() {
     queryKey: ['traffic-monthly', monthStart, todayStr],
     queryFn: async () => {
       const params = new URLSearchParams({ type: 'daily', startDate: monthStart, endDate: todayStr });
-      const res = await fetch(`/api/reports?${params}`);
+      const res = await apiFetch(`/api/reports?${params}`);
       if (!res.ok) return null;
       const json = await res.json();
       return json.data;

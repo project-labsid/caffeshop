@@ -26,7 +26,7 @@ import {
   FileText,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
+import { cn, apiFetch } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -304,7 +304,7 @@ export default function PaymentMethodSettings() {
       if (search) params.set('search', search);
       if (filterType && filterType !== 'all') params.set('type', filterType);
       if (filterStatus && filterStatus !== 'all') params.set('status', filterStatus);
-      const res = await fetch(`/api/payment-methods?${params.toString()}`);
+      const res = await apiFetch(`/api/payment-methods?${params.toString()}`);
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.error || 'Gagal memuat metode pembayaran');
@@ -318,7 +318,7 @@ export default function PaymentMethodSettings() {
   // ── Mutations ──
   const createMutation = useMutation({
     mutationFn: async (payload: Record<string, unknown>) => {
-      const res = await fetch('/api/payment-methods', {
+      const res = await apiFetch('/api/payment-methods', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -339,7 +339,7 @@ export default function PaymentMethodSettings() {
 
   const updateMutation = useMutation({
     mutationFn: async (payload: Record<string, unknown>) => {
-      const res = await fetch('/api/payment-methods', {
+      const res = await apiFetch('/api/payment-methods', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -360,7 +360,7 @@ export default function PaymentMethodSettings() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`/api/payment-methods?id=${encodeURIComponent(id)}`, {
+      const res = await apiFetch(`/api/payment-methods?id=${encodeURIComponent(id)}`, {
         method: 'DELETE',
       });
       if (!res.ok) {
@@ -381,7 +381,7 @@ export default function PaymentMethodSettings() {
   const toggleStatusMutation = useMutation({
     mutationFn: async (pm: PaymentMethod) => {
       const newStatus = pm.status === 'active' ? 'inactive' : 'active';
-      const res = await fetch('/api/payment-methods', {
+      const res = await apiFetch('/api/payment-methods', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: pm.id, status: newStatus }),
@@ -401,7 +401,7 @@ export default function PaymentMethodSettings() {
 
   const setDefaultMutation = useMutation({
     mutationFn: async (pm: PaymentMethod) => {
-      const res = await fetch('/api/payment-methods', {
+      const res = await apiFetch('/api/payment-methods', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: pm.id, isDefault: true }),
@@ -423,7 +423,7 @@ export default function PaymentMethodSettings() {
     mutationFn: async (pm: PaymentMethod) => {
       const payload = { ...pm, id: undefined, name: `${pm.name} (Salinan)`, isDefault: false };
       const { createdAt, updatedAt, deletedAt, ...data } = payload as Record<string, unknown>;
-      const res = await fetch('/api/payment-methods', {
+      const res = await apiFetch('/api/payment-methods', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),

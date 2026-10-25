@@ -33,7 +33,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { DashboardStats } from '@/types';
-import { formatRupiah } from '@/lib/utils';
+import { formatRupiah, apiFetch } from '@/lib/utils';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -242,7 +242,7 @@ function MiniStatCard({
 export default function DashboardPage() {
   const { data, isLoading, error } = useQuery<DashboardStats>({
     queryKey: ['dashboard'],
-    queryFn: () => fetch('/api/dashboard').then((r) => r.json()).then((j) => j.data),
+    queryFn: () => apiFetch('/api/dashboard').then((r) => r.json()).then((j) => j.data),
     refetchInterval: 30_000,
   });
 

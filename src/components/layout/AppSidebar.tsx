@@ -181,7 +181,7 @@ export default function AppSidebar() {
       {/* Logo area */}
       <div className="flex items-center gap-3 px-4 py-5 shrink-0">
         <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0">
-          <img src="/logo.png" alt="Dkriuk" className="w-full h-full object-cover" />
+          <img src="/logo.png" alt="Kasir Kopi Shop" className="w-full h-full object-cover" />
         </div>
         <AnimatePresence>
           {!collapsed && (
@@ -191,8 +191,8 @@ export default function AppSidebar() {
               exit={{ opacity: 0, width: 0 }}
               className="overflow-hidden whitespace-nowrap"
             >
-              <h2 className="font-bold text-base leading-tight">{storeName || 'Dkriuk'}</h2>
-              <p className="text-xs text-muted-foreground">Point of Sale</p>
+              <h2 className="font-bold text-base leading-tight">{storeName || 'Kasir Kopi Shop'}</h2>
+              <p className="text-xs text-muted-foreground">{user?.account?.name || 'Coffee Shop POS'}</p>
             </motion.div>
           )}
         </AnimatePresence>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dkriuk-pos-v1';
+const CACHE_NAME = 'kopi-shop-pos-v1';
 const OFFLINE_URLS = ['/', '/manifest.json'];
 
 self.addEventListener('install', (event) => {

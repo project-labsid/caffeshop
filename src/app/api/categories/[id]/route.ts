@@ -11,11 +11,16 @@ const updateCategorySchema = z.object({
 type RouteParams = { params: Promise<{ id: string }> }
 
 // GET /api/categories/[id] - Get single category
-export async function GET(_request: NextRequest, { params }: RouteParams) {
+export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const { id } = await params
-    const category = await db.category.findUnique({
-      where: { id },
+    const category = await db.category.findFirst({
+      where: { id, accountId },
       include: { _count: { select: { products: true } } },
     })
 
@@ -39,6 +44,11 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 // PUT /api/categories/[id] - Update category
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const { id } = await params
     const body = await request.json()
     const parsed = updateCategorySchema.safeParse(body)
@@ -50,7 +60,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    const existing = await db.category.findUnique({ where: { id } })
+    const existing = await db.category.findFirst({ where: { id, accountId } })
     if (!existing) {
       return NextResponse.json(
         { error: 'Kategori tidak ditemukan' },
@@ -80,11 +90,16 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 }
 
 // DELETE /api/categories/[id] - Delete category
-export async function DELETE(_request: NextRequest, { params }: RouteParams) {
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const { id } = await params
-    const existing = await db.category.findUnique({
-      where: { id },
+    const existing = await db.category.findFirst({
+      where: { id, accountId },
       include: { _count: { select: { products: true } } },
     })
 

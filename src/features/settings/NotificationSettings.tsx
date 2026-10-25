@@ -23,6 +23,7 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuthStore } from '@/store';
+import { apiFetch } from '@/lib/utils';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -121,7 +122,7 @@ export default function NotificationSettings({ onBack }: NotificationSettingsPro
     queryKey: ['notification-settings', userId],
     queryFn: async () => {
       if (!userId) throw new Error('User belum login');
-      const res = await fetch(`/api/notifications/settings?userId=${userId}`);
+      const res = await apiFetch(`/api/notifications/settings?userId=${userId}`);
       if (!res.ok) throw new Error('Gagal memuat pengaturan notifikasi');
       const json = await res.json();
       return json.data as NotificationPreferences;
@@ -162,7 +163,7 @@ export default function NotificationSettings({ onBack }: NotificationSettingsPro
   const saveMutation = useMutation({
     mutationFn: async () => {
       if (!userId) throw new Error('User belum login');
-      const res = await fetch('/api/notifications/settings', {
+      const res = await apiFetch('/api/notifications/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, ...preferences }),

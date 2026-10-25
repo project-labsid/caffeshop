@@ -29,7 +29,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import type { Purchase, PurchaseItem, Supplier, Product, PaginatedResponse } from '@/types';
-import { cn, formatRupiah } from '@/lib/utils';
+import { cn, formatRupiah, apiFetch } from '@/lib/utils';
 import { RupiahInput } from '@/components/ui/rupiah-input';
 
 import { Button } from '@/components/ui/button';
@@ -233,7 +233,7 @@ export default function PurchasesPage() {
         perPage: String(perPage),
       });
       if (search) params.set('search', search);
-      const res = await fetch(`/api/purchases?${params.toString()}`);
+      const res = await apiFetch(`/api/purchases?${params.toString()}`);
       if (!res.ok) throw new Error('Gagal memuat pembelian');
       return res.json();
     },
@@ -242,7 +242,7 @@ export default function PurchasesPage() {
   const suppliersQuery = useQuery<Supplier[]>({
     queryKey: ['suppliers-list'],
     queryFn: async () => {
-      const res = await fetch('/api/suppliers?perPage=100');
+      const res = await apiFetch('/api/suppliers?perPage=100');
       if (!res.ok) throw new Error('Gagal memuat supplier');
       const data = await res.json();
       return data.data ?? data;
@@ -252,7 +252,7 @@ export default function PurchasesPage() {
   const productsQuery = useQuery<Product[]>({
     queryKey: ['products-list'],
     queryFn: async () => {
-      const res = await fetch('/api/products?perPage=200');
+      const res = await apiFetch('/api/products?perPage=200');
       if (!res.ok) throw new Error('Gagal memuat produk');
       const data = await res.json();
       return data.data ?? data;
@@ -263,7 +263,7 @@ export default function PurchasesPage() {
     queryKey: ['purchase-detail', detailId],
     queryFn: async () => {
       if (!detailId) throw new Error('No ID');
-      const res = await fetch(`/api/purchases/${detailId}`);
+      const res = await apiFetch(`/api/purchases/${detailId}`);
       if (!res.ok) throw new Error('Gagal memuat detail pembelian');
       const json = await res.json();
       return json.data as Purchase & { items: (PurchaseItem & { product?: Product })[] };
@@ -284,7 +284,7 @@ export default function PurchasesPage() {
           costPrice: item.costPrice,
         })),
       };
-      const res = await fetch('/api/purchases', {
+      const res = await apiFetch('/api/purchases', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

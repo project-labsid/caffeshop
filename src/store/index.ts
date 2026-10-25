@@ -1,12 +1,14 @@
 import { create } from 'zustand';
-import type { User, PageName, CartItem, PaymentSplit, TaxConfig, ServiceChargeConfig } from '@/types';
+import type { User, Account, PageName, CartItem, PaymentSplit, TaxConfig, ServiceChargeConfig } from '@/types';
 
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
+  accountId: string | null;
   login: (user: User) => void;
   logout: () => void;
   updateUser: (user: Partial<User>) => void;
+  setAccountId: (id: string) => void;
 }
 
 interface NavigationState {
@@ -57,6 +59,7 @@ interface SettingsState {
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isAuthenticated: false,
+  accountId: null,
   login: (user) => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('pos_user', JSON.stringify(user));
@@ -65,13 +68,13 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (user.role === 'cashir') {
       useNavStore.getState().setCurrentPage('pos');
     }
-    set({ user, isAuthenticated: true });
+    set({ user, isAuthenticated: true, accountId: user.accountId || null });
   },
   logout: () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('pos_user');
     }
-    set({ user: null, isAuthenticated: false });
+    set({ user: null, isAuthenticated: false, accountId: null });
   },
   updateUser: (updates) =>
     set((state) => {
@@ -81,6 +84,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       }
       return { user: newUser };
     }),
+  setAccountId: (id) => set({ accountId: id }),
 }));
 
 // Navigation Store
@@ -182,7 +186,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     isEnabled: false,
     percentage: 5,
   },
-  storeName: 'Dkriuk',
+  storeName: 'Kasir Kopi Shop',
   storeAddress: '',
   storePhone: '',
   storeEmail: '',

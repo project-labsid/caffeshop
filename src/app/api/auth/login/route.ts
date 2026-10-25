@@ -22,47 +22,70 @@ export async function POST(request: NextRequest) {
 
     const { email, password } = parsed.data
 
-    const user = await db.user.findUnique({
+    // Find user by email - could be in multiple accounts
+    const users = await db.user.findMany({
       where: { email },
-      include: { branch: true },
+      include: { branch: true, account: true },
     })
 
-    if (!user) {
+    if (users.length === 0) {
       return NextResponse.json(
         { error: 'Email atau password salah' },
         { status: 401 }
       )
     }
 
-    if (!user.isActive) {
+    // Try to find matching user by password
+    let matchedUser = null
+    for (const u of users) {
+      const isValid = await bcrypt.compare(password, u.password)
+      if (isValid) {
+        matchedUser = u
+        break
+      }
+    }
+
+    if (!matchedUser) {
+      return NextResponse.json(
+        { error: 'Email atau password salah' },
+        { status: 401 }
+      )
+    }
+
+    if (!matchedUser.isActive) {
       return NextResponse.json(
         { error: 'Akun tidak aktif. Hubungi administrator.' },
         { status: 403 }
       )
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password)
-
-    if (!isPasswordValid) {
-      return NextResponse.json(
-        { error: 'Email atau password salah' },
-        { status: 401 }
-      )
+    // If user exists in multiple accounts, return account list for selection
+    if (users.length > 1 && !matchedUser) {
+      const accountList = users.map(u => ({
+        accountId: u.accountId,
+        accountName: u.account?.name || 'Unknown',
+        role: u.role,
+      }))
+      return NextResponse.json({
+        requireAccountSelection: true,
+        accounts: accountList,
+      })
     }
 
     // Log activity
     await db.activityLog.create({
       data: {
-        userId: user.id,
+        userId: matchedUser.id,
         action: 'LOGIN',
         module: 'AUTH',
-        details: JSON.stringify({ email: user.email }),
+        details: JSON.stringify({ email: matchedUser.email, accountId: matchedUser.accountId }),
         ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
+        accountId: matchedUser.accountId,
       },
     })
 
     // Return user data without password
-    const { password: _, ...userWithoutPassword } = user
+    const { password: _, ...userWithoutPassword } = matchedUser
 
     return NextResponse.json({
       message: 'Login berhasil',

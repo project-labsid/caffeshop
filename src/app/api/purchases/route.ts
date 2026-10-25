@@ -41,6 +41,11 @@ function generatePurchaseInvoiceNumber(): string {
 // GET /api/purchases - List purchases with pagination, search, filter
 export async function GET(request: NextRequest) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const { searchParams } = new URL(request.url)
     const parsed = listPurchasesSchema.safeParse(Object.fromEntries(searchParams))
 
@@ -54,7 +59,7 @@ export async function GET(request: NextRequest) {
     const { page, perPage, search, status, supplierId, startDate, endDate } = parsed.data
     const skip = (page - 1) * perPage
 
-    const where: Record<string, unknown> = {}
+    const where: Record<string, unknown> = { accountId }
 
     if (search) {
       where.invoiceNumber = { contains: search }
@@ -114,6 +119,11 @@ export async function GET(request: NextRequest) {
 // POST /api/purchases - Create purchase (updates product stock)
 export async function POST(request: NextRequest) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const body = await request.json()
     const parsed = createPurchaseSchema.safeParse(body)
 
@@ -130,6 +140,7 @@ export async function POST(request: NextRequest) {
     const purchase = await db.purchase.create({
       data: {
         ...purchaseData,
+        accountId,
         invoiceNumber,
         items: {
           create: items,

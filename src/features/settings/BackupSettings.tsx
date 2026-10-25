@@ -18,6 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { apiFetch } from '@/lib/utils';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -81,7 +82,7 @@ export default function BackupSettings() {
   const { data: stats, isLoading: statsLoading } = useQuery<DbStats>({
     queryKey: ['backup-stats'],
     queryFn: async () => {
-      const res = await fetch('/api/backup?stats=true');
+      const res = await apiFetch('/api/backup?stats=true');
       if (!res.ok) throw new Error('Gagal memuat statistik database');
       const json = await res.json();
       return json.data as DbStats;
@@ -92,7 +93,7 @@ export default function BackupSettings() {
   const handleExport = async () => {
     setIsExporting(true);
     try {
-      const res = await fetch('/api/backup');
+      const res = await apiFetch('/api/backup');
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.error || 'Gagal mengekspor data');
@@ -157,7 +158,7 @@ export default function BackupSettings() {
     if (!pendingBackup) return;
     setIsImporting(true);
     try {
-      const res = await fetch('/api/backup', {
+      const res = await apiFetch('/api/backup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(pendingBackup),

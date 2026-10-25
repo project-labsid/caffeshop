@@ -10,7 +10,19 @@ const registerSchema = z.object({
   role: z.enum(['super_admin', 'admin', 'cashier']).default('cashier'),
   phone: z.string().optional(),
   branchId: z.string().optional(),
+  // Account fields (only for new account creation)
+  accountName: z.string().optional(),
+  createAccount: z.boolean().default(false),
 })
+
+function generateSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim()
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,30 +36,74 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { name, email, password, role, phone, branchId } = parsed.data
+    const { name, email, password, role, phone, branchId, accountName, createAccount } = parsed.data
 
     // Check if this is the first user (allow super_admin creation)
     const userCount = await db.user.count()
     const isFirstUser = userCount === 0
 
-    // If not the first user, check if there's an authenticated super_admin
-    // For simplicity, we'll check via a header for the requester's role
-    // In production, this would use a proper auth middleware
-    if (!isFirstUser) {
+    let accountId: string | null = null
+    let isAccountOwner = false
+
+    if (createAccount || isFirstUser) {
+      // Create a new account
+      const accName = accountName || `${name}'s Coffee Shop`
+      let slug = generateSlug(accName)
+
+      // Ensure slug is unique
+      const existingSlug = await db.account.findUnique({ where: { slug } })
+      if (existingSlug) {
+        slug = `${slug}-${Date.now().toString(36)}`
+      }
+
+      const account = await db.account.create({
+        data: {
+          name: accName,
+          slug,
+          ownerEmail: email,
+        },
+      })
+
+      accountId = account.id
+      isAccountOwner = true
+    } else {
+      // Adding user to existing account - requires super_admin header
       const requesterRole = request.headers.get('x-user-role')
-      if (requesterRole !== 'super_admin') {
+      const requesterAccountId = request.headers.get('x-account-id')
+
+      if (requesterRole !== 'super_admin' && requesterRole !== 'admin') {
         return NextResponse.json(
-          { error: 'Hanya super admin yang dapat mendaftarkan pengguna baru' },
+          { error: 'Hanya admin yang dapat mendaftarkan pengguna baru' },
           { status: 403 }
         )
       }
+
+      if (!requesterAccountId) {
+        return NextResponse.json(
+          { error: 'Account ID diperlukan' },
+          { status: 400 }
+        )
+      }
+
+      // Verify account exists
+      const account = await db.account.findUnique({ where: { id: requesterAccountId } })
+      if (!account) {
+        return NextResponse.json(
+          { error: 'Akun tidak ditemukan' },
+          { status: 404 }
+        )
+      }
+
+      accountId = requesterAccountId
     }
 
-    // Check for existing email
-    const existingUser = await db.user.findUnique({ where: { email } })
+    // Check for existing email within the same account
+    const existingUser = await db.user.findFirst({
+      where: { email, accountId },
+    })
     if (existingUser) {
       return NextResponse.json(
-        { error: 'Email sudah terdaftar' },
+        { error: 'Email sudah terdaftar di akun ini' },
         { status: 409 }
       )
     }
@@ -70,27 +126,33 @@ export async function POST(request: NextRequest) {
         name,
         email,
         password: hashedPassword,
-        role: isFirstUser ? 'super_admin' : role,
+        role: isAccountOwner ? 'super_admin' : role,
         phone,
         branchId,
+        accountId,
       },
-      include: { branch: true },
+      include: { branch: true, account: true },
     })
 
     // Log activity
     await db.activityLog.create({
       data: {
         userId: user.id,
-        action: 'REGISTER',
+        action: isAccountOwner ? 'REGISTER_OWNER' : 'REGISTER',
         module: 'AUTH',
-        details: JSON.stringify({ email: user.email, role: user.role }),
+        details: JSON.stringify({ email: user.email, role: user.role, accountId }),
+        accountId,
       },
     })
 
     const { password: _, ...userWithoutPassword } = user
 
     return NextResponse.json(
-      { message: 'Pengguna berhasil didaftarkan', user: userWithoutPassword },
+      {
+        message: isAccountOwner ? 'Akun dan pengguna berhasil dibuat' : 'Pengguna berhasil didaftarkan',
+        user: userWithoutPassword,
+        isNewAccount: isAccountOwner,
+      },
       { status: 201 }
     )
   } catch (error) {

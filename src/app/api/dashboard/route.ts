@@ -1,9 +1,20 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 
 // GET /api/dashboard - Return dashboard statistics
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      // Return empty dashboard data when not authenticated
+      return NextResponse.json({
+        todaySales: 0, monthSales: 0, totalRevenue: 0,
+        totalProducts: 0, totalCustomers: 0, totalSuppliers: 0, totalTransactions: 0,
+        topProducts: [], recentTransactions: [], lowStockProducts: [],
+        salesChartData: [], revenueChartData: [],
+      })
+    }
+
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
@@ -37,7 +48,7 @@ export async function GET() {
     ] = await Promise.all([
       safeQuery(
         () => db.transaction.aggregate({
-          where: { status: 'completed', type: 'sale', createdAt: { gte: today } },
+          where: { accountId, status: 'completed', type: 'sale', createdAt: { gte: today } },
           _sum: { grandTotal: true },
           _count: true,
         }),
@@ -46,7 +57,7 @@ export async function GET() {
 
       safeQuery(
         () => db.transaction.aggregate({
-          where: { status: 'completed', type: 'sale', createdAt: { gte: startOfMonth } },
+          where: { accountId, status: 'completed', type: 'sale', createdAt: { gte: startOfMonth } },
           _sum: { grandTotal: true },
           _count: true,
         }),
@@ -55,20 +66,23 @@ export async function GET() {
 
       safeQuery(
         () => db.transaction.aggregate({
-          where: { status: 'completed', type: 'sale' },
+          where: { accountId, status: 'completed', type: 'sale' },
           _sum: { grandTotal: true },
         }),
         { _sum: { grandTotal: 0 } }
       ),
 
-      safeQuery(() => db.product.count({ where: { isActive: true } }), 0),
-      safeQuery(() => db.customer.count({ where: { isActive: true } }), 0),
-      safeQuery(() => db.supplier.count({ where: { isActive: true } }), 0),
-      safeQuery(() => db.transaction.count(), 0),
+      safeQuery(() => db.product.count({ where: { accountId, isActive: true } }), 0),
+      safeQuery(() => db.customer.count({ where: { accountId, isActive: true } }), 0),
+      safeQuery(() => db.supplier.count({ where: { accountId, isActive: true } }), 0),
+      safeQuery(() => db.transaction.count({ where: { accountId } }), 0),
 
       safeQuery(
         () => db.transactionItem.groupBy({
           by: ['productId', 'productName'],
+          where: {
+            transaction: { accountId, status: 'completed', type: 'sale' },
+          },
           _sum: { quantity: true },
           orderBy: { _sum: { quantity: 'desc' } },
           take: 5,
@@ -78,6 +92,7 @@ export async function GET() {
 
       safeQuery(
         () => db.transaction.findMany({
+          where: { accountId },
           take: 10,
           orderBy: { createdAt: 'desc' },
           include: {
@@ -90,7 +105,7 @@ export async function GET() {
 
       safeQuery(
         () => db.product.findMany({
-          where: { isActive: true },
+          where: { accountId, isActive: true },
           take: 50,
           orderBy: { stock: 'asc' },
           include: { category: true },
@@ -100,7 +115,7 @@ export async function GET() {
 
       safeQuery(
         () => db.transaction.findMany({
-          where: { status: 'completed', type: 'sale', createdAt: { gte: thirtyDaysAgo } },
+          where: { accountId, status: 'completed', type: 'sale', createdAt: { gte: thirtyDaysAgo } },
           select: { createdAt: true, grandTotal: true },
         }),
         []

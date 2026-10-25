@@ -10,9 +10,15 @@ const createBranchSchema = z.object({
 })
 
 // GET /api/branches - List branches
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const branches = await db.branch.findMany({
+      where: { accountId },
       orderBy: { name: 'asc' },
       include: {
         _count: {
@@ -38,6 +44,11 @@ export async function GET() {
 // POST /api/branches - Create branch
 export async function POST(request: NextRequest) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const body = await request.json()
     const parsed = createBranchSchema.safeParse(body)
 
@@ -51,6 +62,7 @@ export async function POST(request: NextRequest) {
     const data = {
       ...parsed.data,
       email: parsed.data.email === '' ? null : parsed.data.email,
+      accountId,
     }
 
     const branch = await db.branch.create({ data })

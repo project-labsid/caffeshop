@@ -21,6 +21,11 @@ const createStockAdjustmentSchema = z.object({
 // GET /api/stock - List stock adjustments with pagination, filter
 export async function GET(request: NextRequest) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const { searchParams } = new URL(request.url)
     const parsed = listStockSchema.safeParse(Object.fromEntries(searchParams))
 
@@ -34,7 +39,7 @@ export async function GET(request: NextRequest) {
     const { page, perPage, type, productId } = parsed.data
     const skip = (page - 1) * perPage
 
-    const where: Record<string, unknown> = {}
+    const where: Record<string, unknown> = { accountId }
 
     if (type) {
       where.type = type
@@ -78,6 +83,11 @@ export async function GET(request: NextRequest) {
 // POST /api/stock - Create stock adjustment (updates product stock)
 export async function POST(request: NextRequest) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const body = await request.json()
     const parsed = createStockAdjustmentSchema.safeParse(body)
 
@@ -90,7 +100,7 @@ export async function POST(request: NextRequest) {
 
     const { productId, userId, branchId, type, quantity, reason } = parsed.data
 
-    const product = await db.product.findUnique({ where: { id: productId } })
+    const product = await db.product.findFirst({ where: { id: productId, accountId } })
     if (!product) {
       return NextResponse.json(
         { error: 'Produk tidak ditemukan' },
@@ -123,6 +133,7 @@ export async function POST(request: NextRequest) {
         productId,
         userId,
         branchId,
+        accountId,
         type,
         quantity,
         previousStock,

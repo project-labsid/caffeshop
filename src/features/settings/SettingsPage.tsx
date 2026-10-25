@@ -38,7 +38,7 @@ import { useAuthStore, useSettingsStore } from '@/store';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import dynamic from 'next/dynamic';
-import { cn } from '@/lib/utils';
+import { cn, apiFetch } from '@/lib/utils';
 
 // Lazy-load sub-pages
 const AccountSettings = dynamic(() => import('./AccountSettings'), { ssr: false });
@@ -297,7 +297,7 @@ function TaxSettingsInline({ onBack }: { onBack: () => void }) {
 
   const saveMutation = useMutation({
     mutationFn: async (settings: Record<string, string>) => {
-      const res = await fetch('/api/settings', {
+      const res = await apiFetch('/api/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ settings }),
@@ -459,7 +459,7 @@ function ResetDataSection({ onBack }: { onBack: () => void }) {
 
   const resetMutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch('/api/reset', {
+      const res = await apiFetch('/api/reset', {
         method: 'POST',
       });
       if (!res.ok) {

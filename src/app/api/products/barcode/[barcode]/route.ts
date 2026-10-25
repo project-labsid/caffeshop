@@ -4,11 +4,16 @@ import { db } from '@/lib/db'
 type RouteParams = { params: Promise<{ barcode: string }> }
 
 // GET /api/products/barcode/[barcode] - Find product by barcode
-export async function GET(_request: NextRequest, { params }: RouteParams) {
+export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const { barcode } = await params
-    const product = await db.product.findUnique({
-      where: { barcode },
+    const product = await db.product.findFirst({
+      where: { barcode, accountId },
       include: { category: true, branch: true },
     })
 

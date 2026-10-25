@@ -30,6 +30,11 @@ const createProductSchema = z.object({
 // GET /api/products - List products with pagination, search, filter, sorting
 export async function GET(request: NextRequest) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const { searchParams } = new URL(request.url)
     const parsed = listProductsSchema.safeParse(Object.fromEntries(searchParams))
 
@@ -43,7 +48,7 @@ export async function GET(request: NextRequest) {
     const { page, perPage, search, categoryId, isActive, branchId, sortBy, sortOrder } = parsed.data
     const skip = (page - 1) * perPage
 
-    const where: Record<string, unknown> = {}
+    const where: Record<string, unknown> = { accountId }
 
     if (search) {
       where.OR = [
@@ -99,6 +104,11 @@ export async function GET(request: NextRequest) {
 // POST /api/products - Create product
 export async function POST(request: NextRequest) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const body = await request.json()
     const parsed = createProductSchema.safeParse(body)
 
@@ -110,7 +120,7 @@ export async function POST(request: NextRequest) {
     }
 
     const product = await db.product.create({
-      data: parsed.data,
+      data: { ...parsed.data, accountId },
       include: { category: true, branch: true },
     })
 

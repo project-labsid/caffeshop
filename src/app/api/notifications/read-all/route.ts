@@ -1,12 +1,17 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { classifyError } from '@/lib/api-error'
 
 // PUT /api/notifications/read-all
-export async function PUT() {
+export async function PUT(req: NextRequest) {
   try {
+    const accountId = req.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     await db.notification.updateMany({
-      where: { isRead: false },
+      where: { accountId, isRead: false },
       data: {
         isRead: true,
         readAt: new Date(),

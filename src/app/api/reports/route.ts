@@ -48,6 +48,11 @@ function getDateRange(type: string): { startDate: Date; endDate: Date; groupForm
 // GET /api/reports - Generate report data
 export async function GET(request: NextRequest) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const { searchParams } = new URL(request.url)
     const parsed = reportQuerySchema.safeParse(Object.fromEntries(searchParams))
 
@@ -71,6 +76,7 @@ export async function GET(request: NextRequest) {
       : endDate
 
     const baseWhere: Record<string, unknown> = {
+      accountId,
       status: 'completed',
       type: 'sale',
       createdAt: { gte: start, lte: end },
@@ -126,6 +132,7 @@ export async function GET(request: NextRequest) {
           by: ['productId', 'productName'],
           where: {
             transaction: {
+              accountId,
               status: 'completed',
               type: 'sale',
               createdAt: { gte: start, lte: end },
@@ -230,6 +237,7 @@ export async function GET(request: NextRequest) {
         const purchaseStats = await db.purchase.groupBy({
           by: ['supplierId'],
           where: {
+            accountId,
             status: 'received',
             createdAt: { gte: start, lte: end },
           },
@@ -264,7 +272,7 @@ export async function GET(request: NextRequest) {
 
       case 'stock': {
         const products = await db.product.findMany({
-          where: { isActive: true },
+          where: { accountId, isActive: true },
           orderBy: { stock: 'asc' },
           include: { category: true },
         })

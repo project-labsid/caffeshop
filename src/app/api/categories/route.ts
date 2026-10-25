@@ -8,9 +8,15 @@ const createCategorySchema = z.object({
 })
 
 // GET /api/categories - List categories
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const categories = await db.category.findMany({
+      where: { accountId },
       orderBy: { name: 'asc' },
       include: { _count: { select: { products: true } } },
     })
@@ -28,6 +34,11 @@ export async function GET() {
 // POST /api/categories - Create category
 export async function POST(request: NextRequest) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const body = await request.json()
     const parsed = createCategorySchema.safeParse(body)
 
@@ -39,7 +50,7 @@ export async function POST(request: NextRequest) {
     }
 
     const category = await db.category.create({
-      data: parsed.data,
+      data: { ...parsed.data, accountId },
     })
 
     return NextResponse.json({ data: category }, { status: 201 })

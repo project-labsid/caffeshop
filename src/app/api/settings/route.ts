@@ -10,9 +10,15 @@ const updateSettingsSchema = z.object({
 })
 
 // GET /api/settings - Get all store settings as key-value pairs
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ data: {} })
+    }
+
     const settings = await db.storeSetting.findMany({
+      where: { accountId },
       orderBy: { key: 'asc' },
     })
 
@@ -34,6 +40,11 @@ export async function GET() {
 // PUT /api/settings - Update store settings (accept key-value pairs object)
 export async function PUT(request: NextRequest) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 401 })
+    }
+
     const body = await request.json()
     const parsed = updateSettingsSchema.safeParse(body)
 
@@ -46,14 +57,24 @@ export async function PUT(request: NextRequest) {
 
     const { settings } = parsed.data
 
-    const results = []
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const results: any[] = []
     for (const [key, value] of Object.entries(settings)) {
-      const result = await db.storeSetting.upsert({
-        where: { key },
-        update: { value },
-        create: { key, value },
+      const existing = await db.storeSetting.findFirst({
+        where: { key, accountId },
       })
-      results.push(result)
+      if (existing) {
+        const result = await db.storeSetting.update({
+          where: { id: existing.id },
+          data: { value },
+        })
+        results.push(result)
+      } else {
+        const result = await db.storeSetting.create({
+          data: { key, value, accountId },
+        })
+        results.push(result)
+      }
     }
 
     return NextResponse.json({ data: results })

@@ -14,6 +14,9 @@ const listUsersSchema = z.object({
 // GET /api/users - List all users with pagination and search
 export async function GET(request: NextRequest) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    // accountId is optional for initial setup check (perPage=1)
+
     const { searchParams } = new URL(request.url)
     const parsed = listUsersSchema.safeParse(Object.fromEntries(searchParams))
 
@@ -28,6 +31,7 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit
 
     const where: Record<string, unknown> = {}
+    if (accountId) where.accountId = accountId
 
     if (search) {
       where.OR = [
@@ -65,6 +69,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       users: usersWithoutPassword,
+      total,
       pagination: {
         page,
         limit,

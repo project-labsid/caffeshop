@@ -35,7 +35,7 @@ import {
   Building2,
 } from 'lucide-react';
 
-import { cn, formatRupiah, formatNominal, parseNominal } from '@/lib/utils';
+import { cn, formatRupiah, formatNominal, parseNominal, apiFetch } from '@/lib/utils';
 import { useCartStore, useSettingsStore, useAuthStore } from '@/store';
 import type { Product, Category, Customer, CartItem, PaymentSplit, Transaction } from '@/types';
 
@@ -234,7 +234,7 @@ export default function POSPage() {
   useQuery({
     queryKey: ['printer-settings'],
     queryFn: async () => {
-      const res = await fetch('/api/settings/printer');
+      const res = await apiFetch('/api/settings/printer');
       const json = await res.json();
       const d = json.data;
       if (d) {
@@ -255,7 +255,7 @@ export default function POSPage() {
   const { data: categoriesRaw = [], isLoading: categoriesLoading } = useQuery<Category[]>({
     queryKey: ['categories'],
     queryFn: async () => {
-      const res = await fetch('/api/categories');
+      const res = await apiFetch('/api/categories');
       if (!res.ok) return [];
       const json = await res.json();
       const data = json.data;
@@ -271,7 +271,7 @@ export default function POSPage() {
       const params = new URLSearchParams({ isActive: 'true', perPage: '200' });
       if (searchQuery) params.set('search', searchQuery);
       if (selectedCategory !== 'all') params.set('categoryId', selectedCategory);
-      const res = await fetch(`/api/products?${params.toString()}`);
+      const res = await apiFetch(`/api/products?${params.toString()}`);
       if (!res.ok) return [];
       const json = await res.json();
       const data = json.data;
@@ -284,7 +284,7 @@ export default function POSPage() {
   const { data: taxData } = useQuery({
     queryKey: ['tax-setting'],
     queryFn: async () => {
-      const res = await fetch('/api/settings/tax');
+      const res = await apiFetch('/api/settings/tax');
       const json = await res.json();
       return json.data;
     },
@@ -293,7 +293,7 @@ export default function POSPage() {
   const { data: scData } = useQuery({
     queryKey: ['sc-setting'],
     queryFn: async () => {
-      const res = await fetch('/api/settings/service-charge');
+      const res = await apiFetch('/api/settings/service-charge');
       const json = await res.json();
       return json.data;
     },
@@ -302,7 +302,7 @@ export default function POSPage() {
   const { data: customersRaw = [] } = useQuery<Customer[]>({
     queryKey: ['customers-short'],
     queryFn: async () => {
-      const res = await fetch('/api/customers?perPage=100');
+      const res = await apiFetch('/api/customers?perPage=100');
       if (!res.ok) return [];
       const json = await res.json();
       const data = json.data;
@@ -316,7 +316,7 @@ export default function POSPage() {
     queryKey: ['held-transactions', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      const res = await fetch(`/api/transactions/held?userId=${user.id}`);
+      const res = await apiFetch(`/api/transactions/held?userId=${user.id}`);
       if (!res.ok) return [];
       const json = await res.json();
       const data = json.data;
@@ -349,7 +349,7 @@ export default function POSPage() {
   const { data: dbPaymentMethodsRaw = [] } = useQuery<DbPaymentMethod[]>({
     queryKey: ['pos-payment-methods'],
     queryFn: async () => {
-      const res = await fetch('/api/payment-methods?status=active');
+      const res = await apiFetch('/api/payment-methods?status=active');
       if (!res.ok) return [];
       const json = await res.json();
       return Array.isArray(json.data) ? json.data : [];
@@ -426,7 +426,7 @@ export default function POSPage() {
 
   const createTransactionMutation = useMutation({
     mutationFn: async (payload: Record<string, unknown>) => {
-      const res = await fetch('/api/transactions', {
+      const res = await apiFetch('/api/transactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -495,7 +495,7 @@ export default function POSPage() {
         notes: cart.notes || undefined,
         items,
       };
-      const res = await fetch('/api/transactions', {
+      const res = await apiFetch('/api/transactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -518,7 +518,7 @@ export default function POSPage() {
 
   const deleteHeldMutation = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`/api/transactions/held?id=${id}`, { method: 'DELETE' });
+      const res = await apiFetch(`/api/transactions/held?id=${id}`, { method: 'DELETE' });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Gagal menghapus transaksi ditahan');
     },
@@ -553,7 +553,7 @@ export default function POSPage() {
   const handleBarcodeSearch = useCallback(async () => {
     if (!barcodeInput.trim()) return;
     try {
-      const res = await fetch(`/api/products/barcode/${encodeURIComponent(barcodeInput.trim())}`);
+      const res = await apiFetch(`/api/products/barcode/${encodeURIComponent(barcodeInput.trim())}`);
       const json = await res.json();
       if (!res.ok) {
         toast.error(json.error || 'Produk tidak ditemukan');
@@ -708,7 +708,7 @@ export default function POSPage() {
       const win = window.open('', '_blank', `width=${maxW},height=600`);
       if (!win) { toast.error('Popup diblokir, izinkan popup'); return; }
       win.document.write(`<!DOCTYPE html>
-<html><head><title>Struk - ${storeName || 'Dkriuk'}</title>
+<html><head><title>Struk - ${storeName || 'Kasir Kopi Shop'}</title>
 <style>
   @page { size: ${printerConfig.paperWidth}mm auto; margin: 0; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -1822,7 +1822,7 @@ export default function POSPage() {
               {printerConfig.headerText && (
                 <p className="text-[10px] text-gray-600 mb-1 font-semibold">{printerConfig.headerText}</p>
               )}
-              <p className="text-sm font-bold text-base">{storeName || 'Dkriuk'}</p>
+              <p className="text-sm font-bold text-base">{storeName || 'Kasir Kopi Shop'}</p>
               {storeAddress && (
                 <p className="text-[10px] text-gray-600 mt-0.5">{storeAddress}</p>
               )}

@@ -26,6 +26,7 @@ import {
   Users,
 } from 'lucide-react';
 import type { Branch } from '@/types';
+import { apiFetch } from '@/lib/utils';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -174,7 +175,7 @@ export default function BranchesPage() {
   const branchesQuery = useQuery<{ data: BranchWithCounts[] }>({
     queryKey: ['branches'],
     queryFn: async () => {
-      const res = await fetch('/api/branches');
+      const res = await apiFetch('/api/branches');
       if (!res.ok) throw new Error('Gagal memuat cabang');
       return res.json();
     },
@@ -188,7 +189,7 @@ export default function BranchesPage() {
       if (!payload.address) delete payload.address;
       if (!payload.phone) delete payload.phone;
       if (!payload.email) delete payload.email;
-      const res = await fetch('/api/branches', {
+      const res = await apiFetch('/api/branches', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -218,7 +219,7 @@ export default function BranchesPage() {
         phone: data.phone || null,
         email: data.email || null,
       };
-      const res = await fetch(`/api/branches/${editingBranch.id}`, {
+      const res = await apiFetch(`/api/branches/${editingBranch.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -241,7 +242,7 @@ export default function BranchesPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`/api/branches/${id}`, {
+      const res = await apiFetch(`/api/branches/${id}`, {
         method: 'DELETE',
       });
       if (!res.ok) {

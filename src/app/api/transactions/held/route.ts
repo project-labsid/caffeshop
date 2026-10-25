@@ -4,6 +4,11 @@ import { db } from '@/lib/db'
 // GET /api/transactions/held - Get all held transactions for current user
 export async function GET(request: NextRequest) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get('userId')
 
@@ -16,6 +21,7 @@ export async function GET(request: NextRequest) {
 
     const transactions = await db.transaction.findMany({
       where: {
+        accountId,
         userId,
         status: 'held',
       },
@@ -41,6 +47,11 @@ export async function GET(request: NextRequest) {
 // DELETE /api/transactions/held?id=xxx - Delete a held transaction
 export async function DELETE(request: NextRequest) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
 
@@ -51,8 +62,8 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    const transaction = await db.transaction.findUnique({
-      where: { id },
+    const transaction = await db.transaction.findFirst({
+      where: { id, accountId },
     })
 
     if (!transaction) {

@@ -13,6 +13,11 @@ const stockOpnameSchema = z.object({
 // POST /api/stock/opname - Stock opname: set actual stock count
 export async function POST(request: NextRequest) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const body = await request.json()
     const parsed = stockOpnameSchema.safeParse(body)
 
@@ -25,7 +30,7 @@ export async function POST(request: NextRequest) {
 
     const { productId, userId, branchId, actualStock, reason } = parsed.data
 
-    const product = await db.product.findUnique({ where: { id: productId } })
+    const product = await db.product.findFirst({ where: { id: productId, accountId } })
     if (!product) {
       return NextResponse.json(
         { error: 'Produk tidak ditemukan' },
@@ -48,6 +53,7 @@ export async function POST(request: NextRequest) {
         productId,
         userId,
         branchId,
+        accountId,
         type: 'opname',
         quantity: difference,
         previousStock,

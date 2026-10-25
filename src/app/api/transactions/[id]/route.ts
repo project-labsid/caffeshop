@@ -19,11 +19,16 @@ const updateTransactionSchema = z.object({
 type RouteParams = { params: Promise<{ id: string }> }
 
 // GET /api/transactions/[id] - Get single transaction with items
-export async function GET(_request: NextRequest, { params }: RouteParams) {
+export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const { id } = await params
-    const transaction = await db.transaction.findUnique({
-      where: { id },
+    const transaction = await db.transaction.findFirst({
+      where: { id, accountId },
       include: {
         user: { select: { id: true, name: true, email: true } },
         customer: true,
@@ -52,6 +57,11 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 // PUT /api/transactions/[id] - Update transaction
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const { id } = await params
     const body = await request.json()
     const parsed = updateTransactionSchema.safeParse(body)
@@ -63,8 +73,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    const existing = await db.transaction.findUnique({
-      where: { id },
+    const existing = await db.transaction.findFirst({
+      where: { id, accountId },
       include: { items: true },
     })
 

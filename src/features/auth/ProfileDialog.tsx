@@ -27,6 +27,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { useAuthStore } from '@/store';
+import { apiFetch } from '@/lib/utils';
 
 interface ProfileDialogProps {
   open: boolean;
@@ -96,7 +97,7 @@ export default function ProfileDialog({ open, onOpenChange }: ProfileDialogProps
     if (!user) return;
     setSavingProfile(true);
     try {
-      const res = await fetch(`/api/auth/${user.id}`, {
+      const res = await apiFetch(`/api/auth/${user.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -120,7 +121,7 @@ export default function ProfileDialog({ open, onOpenChange }: ProfileDialogProps
     if (!user) return;
     setSavingPassword(true);
     try {
-      const res = await fetch('/api/auth/change-password', {
+      const res = await apiFetch('/api/auth/change-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

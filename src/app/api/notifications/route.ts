@@ -5,12 +5,17 @@ import { classifyError } from '@/lib/api-error'
 // GET /api/notifications?unreadOnly=true&limit=20
 export async function GET(req: NextRequest) {
   try {
+    const accountId = req.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const { searchParams } = req.nextUrl
     const unreadOnly = searchParams.get('unreadOnly') === 'true'
     const limit = parseInt(searchParams.get('limit') || '50', 10)
     const type = searchParams.get('type')
 
-    const where: Record<string, unknown> = {}
+    const where: Record<string, unknown> = { accountId }
     if (unreadOnly) where.isRead = false
     if (type) where.type = type
 
@@ -21,7 +26,7 @@ export async function GET(req: NextRequest) {
     })
 
     const unreadCount = await db.notification.count({
-      where: { isRead: false },
+      where: { accountId, isRead: false },
     })
 
     return NextResponse.json({
@@ -36,6 +41,11 @@ export async function GET(req: NextRequest) {
 // POST /api/notifications — create a notification (for manual/testing use)
 export async function POST(req: NextRequest) {
   try {
+    const accountId = req.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const body = await req.json()
     const { type, title, message, userId, data } = body
 
@@ -52,6 +62,7 @@ export async function POST(req: NextRequest) {
         title,
         message,
         userId: userId || null,
+        accountId,
         data: data ? JSON.stringify(data) : null,
       },
     })
@@ -65,6 +76,11 @@ export async function POST(req: NextRequest) {
 // DELETE /api/notifications?olderThan=7 (days)
 export async function DELETE(req: NextRequest) {
   try {
+    const accountId = req.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const { searchParams } = req.nextUrl
     const olderThanDays = parseInt(searchParams.get('olderThan') || '30', 10)
 
@@ -72,7 +88,7 @@ export async function DELETE(req: NextRequest) {
     cutoff.setDate(cutoff.getDate() - olderThanDays)
 
     const result = await db.notification.deleteMany({
-      where: { createdAt: { lt: cutoff } },
+      where: { accountId, createdAt: { lt: cutoff } },
     })
 
     return NextResponse.json({ deleted: result.count })

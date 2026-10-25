@@ -1,5 +1,14 @@
 export type UserRole = 'super_admin' | 'admin' | 'cashir';
 
+export interface Account {
+  id: string;
+  name: string;
+  slug: string;
+  ownerEmail: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -8,9 +17,11 @@ export interface User {
   avatar?: string;
   role: string;
   branchId?: string;
+  accountId: string;
   isActive: boolean;
   createdAt: string;
   branch?: Branch;
+  account?: Account;
 }
 
 export interface Branch {

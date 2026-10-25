@@ -30,6 +30,7 @@ import {
   FolderOpen,
 } from 'lucide-react';
 import type { Category } from '@/types';
+import { apiFetch } from '@/lib/utils';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -165,7 +166,7 @@ export default function CategoriesPage() {
   const categoriesQuery = useQuery<{ data: CategoryWithCount[] }>({
     queryKey: ['categories'],
     queryFn: async () => {
-      const res = await fetch('/api/categories');
+      const res = await apiFetch('/api/categories');
       if (!res.ok) throw new Error('Gagal memuat kategori');
       return res.json();
     },
@@ -177,7 +178,7 @@ export default function CategoriesPage() {
     mutationFn: async (data: CategoryFormData) => {
       const payload: Record<string, unknown> = { ...data };
       if (!payload.description) delete payload.description;
-      const res = await fetch('/api/categories', {
+      const res = await apiFetch('/api/categories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -203,7 +204,7 @@ export default function CategoriesPage() {
       if (!editingCategory) return;
       const payload: Record<string, unknown> = { ...data };
       if (!payload.description) payload.description = null;
-      const res = await fetch(`/api/categories/${editingCategory.id}`, {
+      const res = await apiFetch(`/api/categories/${editingCategory.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -226,7 +227,7 @@ export default function CategoriesPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`/api/categories/${id}`, {
+      const res = await apiFetch(`/api/categories/${id}`, {
         method: 'DELETE',
       });
       if (!res.ok) {

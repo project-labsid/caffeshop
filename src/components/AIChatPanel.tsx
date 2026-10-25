@@ -24,6 +24,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { apiFetch } from "@/lib/utils";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -81,10 +82,10 @@ export default function AIChatPanel() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/ai/chat", {
+      const res = await apiFetch("/api/ai/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: updatedMessages, context: "POS Dkriuk" }),
+        body: JSON.stringify({ messages: updatedMessages, context: "Kasir Kopi Shop POS" }),
       });
 
       if (!res.ok) throw new Error("Gagal mendapatkan respons AI");
@@ -150,7 +151,7 @@ export default function AIChatPanel() {
                   className="gap-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
                 >
                   <Sparkles className="h-3 w-3" />
-                  Dkriuk AI
+                  Kopi AI
                 </Badge>
               </div>
               <Button
@@ -173,7 +174,7 @@ export default function AIChatPanel() {
                     <Sparkles className="h-6 w-6 text-emerald-600" />
                   </div>
                   <p className="text-sm font-medium">
-                    Halo! Saya Dkriuk AI Assistant
+                    Halo! Saya Kopi AI Assistant
                   </p>
                   <p className="text-xs">
                     Tanyakan apa saja tentang toko Anda, atau gunakan aksi cepat di

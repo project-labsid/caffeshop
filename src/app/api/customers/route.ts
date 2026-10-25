@@ -19,6 +19,11 @@ const createCustomerSchema = z.object({
 // GET /api/customers - List customers with pagination, search
 export async function GET(request: NextRequest) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const { searchParams } = new URL(request.url)
     const parsed = listCustomersSchema.safeParse(Object.fromEntries(searchParams))
 
@@ -32,7 +37,7 @@ export async function GET(request: NextRequest) {
     const { page, perPage, search } = parsed.data
     const skip = (page - 1) * perPage
 
-    const where: Record<string, unknown> = {}
+    const where: Record<string, unknown> = { accountId }
 
     if (search) {
       where.OR = [
@@ -72,6 +77,11 @@ export async function GET(request: NextRequest) {
 // POST /api/customers - Create customer
 export async function POST(request: NextRequest) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const body = await request.json()
     const parsed = createCustomerSchema.safeParse(body)
 
@@ -85,6 +95,7 @@ export async function POST(request: NextRequest) {
     const data = {
       ...parsed.data,
       email: parsed.data.email === '' ? null : parsed.data.email,
+      accountId,
     }
 
     const customer = await db.customer.create({ data })

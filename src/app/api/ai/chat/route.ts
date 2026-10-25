@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import ZAI from 'z-ai-web-dev-sdk'
 
-const SYSTEM_PROMPT = `You are "Dkriuk AI Assistant", an intelligent assistant for a POS (Point of Sale) application called "Dkriuk POS". You help store owners with:
+const SYSTEM_PROMPT = `You are "Kopi AI Assistant", an intelligent assistant for a POS (Point of Sale) application called "Kasir Kopi Shop". You help coffee shop owners with:
 - Sales analysis and insights
 - Product recommendations and restock suggestions  
 - Customer insights and retention strategies
@@ -19,10 +19,10 @@ const AI_FEATURE_TOGGLE_KEYS = [
   'ai_customer_insight',
 ] as const
 
-async function getStoreSetting(key: string): Promise<string | null> {
+async function getStoreSetting(key: string, accountId: string): Promise<string | null> {
   try {
-    const setting = await db.storeSetting.findUnique({
-      where: { key },
+    const setting = await db.storeSetting.findFirst({
+      where: { key, accountId },
     })
     return setting?.value ?? null
   } catch {
@@ -32,6 +32,11 @@ async function getStoreSetting(key: string): Promise<string | null> {
 
 export async function POST(request: NextRequest) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const body = await request.json()
     const { messages, context } = body as {
       messages: Array<{ role: string; content: string }>
@@ -46,12 +51,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Read AI model setting (default: gpt-4o-mini)
-    const aiModel = (await getStoreSetting('ai_model')) || 'gpt-4o-mini'
+    const aiModel = (await getStoreSetting('ai_model', accountId)) || 'gpt-4o-mini'
 
     // Read AI feature toggles in parallel
     const featureToggles = await Promise.all(
       AI_FEATURE_TOGGLE_KEYS.map(async (key) => {
-        const value = await getStoreSetting(key)
+        const value = await getStoreSetting(key, accountId)
         return { key, enabled: value !== 'false' && value !== null }
       })
     )

@@ -58,6 +58,11 @@ function generateInvoiceNumber(): string {
 // GET /api/transactions - List transactions with pagination, search, filter
 export async function GET(request: NextRequest) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const { searchParams } = new URL(request.url)
     const parsed = listTransactionsSchema.safeParse(Object.fromEntries(searchParams))
 
@@ -71,7 +76,7 @@ export async function GET(request: NextRequest) {
     const { page, perPage, search, status, paymentMethod, branchId, startDate, endDate } = parsed.data
     const skip = (page - 1) * perPage
 
-    const where: Record<string, unknown> = {}
+    const where: Record<string, unknown> = { accountId }
 
     if (search) {
       where.invoiceNumber = { contains: search }
@@ -135,6 +140,11 @@ export async function GET(request: NextRequest) {
 // POST /api/transactions - Create transaction
 export async function POST(request: NextRequest) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const body = await request.json()
     const parsed = createTransactionSchema.safeParse(body)
 
@@ -155,14 +165,14 @@ export async function POST(request: NextRequest) {
     }
 
     const productIds = items.map(i => i.productId)
-    const existingProducts = await db.product.findMany({ where: { id: { in: productIds } }, select: { id: true } })
+    const existingProducts = await db.product.findMany({ where: { id: { in: productIds }, accountId }, select: { id: true } })
     const missingIds = productIds.filter(id => !existingProducts.find(p => p.id === id))
     if (missingIds.length > 0) {
       return NextResponse.json({ error: 'Beberapa produk tidak ditemukan, refresh halaman kasir' }, { status: 400 })
     }
 
     if (transactionData.customerId) {
-      const existingCustomer = await db.customer.findUnique({ where: { id: transactionData.customerId }, select: { id: true } })
+      const existingCustomer = await db.customer.findFirst({ where: { id: transactionData.customerId, accountId }, select: { id: true } })
       if (!existingCustomer) {
         return NextResponse.json({ error: 'Pelanggan tidak ditemukan' }, { status: 400 })
       }
@@ -175,6 +185,7 @@ export async function POST(request: NextRequest) {
     const transaction = await db.transaction.create({
       data: {
         ...transactionData,
+        accountId,
         invoiceNumber,
         completedAt: isCompleted ? now : null,
         heldAt: isHeld ? now : null,

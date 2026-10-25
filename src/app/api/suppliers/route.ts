@@ -18,6 +18,11 @@ const createSupplierSchema = z.object({
 // GET /api/suppliers - List suppliers with pagination, search
 export async function GET(request: NextRequest) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const { searchParams } = new URL(request.url)
     const parsed = listSuppliersSchema.safeParse(Object.fromEntries(searchParams))
 
@@ -31,7 +36,7 @@ export async function GET(request: NextRequest) {
     const { page, perPage, search } = parsed.data
     const skip = (page - 1) * perPage
 
-    const where: Record<string, unknown> = {}
+    const where: Record<string, unknown> = { accountId }
 
     if (search) {
       where.OR = [
@@ -70,6 +75,11 @@ export async function GET(request: NextRequest) {
 // POST /api/suppliers - Create supplier
 export async function POST(request: NextRequest) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const body = await request.json()
     const parsed = createSupplierSchema.safeParse(body)
 
@@ -83,6 +93,7 @@ export async function POST(request: NextRequest) {
     const data = {
       ...parsed.data,
       email: parsed.data.email === '' ? null : parsed.data.email,
+      accountId,
     }
 
     const supplier = await db.supplier.create({ data })

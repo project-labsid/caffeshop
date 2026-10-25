@@ -34,7 +34,7 @@ import {
   Package,
   ImagePlus,
 } from 'lucide-react';
-import { cn, formatRupiah } from '@/lib/utils';
+import { cn, formatRupiah, apiFetch } from '@/lib/utils';
 import type { Product, Category, PaginatedResponse } from '@/types';
 import { RupiahInput } from '@/components/ui/rupiah-input';
 
@@ -268,7 +268,7 @@ export default function ProductsPage() {
         params.set('sortBy', sorting[0].id);
         params.set('sortOrder', sorting[0].desc ? 'desc' : 'asc');
       }
-      const res = await fetch(`/api/products?${params.toString()}`);
+      const res = await apiFetch(`/api/products?${params.toString()}`);
       if (!res.ok) throw new Error('Gagal memuat produk');
       return res.json();
     },
@@ -277,7 +277,7 @@ export default function ProductsPage() {
   const categoriesQuery = useQuery<{ data: Category[] }>({
     queryKey: ['categories'],
     queryFn: async () => {
-      const res = await fetch('/api/categories');
+      const res = await apiFetch('/api/categories');
       if (!res.ok) throw new Error('Gagal memuat kategori');
       return res.json();
     },
@@ -292,7 +292,7 @@ export default function ProductsPage() {
       if (!payload.sku) delete payload.sku;
       if (!payload.categoryId) delete payload.categoryId;
       if (!payload.image) delete payload.image;
-      const res = await fetch('/api/products', {
+      const res = await apiFetch('/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -321,7 +321,7 @@ export default function ProductsPage() {
       if (!payload.sku) payload.sku = null;
       if (!payload.categoryId) payload.categoryId = null;
       if (!payload.image) payload.image = null;
-      const res = await fetch(`/api/products/${editingProduct.id}`, {
+      const res = await apiFetch(`/api/products/${editingProduct.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -344,7 +344,7 @@ export default function ProductsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`/api/products/${id}`, {
+      const res = await apiFetch(`/api/products/${id}`, {
         method: 'DELETE',
       });
       if (!res.ok) {

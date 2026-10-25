@@ -29,7 +29,7 @@ import {
   Smartphone,
 } from 'lucide-react';
 import type { Transaction, TransactionItem, PaginatedResponse } from '@/types';
-import { cn, formatRupiah } from '@/lib/utils';
+import { cn, formatRupiah, apiFetch } from '@/lib/utils';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -198,7 +198,7 @@ export default function TransactionsPage() {
       if (paymentMethod && paymentMethod !== 'all') params.set('paymentMethod', paymentMethod);
       if (startDate) params.set('startDate', startDate);
       if (endDate) params.set('endDate', endDate);
-      const res = await fetch(`/api/transactions?${params.toString()}`);
+      const res = await apiFetch(`/api/transactions?${params.toString()}`);
       if (!res.ok) throw new Error('Gagal memuat transaksi');
       return res.json();
     },
@@ -209,7 +209,7 @@ export default function TransactionsPage() {
     queryKey: ['transaction-detail', detailId],
     queryFn: async () => {
       if (!detailId) throw new Error('No ID');
-      const res = await fetch(`/api/transactions/${detailId}`);
+      const res = await apiFetch(`/api/transactions/${detailId}`);
       if (!res.ok) throw new Error('Gagal memuat detail transaksi');
       const json = await res.json();
       return json.data as Transaction;

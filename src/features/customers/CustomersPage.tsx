@@ -29,6 +29,7 @@ import {
   Users,
 } from 'lucide-react';
 import type { Customer, PaginatedResponse } from '@/types';
+import { apiFetch } from '@/lib/utils';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -178,7 +179,7 @@ export default function CustomersPage() {
         perPage: String(perPage),
       });
       if (search) params.set('search', search);
-      const res = await fetch(`/api/customers?${params.toString()}`);
+      const res = await apiFetch(`/api/customers?${params.toString()}`);
       if (!res.ok) throw new Error('Gagal memuat pelanggan');
       return res.json();
     },
@@ -192,7 +193,7 @@ export default function CustomersPage() {
       if (!payload.phone) delete payload.phone;
       if (!payload.email) delete payload.email;
       if (!payload.address) delete payload.address;
-      const res = await fetch('/api/customers', {
+      const res = await apiFetch('/api/customers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -220,7 +221,7 @@ export default function CustomersPage() {
       if (!payload.phone) payload.phone = null;
       if (!payload.email) payload.email = null;
       if (!payload.address) payload.address = null;
-      const res = await fetch(`/api/customers/${editingCustomer.id}`, {
+      const res = await apiFetch(`/api/customers/${editingCustomer.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -243,7 +244,7 @@ export default function CustomersPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`/api/customers/${id}`, {
+      const res = await apiFetch(`/api/customers/${id}`, {
         method: 'DELETE',
       });
       if (!res.ok) {

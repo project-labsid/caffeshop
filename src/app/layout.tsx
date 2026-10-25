@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Dkriuk - POS",
-  description: "Dkriuk - Aplikasi Kasir Modern",
+  title: "Kasir Kopi Shop",
+  description: "Kasir Kopi Shop - Aplikasi Kasir Coffee Shop Modern",
   manifest: "/manifest.json",
   icons: {
     icon: "/favicon.png",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Dkriuk",
+    title: "Kasir Kopi Shop",
   },
   formatDetection: {
     telephone: false,

@@ -16,6 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
+import { apiFetch } from '@/lib/utils';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -46,7 +47,7 @@ export default function PrinterSettings() {
   const { data, isLoading } = useQuery({
     queryKey: ['settings-printer'],
     queryFn: async () => {
-      const res = await fetch('/api/settings/printer');
+      const res = await apiFetch('/api/settings/printer');
       if (!res.ok) throw new Error('Gagal memuat pengaturan printer');
       const json = await res.json();
       return json.data as Record<string, string>;
@@ -87,7 +88,7 @@ export default function PrinterSettings() {
         printer_show_logo: String(values.printer_show_logo),
       };
 
-      const res = await fetch('/api/settings/printer', {
+      const res = await apiFetch('/api/settings/printer', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

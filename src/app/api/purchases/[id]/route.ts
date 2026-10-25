@@ -12,11 +12,16 @@ const updatePurchaseSchema = z.object({
 type RouteParams = { params: Promise<{ id: string }> }
 
 // GET /api/purchases/[id] - Get single purchase
-export async function GET(_request: NextRequest, { params }: RouteParams) {
+export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const { id } = await params
-    const purchase = await db.purchase.findUnique({
-      where: { id },
+    const purchase = await db.purchase.findFirst({
+      where: { id, accountId },
       include: {
         supplier: true,
         user: { select: { id: true, name: true, email: true } },
@@ -45,6 +50,11 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 // PUT /api/purchases/[id] - Update purchase
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const { id } = await params
     const body = await request.json()
     const parsed = updatePurchaseSchema.safeParse(body)
@@ -56,8 +66,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    const existing = await db.purchase.findUnique({
-      where: { id },
+    const existing = await db.purchase.findFirst({
+      where: { id, accountId },
       include: { items: true },
     })
 
@@ -103,11 +113,16 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 }
 
 // DELETE /api/purchases/[id] - Delete purchase
-export async function DELETE(_request: NextRequest, { params }: RouteParams) {
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const { id } = await params
-    const existing = await db.purchase.findUnique({
-      where: { id },
+    const existing = await db.purchase.findFirst({
+      where: { id, accountId },
       include: { items: true },
     })
 

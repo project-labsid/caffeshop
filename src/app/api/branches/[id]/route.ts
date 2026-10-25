@@ -13,11 +13,16 @@ const updateBranchSchema = z.object({
 type RouteParams = { params: Promise<{ id: string }> }
 
 // GET /api/branches/[id] - Get single branch
-export async function GET(_request: NextRequest, { params }: RouteParams) {
+export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const { id } = await params
-    const branch = await db.branch.findUnique({
-      where: { id },
+    const branch = await db.branch.findFirst({
+      where: { id, accountId },
       include: {
         _count: {
           select: {
@@ -49,6 +54,11 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 // PUT /api/branches/[id] - Update branch
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const { id } = await params
     const body = await request.json()
     const parsed = updateBranchSchema.safeParse(body)
@@ -60,7 +70,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    const existing = await db.branch.findUnique({ where: { id } })
+    const existing = await db.branch.findFirst({ where: { id, accountId } })
     if (!existing) {
       return NextResponse.json(
         { error: 'Cabang tidak ditemukan' },
@@ -93,11 +103,16 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 }
 
 // DELETE /api/branches/[id] - Delete branch
-export async function DELETE(_request: NextRequest, { params }: RouteParams) {
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const { id } = await params
-    const existing = await db.branch.findUnique({
-      where: { id },
+    const existing = await db.branch.findFirst({
+      where: { id, accountId },
       include: {
         _count: {
           select: {

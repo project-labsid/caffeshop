@@ -14,11 +14,16 @@ const updateCustomerSchema = z.object({
 type RouteParams = { params: Promise<{ id: string }> }
 
 // GET /api/customers/[id] - Get single customer
-export async function GET(_request: NextRequest, { params }: RouteParams) {
+export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const { id } = await params
-    const customer = await db.customer.findUnique({
-      where: { id },
+    const customer = await db.customer.findFirst({
+      where: { id, accountId },
       include: { _count: { select: { transactions: true } } },
     })
 
@@ -42,6 +47,11 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 // PUT /api/customers/[id] - Update customer
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const { id } = await params
     const body = await request.json()
     const parsed = updateCustomerSchema.safeParse(body)
@@ -53,7 +63,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    const existing = await db.customer.findUnique({ where: { id } })
+    const existing = await db.customer.findFirst({ where: { id, accountId } })
     if (!existing) {
       return NextResponse.json(
         { error: 'Pelanggan tidak ditemukan' },
@@ -77,11 +87,16 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 }
 
 // DELETE /api/customers/[id] - Delete customer
-export async function DELETE(_request: NextRequest, { params }: RouteParams) {
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const { id } = await params
-    const existing = await db.customer.findUnique({
-      where: { id },
+    const existing = await db.customer.findFirst({
+      where: { id, accountId },
       include: { _count: { select: { transactions: true } } },
     })
 

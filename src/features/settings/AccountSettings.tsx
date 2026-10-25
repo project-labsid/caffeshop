@@ -18,6 +18,8 @@ import {
   Shield,
   Eye,
   EyeOff,
+  Coffee,
+  Building2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,6 +28,7 @@ import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useAuthStore } from '@/store';
+import { apiFetch } from '@/lib/utils';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -96,7 +99,7 @@ export default function AccountSettings({ onBack }: AccountSettingsProps) {
   const profileMutation = useMutation({
     mutationFn: async (values: ProfileForm) => {
       if (!userId) throw new Error('User belum login');
-      const res = await fetch(`/api/auth/${userId}`, {
+      const res = await apiFetch(`/api/auth/${userId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(values),
@@ -130,7 +133,7 @@ export default function AccountSettings({ onBack }: AccountSettingsProps) {
   const passwordMutation = useMutation({
     mutationFn: async (values: ChangePasswordForm) => {
       if (!userId) throw new Error('User belum login');
-      const res = await fetch('/api/auth/change-password', {
+      const res = await apiFetch('/api/auth/change-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -207,6 +210,53 @@ export default function AccountSettings({ onBack }: AccountSettingsProps) {
                 )}
               </div>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Account / Coffee Shop Info Card */}
+      <Card className="rounded-xl border-emerald-200 dark:border-emerald-800">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Coffee className="h-5 w-5 text-emerald-600" />
+            Informasi Coffee Shop
+          </CardTitle>
+          <CardDescription>
+            Akun toko yang sedang aktif. Data Anda terisolasi per toko.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Nama Coffee Shop</p>
+              <p className="font-medium flex items-center gap-2">
+                <Building2 className="w-4 h-4 text-emerald-600" />
+                {user?.account?.name || 'Kasir Kopi Shop'}
+              </p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Account ID</p>
+              <p className="font-mono text-sm text-muted-foreground">{user?.accountId || '-'}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Role di Toko</p>
+              <Badge variant="secondary" className="gap-1">
+                <Shield className="h-3 w-3" />
+                {roleLabels[user?.role || ''] || user?.role || '-'}
+              </Badge>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Status</p>
+              <Badge variant="outline" className="bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400">
+                {user?.account?.isActive !== false ? 'Aktif' : 'Nonaktif'}
+              </Badge>
+            </div>
+          </div>
+          <div className="mt-4 p-3 bg-emerald-50/50 dark:bg-emerald-950/20 rounded-lg border border-emerald-200/50 dark:border-emerald-800/50">
+            <p className="text-xs text-emerald-700 dark:text-emerald-400">
+              ☕ Setiap Coffee Shop memiliki data terpisah. Produk, transaksi, dan pelanggan di toko ini tidak terhubung dengan toko lain.
+              {user?.role === 'super_admin' && ' Sebagai pemilik toko, Anda dapat menambahkan staf melalui menu Pengguna.'}
+            </p>
           </div>
         </CardContent>
       </Card>

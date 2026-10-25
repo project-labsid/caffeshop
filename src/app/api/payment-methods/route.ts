@@ -39,6 +39,11 @@ const updatePaymentMethodSchema = createPaymentMethodSchema.partial().required({
 // GET /api/payment-methods - List all payment methods with filters
 export async function GET(request: NextRequest) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const { searchParams } = new URL(request.url)
     const parsed = listPaymentMethodsSchema.safeParse(Object.fromEntries(searchParams))
 
@@ -52,6 +57,7 @@ export async function GET(request: NextRequest) {
     const { type, status, search } = parsed.data
 
     const where: Record<string, unknown> = {
+      accountId,
       deletedAt: null,
     }
 
@@ -96,6 +102,11 @@ export async function GET(request: NextRequest) {
 // POST /api/payment-methods - Create payment method
 export async function POST(request: NextRequest) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const body = await request.json()
     const parsed = createPaymentMethodSchema.safeParse(body)
 
@@ -106,12 +117,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const data = parsed.data
+    const data = { ...parsed.data, accountId }
 
     // If this is set as default, unset other defaults
     if (data.isDefault) {
       await db.paymentMethod.updateMany({
-        where: { isDefault: true, deletedAt: null },
+        where: { accountId, isDefault: true, deletedAt: null },
         data: { isDefault: false },
       })
     }
@@ -133,6 +144,11 @@ export async function POST(request: NextRequest) {
 // PUT /api/payment-methods - Update payment method
 export async function PUT(request: NextRequest) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const body = await request.json()
 
     const { id, ...updateData } = body
@@ -155,7 +171,7 @@ export async function PUT(request: NextRequest) {
 
     // Verify payment method exists and not soft-deleted
     const existing = await db.paymentMethod.findFirst({
-      where: { id, deletedAt: null },
+      where: { id, accountId, deletedAt: null },
     })
 
     if (!existing) {
@@ -170,7 +186,7 @@ export async function PUT(request: NextRequest) {
     // If this is set as default, unset other defaults
     if (data.isDefault) {
       await db.paymentMethod.updateMany({
-        where: { isDefault: true, deletedAt: null, id: { not: id } },
+        where: { accountId, isDefault: true, deletedAt: null, id: { not: id } },
         data: { isDefault: false },
       })
     }
@@ -193,6 +209,11 @@ export async function PUT(request: NextRequest) {
 // PATCH /api/payment-methods - Batch reorder
 export async function PATCH(request: NextRequest) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const body = await request.json()
     const { orders } = body as { orders: { id: string; sortOrder: number }[] }
 
@@ -225,6 +246,11 @@ export async function PATCH(request: NextRequest) {
 // DELETE /api/payment-methods - Soft-delete payment method
 export async function DELETE(request: NextRequest) {
   try {
+    const accountId = request.headers.get('x-account-id')
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
 
@@ -237,7 +263,7 @@ export async function DELETE(request: NextRequest) {
 
     // Verify payment method exists and not already soft-deleted
     const existing = await db.paymentMethod.findFirst({
-      where: { id, deletedAt: null },
+      where: { id, accountId, deletedAt: null },
     })
 
     if (!existing) {
