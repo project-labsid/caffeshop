@@ -132,7 +132,7 @@ const cardVariants = {
 function getStatusBadge(isActive: boolean) {
   if (isActive) {
     return (
-      <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100">
+      <Badge className="bg-[#ffe088]/40 text-[#4a2c20] border-[#e9c349]/40 hover:bg-[#ffe088]/40">
         Aktif
       </Badge>
     );
@@ -446,7 +446,7 @@ export default function BranchesPage() {
         </div>
         <Button
           onClick={openAddDialog}
-          className="bg-emerald-600 hover:bg-emerald-700"
+          className="bg-primary hover:bg-[#4a2c20]"
         >
           <Plus className="size-4" />
           Tambah Cabang
@@ -493,8 +493,8 @@ export default function BranchesPage() {
           variants={itemVariants}
           className="flex flex-col items-center justify-center py-20"
         >
-          <div className="w-16 h-16 rounded-2xl bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center mb-4">
-            <Building2 className="size-8 text-emerald-600" />
+          <div className="w-16 h-16 rounded-2xl bg-[#ffe088]/40 dark:bg-[#2c1810]/50 flex items-center justify-center mb-4">
+            <Building2 className="size-8 text-[#735c00]" />
           </div>
           <p className="text-muted-foreground text-sm text-center max-w-sm">
             {search
@@ -513,8 +513,8 @@ export default function BranchesPage() {
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center flex-shrink-0">
-                        <Building2 className="size-5 text-emerald-600" />
+                      <div className="w-10 h-10 rounded-lg bg-[#ffe088]/40 dark:bg-[#2c1810]/50 flex items-center justify-center flex-shrink-0">
+                        <Building2 className="size-5 text-[#735c00]" />
                       </div>
                       <CardTitle className="text-base font-semibold leading-tight">
                         {branch.name}
@@ -628,7 +628,7 @@ export default function BranchesPage() {
               type="button"
               onClick={form.handleSubmit(onSubmitForm)}
               disabled={isMutating}
-              className="bg-emerald-600 hover:bg-emerald-700"
+              className="bg-primary hover:bg-[#4a2c20]"
             >
               {isMutating && <Loader2 className="size-4 animate-spin" />}
               {isMutating ? 'Menyimpan...' : 'Simpan Cabang'}
@@ -662,7 +662,7 @@ export default function BranchesPage() {
               type="button"
               onClick={form.handleSubmit(onSubmitForm)}
               disabled={isMutating}
-              className="bg-emerald-600 hover:bg-emerald-700"
+              className="bg-primary hover:bg-[#4a2c20]"
             >
               {isMutating && <Loader2 className="size-4 animate-spin" />}
               {isMutating ? 'Menyimpan...' : 'Perbarui Cabang'}
@@ -701,7 +701,7 @@ export default function BranchesPage() {
             </Button>
             <Button
               type="button"
-              className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+              className="flex-1 bg-primary hover:bg-[#4a2c20]"
               onClick={form.handleSubmit(onSubmitForm)}
               disabled={isMutating}
             >

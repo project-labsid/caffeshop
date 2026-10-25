@@ -103,7 +103,7 @@ function getStatusBadge(status: string) {
   switch (status) {
     case 'received':
       return (
-        <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100">
+        <Badge className="bg-[#ffe088]/40 text-[#4a2c20] border-[#e9c349]/40 hover:bg-[#ffe088]/40">
           Diterima
         </Badge>
       );
@@ -440,7 +440,7 @@ export default function PurchasesPage() {
           <Button
             variant="ghost"
             size="sm"
-            className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+            className="text-[#735c00] hover:text-[#2c1810] hover:bg-[#ffe088]/20"
             onClick={(e) => {
               e.stopPropagation();
               openDetail(row.original.id);
@@ -489,7 +489,7 @@ export default function PurchasesPage() {
             Kelola pembelian barang dari supplier
           </p>
         </div>
-        <Button onClick={openAddDialog} className="bg-emerald-600 hover:bg-emerald-700">
+        <Button onClick={openAddDialog} className="bg-primary hover:bg-[#4a2c20]">
           <Plus className="size-4" />
           Tambah Pembelian
         </Button>
@@ -782,7 +782,7 @@ export default function PurchasesPage() {
               {/* Grand Total */}
               <div className="flex items-center justify-between py-2">
                 <span className="font-semibold text-base">Grand Total</span>
-                <span className="font-bold text-lg text-emerald-600">{formatRupiah(grandTotal)}</span>
+                <span className="font-bold text-lg text-[#735c00]">{formatRupiah(grandTotal)}</span>
               </div>
             </form>
           </Form>
@@ -795,7 +795,7 @@ export default function PurchasesPage() {
               type="button"
               onClick={form.handleSubmit(onSubmitForm)}
               disabled={isMutating}
-              className="bg-emerald-600 hover:bg-emerald-700"
+              className="bg-primary hover:bg-[#4a2c20]"
             >
               {isMutating && <Loader2 className="size-4 animate-spin" />}
               {isMutating ? 'Menyimpan...' : 'Simpan Pembelian'}
@@ -890,7 +890,7 @@ export default function PurchasesPage() {
               {/* Grand Total */}
               <div className="flex items-center justify-between py-1">
                 <span className="font-semibold text-base">Total Pembelian</span>
-                <span className="font-bold text-lg text-emerald-600">{formatRupiah(detailData.totalAmount)}</span>
+                <span className="font-bold text-lg text-[#735c00]">{formatRupiah(detailData.totalAmount)}</span>
               </div>
             </div>
           ) : null}

@@ -58,7 +58,7 @@ function formatTime(dateStr: string): string {
 function getStatusBadge(status: string) {
   switch (status) {
     case 'completed':
-      return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100">Selesai</Badge>;
+      return <Badge className="bg-[#ffe088]/40 text-[#735c00] border-[#e9c349]/40 hover:bg-[#ffe088]/40">Selesai</Badge>;
     case 'pending':
       return <Badge className="bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-100">Menunggu</Badge>;
     case 'held':
@@ -193,11 +193,11 @@ function KpiCard({
             <p className="text-xl font-bold tracking-tight truncate">{value}</p>
             <div className="mt-0.5 flex items-center gap-1">
               {isPositive ? (
-                <ArrowUpRight className="h-3.5 w-3.5 text-emerald-600" />
+                <ArrowUpRight className="h-3.5 w-3.5 text-[#735c00]" />
               ) : (
                 <ArrowDownRight className="h-3.5 w-3.5 text-red-500" />
               )}
-              <span className={`text-xs font-medium ${isPositive ? 'text-emerald-600' : 'text-red-500'}`}>
+              <span className={`text-xs font-medium ${isPositive ? 'text-[#735c00]' : 'text-red-500'}`}>
                 {isPositive ? '+' : ''}{trend}%
               </span>
               <span className="text-xs text-muted-foreground">{trendLabel}</span>
@@ -319,8 +319,8 @@ export default function DashboardPage() {
           value={formatRupiah(data.todaySales)}
           trend={12.5}
           trendLabel="vs kemarin"
-          iconBg="bg-emerald-100"
-          iconColor="text-emerald-600"
+          iconBg="bg-[#ffe088]/40"
+          iconColor="text-[#735c00]"
         />
         <KpiCard
           icon={TrendingUp}
@@ -374,8 +374,8 @@ export default function DashboardPage() {
                     <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
                       <defs>
                         <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#10b981" stopOpacity={0.3} />
-                          <stop offset="100%" stopColor="#10b981" stopOpacity={0.02} />
+                          <stop offset="0%" stopColor="#e9c349" stopOpacity={0.3} />
+                          <stop offset="100%" stopColor="#e9c349" stopOpacity={0.02} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
@@ -397,7 +397,7 @@ export default function DashboardPage() {
                       <Area
                         type="monotone"
                         dataKey="total"
-                        stroke="#10b981"
+                        stroke="#e9c349"
                         strokeWidth={2}
                         fill="url(#salesGradient)"
                       />
@@ -446,7 +446,7 @@ export default function DashboardPage() {
                       <Tooltip content={<ProductTooltip />} />
                       <Bar
                         dataKey="quantity"
-                        fill="#10b981"
+                        fill="#e9c349"
                         radius={[0, 6, 6, 0]}
                         barSize={24}
                       />

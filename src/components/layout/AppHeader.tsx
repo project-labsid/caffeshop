@@ -69,7 +69,7 @@ const sampleNotifications: NotificationItem[] = [
     time: '15 menit lalu',
     type: 'success',
     read: false,
-    icon: <ShoppingCart className="w-4 h-4 text-emerald-500" />,
+    icon: <ShoppingCart className="w-4 h-4 text-[#e9c349]" />,
   },
   {
     id: '3',
@@ -93,8 +93,8 @@ const sampleNotifications: NotificationItem[] = [
 
 const typeStyles: Record<string, string> = {
   warning: 'bg-amber-50 dark:bg-amber-950/30',
-  success: 'bg-emerald-50 dark:bg-emerald-950/30',
-  info: 'bg-blue-50 dark:bg-blue-950/30',
+  success: 'bg-[#ffe088]/30 dark:bg-[#2c1810]/30',
+  info: 'bg-[#ffe088]/20 dark:bg-[#2c1810]/20',
 };
 
 interface AppHeaderProps {
@@ -193,7 +193,7 @@ export default function AppHeader({ onOpenProfile }: AppHeaderProps) {
             >
               <Bell className="w-[18px] h-[18px] sm:w-5 sm:h-5" />
               {unreadCount > 0 && (
-                <Badge className="absolute -top-0.5 -right-0.5 h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center p-0 text-[9px] sm:text-[10px] bg-emerald-600 border-0 rounded-full">
+                <Badge className="absolute -top-0.5 -right-0.5 h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center p-0 text-[9px] sm:text-[10px] bg-[#e9c349] text-[#2c1810] border-0 rounded-full">
                   {unreadCount}
                 </Badge>
               )}
@@ -260,7 +260,7 @@ export default function AppHeader({ onOpenProfile }: AppHeaderProps) {
                               {notif.title}
                             </p>
                             {!notif.read && (
-                              <span className="shrink-0 mt-1.5 w-2 h-2 rounded-full bg-emerald-500" />
+                              <span className="shrink-0 mt-1.5 w-2 h-2 rounded-full bg-[#e9c349]" />
                             )}
                           </div>
                           <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
@@ -313,7 +313,7 @@ export default function AppHeader({ onOpenProfile }: AppHeaderProps) {
             <Button variant="ghost" className="relative h-8 w-8 sm:h-9 sm:w-9 rounded-full p-0">
               <Avatar className="h-7 w-7 sm:h-8 sm:w-8">
                 {user?.avatar && <AvatarImage src={user.avatar} alt={user.name} />}
-                <AvatarFallback className="bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 text-[10px] sm:text-xs font-semibold">
+                <AvatarFallback className="bg-[#ffe088]/40 dark:bg-[#2c1810] text-[#735c00] dark:text-[#e9c349] text-[10px] sm:text-xs font-semibold">
                   {initials}
                 </AvatarFallback>
               </Avatar>
@@ -326,7 +326,7 @@ export default function AppHeader({ onOpenProfile }: AppHeaderProps) {
                 <p className="text-xs text-muted-foreground leading-none mt-1">
                   {user?.email || ''}
                 </p>
-                <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 capitalize">
+                <p className="text-xs text-[#735c00] dark:text-[#e9c349] mt-1 capitalize">
                   {roleLabel}
                 </p>
               </div>

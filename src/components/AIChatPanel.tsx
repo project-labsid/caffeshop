@@ -114,7 +114,7 @@ export default function AIChatPanel() {
       {/* Floating Button */}
       <motion.button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 transition-colors hover:bg-emerald-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/30 transition-colors hover:bg-[#4a2c20] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.95 }}
         animate={{}}
@@ -127,7 +127,7 @@ export default function AIChatPanel() {
             repeat: Infinity,
             ease: "easeInOut",
           }}
-          className="absolute inset-0 rounded-full bg-emerald-600"
+          className="absolute inset-0 rounded-full bg-primary"
         />
         <Bot className="relative h-6 w-6" />
       </motion.button>
@@ -142,13 +142,13 @@ export default function AIChatPanel() {
           <SheetHeader className="border-b px-4 py-3">
             <SheetTitle className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white">
                   <Bot className="h-4 w-4" />
                 </div>
                 <span className="text-base font-semibold">AI Assistant</span>
                 <Badge
                   variant="secondary"
-                  className="gap-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                  className="gap-1 bg-[#ffe088]/20 text-[#4a2c20] hover:bg-[#ffe088]/40"
                 >
                   <Sparkles className="h-3 w-3" />
                   Kopi AI
@@ -170,8 +170,8 @@ export default function AIChatPanel() {
             <div ref={scrollViewportRef} className="py-4 space-y-4 overflow-y-auto">
               {messages.length === 0 && (
                 <div className="flex flex-col items-center justify-center gap-3 py-16 text-center text-muted-foreground">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
-                    <Sparkles className="h-6 w-6 text-emerald-600" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#ffe088]/40">
+                    <Sparkles className="h-6 w-6 text-[#735c00]" />
                   </div>
                   <p className="text-sm font-medium">
                     Halo! Saya Kopi AI Assistant
@@ -193,7 +193,7 @@ export default function AIChatPanel() {
                   <div
                     className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
                       msg.role === "user"
-                        ? "rounded-br-sm bg-emerald-600 text-white"
+                        ? "rounded-br-sm bg-primary text-white"
                         : "rounded-bl-sm bg-muted text-foreground"
                     }`}
                     dangerouslySetInnerHTML={
@@ -210,7 +210,7 @@ export default function AIChatPanel() {
               {loading && (
                 <div className="flex justify-start">
                   <div className="rounded-2xl rounded-bl-sm bg-muted px-4 py-3">
-                    <Loader2 className="h-4 w-4 animate-spin text-emerald-600" />
+                    <Loader2 className="h-4 w-4 animate-spin text-[#735c00]" />
                   </div>
                 </div>
               )}
@@ -225,7 +225,7 @@ export default function AIChatPanel() {
                   key={action.label}
                   variant="outline"
                   size="sm"
-                  className="gap-1.5 text-xs hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700"
+                  className="gap-1.5 text-xs hover:border-[#ffe088] hover:bg-[#ffe088]/20 hover:text-[#2c1810]"
                   onClick={() => sendMessage(action.prompt)}
                   disabled={loading}
                 >
@@ -257,7 +257,7 @@ export default function AIChatPanel() {
                 type="submit"
                 size="icon"
                 disabled={!input.trim() || loading}
-                className="bg-emerald-600 text-white hover:bg-emerald-700"
+                className="bg-primary text-white hover:bg-[#4a2c20]"
               >
                 {loading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />

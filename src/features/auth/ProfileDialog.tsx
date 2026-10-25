@@ -160,7 +160,7 @@ export default function ProfileDialog({ open, onOpenChange }: ProfileDialogProps
         <div className="flex items-center gap-4">
           <Avatar className="w-14 h-14">
             {user?.avatar && <AvatarImage src={user.avatar} alt={user.name} />}
-            <AvatarFallback className="bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 font-semibold">
+            <AvatarFallback className="bg-[#ffe088]/40 dark:bg-[#2c1810] text-[#4a2c20] dark:text-[#ffe088] font-semibold">
               {initials}
             </AvatarFallback>
           </Avatar>
@@ -254,7 +254,7 @@ export default function ProfileDialog({ open, onOpenChange }: ProfileDialogProps
                 </Button>
                 <Button
                   type="submit"
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="bg-primary hover:bg-[#4a2c20] text-white"
                   disabled={savingProfile}
                 >
                   {savingProfile ? (
@@ -337,7 +337,7 @@ export default function ProfileDialog({ open, onOpenChange }: ProfileDialogProps
                 </Button>
                 <Button
                   type="submit"
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="bg-primary hover:bg-[#4a2c20] text-white"
                   disabled={savingPassword}
                 >
                   {savingPassword ? (

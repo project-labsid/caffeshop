@@ -132,13 +132,13 @@ export default function MobileNav() {
                 className={cn(
                   'flex flex-col items-center justify-center gap-0.5 flex-1 h-full relative',
                   'transition-colors duration-150',
-                  isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground'
+                  isActive ? 'text-primary dark:text-[#e9c349]' : 'text-muted-foreground'
                 )}
               >
                 {isActive && (
                   <motion.div
                     layoutId="mobile-nav-indicator"
-                    className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-emerald-600 dark:bg-emerald-400 rounded-full"
+                    className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary dark:bg-[#e9c349] rounded-full"
                     transition={{ type: 'spring', stiffness: 350, damping: 30 }}
                   />
                 )}
@@ -184,7 +184,7 @@ export default function MobileNav() {
                             'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
                             'hover:bg-accent',
                             isActive
-                              ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                              ? 'bg-primary text-primary-foreground hover:bg-[#4a2c20]'
                               : 'text-foreground/70'
                           )}
                         >

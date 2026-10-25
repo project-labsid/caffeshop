@@ -119,7 +119,7 @@ const QUICK_CASH_AMOUNTS = [50000, 100000, 200000, 500000];
 // ─── Color palette for product image placeholders ─────────────────────────────
 
 const PRODUCT_COLORS = [
-  'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
+  'bg-[#ffe088]/40 text-[#4a2c20] dark:bg-[#2c1810]/40 dark:text-[#ffe088]',
   'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
   'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300',
   'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300',
@@ -1103,7 +1103,7 @@ export default function POSPage() {
 
           <Button
             size="lg"
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold h-12 text-base"
+            className="w-full bg-primary hover:bg-[#4a2c20] text-white font-semibold h-12 text-base"
             onClick={handleOpenPayment}
           >
             <CircleDollarSign className="size-5" />
@@ -1238,7 +1238,7 @@ export default function POSPage() {
             >
               <Button
                 size="lg"
-                className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg rounded-2xl"
+                className="w-full h-14 bg-primary hover:bg-[#4a2c20] text-white shadow-lg rounded-2xl"
                 onClick={() => setCartSheetOpen(true)}
               >
                 <ShoppingCart className="size-5" />
@@ -1391,7 +1391,7 @@ export default function POSPage() {
                   animate={{ scale: 1, rotate: 0 }}
                   transition={{ type: 'spring', stiffness: 200, damping: 15 }}
                 >
-                  <CheckCircle2 className="size-20 text-emerald-500" />
+                  <CheckCircle2 className="size-20 text-[#735c00]" />
                 </motion.div>
                 <motion.p
                   initial={{ opacity: 0, y: 10 }}
@@ -1561,12 +1561,12 @@ export default function POSPage() {
                 {cashAmount && parseNominal(cashAmount) >= calculations.grandTotal && (
                   <motion.div
                     {...scaleIn}
-                    className="flex items-center justify-between rounded-lg bg-emerald-50 dark:bg-emerald-900/20 p-3"
+                    className="flex items-center justify-between rounded-lg bg-[#ffe088]/20 dark:bg-[#2c1810]/20 p-3"
                   >
-                    <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
+                    <span className="text-sm font-medium text-[#4a2c20] dark:text-[#ffe088]">
                       Kembalian
                     </span>
-                    <span className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
+                    <span className="text-xl font-bold text-[#735c00] dark:text-[#e9c349]">
                       {formatRupiah(
                         parseNominal(cashAmount) - calculations.grandTotal
                       )}
@@ -1786,7 +1786,7 @@ export default function POSPage() {
               Batal
             </Button>
             <Button
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="bg-primary hover:bg-[#4a2c20] text-white"
               onClick={handleProcessPayment}
               disabled={
                 showSuccess ||
@@ -1971,7 +1971,7 @@ export default function POSPage() {
               Cetak
             </Button>
             <Button
-              className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="flex-1 bg-primary hover:bg-[#4a2c20] text-white"
               onClick={() => setReceiptDialogOpen(false)}
             >
               Selesai

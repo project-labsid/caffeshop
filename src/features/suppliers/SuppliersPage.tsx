@@ -127,7 +127,7 @@ const itemVariants = {
 function getStatusBadge(isActive: boolean) {
   if (isActive) {
     return (
-      <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100">
+      <Badge className="bg-[#ffe088]/40 text-[#4a2c20] border-[#e9c349]/40 hover:bg-[#ffe088]/40">
         Aktif
       </Badge>
     );
@@ -545,7 +545,7 @@ export default function SuppliersPage() {
             Kelola daftar supplier toko Anda
           </p>
         </div>
-        <Button onClick={openAddDialog} className="bg-emerald-600 hover:bg-emerald-700">
+        <Button onClick={openAddDialog} className="bg-primary hover:bg-[#4a2c20]">
           <Plus className="size-4" />
           Tambah Supplier
         </Button>
@@ -689,7 +689,7 @@ export default function SuppliersPage() {
               type="button"
               onClick={form.handleSubmit(onSubmitForm)}
               disabled={isMutating}
-              className="bg-emerald-600 hover:bg-emerald-700"
+              className="bg-primary hover:bg-[#4a2c20]"
             >
               {isMutating && <Loader2 className="size-4 animate-spin" />}
               {isMutating ? 'Menyimpan...' : 'Simpan Supplier'}
@@ -716,7 +716,7 @@ export default function SuppliersPage() {
               type="button"
               onClick={form.handleSubmit(onSubmitForm)}
               disabled={isMutating}
-              className="bg-emerald-600 hover:bg-emerald-700"
+              className="bg-primary hover:bg-[#4a2c20]"
             >
               {isMutating && <Loader2 className="size-4 animate-spin" />}
               {isMutating ? 'Menyimpan...' : 'Perbarui Supplier'}
@@ -752,7 +752,7 @@ export default function SuppliersPage() {
             </Button>
             <Button
               type="button"
-              className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+              className="flex-1 bg-primary hover:bg-[#4a2c20]"
               onClick={form.handleSubmit(onSubmitForm)}
               disabled={isMutating}
             >

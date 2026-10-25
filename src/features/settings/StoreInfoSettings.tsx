@@ -129,7 +129,7 @@ export default function StoreInfoSettings({ onBack }: StoreInfoSettingsProps) {
       <Card className="rounded-xl">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Store className="h-5 w-5 text-emerald-600" />
+            <Store className="h-5 w-5 text-[#735c00]" />
             Detail Informasi Toko
           </CardTitle>
           <CardDescription>

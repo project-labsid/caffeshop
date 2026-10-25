@@ -141,7 +141,7 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 const TYPE_COLORS: Record<string, { bg: string; text: string; icon: string; badge: string }> = {
-  cash: { bg: 'bg-emerald-100 dark:bg-emerald-950/40', text: 'text-emerald-600 dark:text-emerald-400', icon: 'text-emerald-500', badge: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400' },
+  cash: { bg: 'bg-[#ffe088]/40 dark:bg-[#2c1810]/40', text: 'text-[#735c00] dark:text-[#e9c349]', icon: 'text-[#735c00]', badge: 'bg-[#ffe088]/40 text-[#4a2c20] dark:bg-[#2c1810]/40 dark:text-[#e9c349]' },
   qris: { bg: 'bg-violet-100 dark:bg-violet-950/40', text: 'text-violet-600 dark:text-violet-400', icon: 'text-violet-500', badge: 'bg-violet-100 text-violet-700 dark:bg-violet-950/40 dark:text-violet-400' },
   transfer: { bg: 'bg-blue-100 dark:bg-blue-950/40', text: 'text-blue-600 dark:text-blue-400', icon: 'text-blue-500', badge: 'bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400' },
   virtual_account: { bg: 'bg-sky-100 dark:bg-sky-950/40', text: 'text-sky-600 dark:text-sky-400', icon: 'text-sky-500', badge: 'bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-400' },
@@ -695,7 +695,7 @@ export default function PaymentMethodSettings() {
                               className={cn(
                                 'text-xs',
                                 isActive
-                                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400'
+                                  ? 'bg-[#ffe088]/40 text-[#4a2c20] dark:bg-[#2c1810]/40 dark:text-[#e9c349]'
                                   : 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400'
                               )}
                             >
@@ -757,7 +757,7 @@ export default function PaymentMethodSettings() {
                             size="sm"
                             className={cn(
                               'h-8 gap-1.5 text-xs',
-                              isActive ? 'text-amber-600 hover:text-amber-700' : 'text-emerald-600 hover:text-emerald-700'
+                              isActive ? 'text-amber-600 hover:text-amber-700' : 'text-[#735c00] hover:text-[#2c1810]'
                             )}
                             onClick={() => toggleStatusMutation.mutate(pm)}
                             disabled={toggleStatusMutation.isPending}

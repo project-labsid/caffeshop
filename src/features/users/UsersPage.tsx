@@ -108,7 +108,7 @@ const roleBadgeStyles: Record<string, string> = {
     'bg-red-100 text-red-700 border-red-200 hover:bg-red-100 dark:bg-red-900/50 dark:text-red-400 dark:border-red-800',
   admin: 'bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100 dark:bg-blue-900/50 dark:text-blue-400 dark:border-blue-800',
   cashier:
-    'bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-900/50 dark:text-emerald-400 dark:border-emerald-800',
+    'bg-[#ffe088]/40 text-[#4a2c20] border-[#e9c349]/40 hover:bg-[#ffe088]/40 dark:bg-[#2c1810]/50 dark:text-[#e9c349] dark:border-[#4a2c20]',
 };
 
 // ─── Form Schema ───────────────────────────────────────────────────────────────
@@ -166,7 +166,7 @@ function getRoleBadge(role: string) {
 function getStatusBadge(isActive: boolean) {
   if (isActive) {
     return (
-      <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100">
+      <Badge className="bg-[#ffe088]/40 text-[#4a2c20] border-[#e9c349]/40 hover:bg-[#ffe088]/40">
         Aktif
       </Badge>
     );
@@ -882,7 +882,7 @@ export default function UsersPage() {
         </div>
         <Button
           onClick={openAddDialog}
-          className="bg-emerald-600 hover:bg-emerald-700"
+          className="bg-primary hover:bg-[#4a2c20]"
         >
           <Plus className="size-4" />
           Tambah Pengguna
@@ -1056,7 +1056,7 @@ export default function UsersPage() {
               type="button"
               onClick={createForm.handleSubmit(onSubmitCreateForm)}
               disabled={isMutating}
-              className="bg-emerald-600 hover:bg-emerald-700"
+              className="bg-primary hover:bg-[#4a2c20]"
             >
               {isMutating && <Loader2 className="size-4 animate-spin" />}
               {isMutating ? 'Menyimpan...' : 'Simpan Pengguna'}
@@ -1090,7 +1090,7 @@ export default function UsersPage() {
               type="button"
               onClick={editForm.handleSubmit(onSubmitEditForm)}
               disabled={isMutating}
-              className="bg-emerald-600 hover:bg-emerald-700"
+              className="bg-primary hover:bg-[#4a2c20]"
             >
               {isMutating && <Loader2 className="size-4 animate-spin" />}
               {isMutating ? 'Menyimpan...' : 'Perbarui Pengguna'}
@@ -1131,7 +1131,7 @@ export default function UsersPage() {
             </Button>
             <Button
               type="button"
-              className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+              className="flex-1 bg-primary hover:bg-[#4a2c20]"
               onClick={() => {
                 if (editingUser) {
                   editForm.handleSubmit(onSubmitEditForm)();

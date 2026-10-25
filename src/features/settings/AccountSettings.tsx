@@ -174,7 +174,7 @@ export default function AccountSettings({ onBack }: AccountSettingsProps) {
       <Card className="rounded-xl">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
-            <User className="h-5 w-5 text-emerald-600" />
+            <User className="h-5 w-5 text-[#735c00]" />
             Informasi Akun
           </CardTitle>
           <CardDescription>
@@ -184,7 +184,7 @@ export default function AccountSettings({ onBack }: AccountSettingsProps) {
         <CardContent>
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
             {/* Avatar placeholder */}
-            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 shrink-0">
+            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-[#ffe088]/40 text-[#4a2c20] dark:bg-[#2c1810]/40 dark:text-[#e9c349] shrink-0">
               <span className="text-2xl font-bold">
                 {user?.name?.charAt(0)?.toUpperCase() || 'U'}
               </span>
@@ -215,10 +215,10 @@ export default function AccountSettings({ onBack }: AccountSettingsProps) {
       </Card>
 
       {/* Account / Coffee Shop Info Card */}
-      <Card className="rounded-xl border-emerald-200 dark:border-emerald-800">
+      <Card className="rounded-xl border-[#e9c349]/40 dark:border-[#4a2c20]">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Coffee className="h-5 w-5 text-emerald-600" />
+            <Coffee className="h-5 w-5 text-[#735c00]" />
             Informasi Coffee Shop
           </CardTitle>
           <CardDescription>
@@ -230,7 +230,7 @@ export default function AccountSettings({ onBack }: AccountSettingsProps) {
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Nama Coffee Shop</p>
               <p className="font-medium flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-emerald-600" />
+                <Building2 className="w-4 h-4 text-[#735c00]" />
                 {user?.account?.name || 'Kasir Kopi Shop'}
               </p>
             </div>
@@ -247,13 +247,13 @@ export default function AccountSettings({ onBack }: AccountSettingsProps) {
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Status</p>
-              <Badge variant="outline" className="bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400">
+              <Badge variant="outline" className="bg-[#ffe088]/20 text-[#4a2c20] dark:bg-[#2c1810]/30 dark:text-[#e9c349]">
                 {user?.account?.isActive !== false ? 'Aktif' : 'Nonaktif'}
               </Badge>
             </div>
           </div>
-          <div className="mt-4 p-3 bg-emerald-50/50 dark:bg-emerald-950/20 rounded-lg border border-emerald-200/50 dark:border-emerald-800/50">
-            <p className="text-xs text-emerald-700 dark:text-emerald-400">
+          <div className="mt-4 p-3 bg-[#ffe088]/50 dark:bg-[#2c1810]/20 rounded-lg border border-[#e9c349]/50 dark:border-[#4a2c20]/50">
+            <p className="text-xs text-[#4a2c20] dark:text-[#e9c349]">
               ☕ Setiap Coffee Shop memiliki data terpisah. Produk, transaksi, dan pelanggan di toko ini tidak terhubung dengan toko lain.
               {user?.role === 'super_admin' && ' Sebagai pemilik toko, Anda dapat menambahkan staf melalui menu Pengguna.'}
             </p>
@@ -265,7 +265,7 @@ export default function AccountSettings({ onBack }: AccountSettingsProps) {
       <Card className="rounded-xl">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
-            <User className="h-5 w-5 text-emerald-600" />
+            <User className="h-5 w-5 text-[#735c00]" />
             Edit Profil
           </CardTitle>
           <CardDescription>
@@ -319,7 +319,7 @@ export default function AccountSettings({ onBack }: AccountSettingsProps) {
       <Card className="rounded-xl">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
-            <KeyRound className="h-5 w-5 text-emerald-600" />
+            <KeyRound className="h-5 w-5 text-[#735c00]" />
             Ubah Password
           </CardTitle>
           <CardDescription>

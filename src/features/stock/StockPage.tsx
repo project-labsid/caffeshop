@@ -93,7 +93,7 @@ function formatDate(dateStr: string): string {
 
 
 const typeConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  in: { label: 'Masuk', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400', icon: <ArrowDownCircle className="h-3.5 w-3.5" /> },
+  in: { label: 'Masuk', color: 'bg-[#ffe088]/40 text-[#4a2c20] dark:bg-[#2c1810]/30 dark:text-[#e9c349]', icon: <ArrowDownCircle className="h-3.5 w-3.5" /> },
   out: { label: 'Keluar', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400', icon: <ArrowUpCircle className="h-3.5 w-3.5" /> },
   adjustment: { label: 'Adjustment', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400', icon: <History className="h-3.5 w-3.5" /> },
   opname: { label: 'Opname', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400', icon: <ClipboardCheck className="h-3.5 w-3.5" /> },
@@ -482,7 +482,7 @@ function StokMasukTab() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <ArrowDownCircle className="h-5 w-5 text-emerald-500" />
+            <ArrowDownCircle className="h-5 w-5 text-[#735c00]" />
             Tambah Stok Masuk
           </CardTitle>
           <CardDescription>
@@ -834,7 +834,7 @@ function StockOpnameTab() {
                         <p className="text-xs text-muted-foreground">Stok Aktual</p>
                         <p className={cn(
                           'text-lg font-mono font-bold',
-                          difference > 0 && 'text-emerald-600',
+                          difference > 0 && 'text-[#735c00]',
                           difference < 0 && 'text-red-600',
                           difference === 0 && 'text-muted-foreground'
                         )}>
@@ -845,7 +845,7 @@ function StockOpnameTab() {
                     {difference !== 0 && (
                       <p className={cn(
                         'mt-2 text-center text-sm font-medium',
-                        difference > 0 && 'text-emerald-600',
+                        difference > 0 && 'text-[#735c00]',
                         difference < 0 && 'text-red-600'
                       )}>
                         {difference > 0 ? `+${difference}` : difference} ({difference > 0 ? 'kelebihan' : 'kekurangan'})

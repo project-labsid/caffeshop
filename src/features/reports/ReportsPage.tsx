@@ -315,8 +315,8 @@ function PenjualanTab() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-emerald-500/10 p-2.5">
-                <DollarSign className="h-5 w-5 text-emerald-600" />
+              <div className="rounded-lg bg-[#735c00]/10 p-2.5">
+                <DollarSign className="h-5 w-5 text-[#735c00]" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total Pendapatan</p>
@@ -732,7 +732,7 @@ function LabaRugiTab() {
             {isLoading ? (
               <Skeleton className="mt-1 h-6 w-28" />
             ) : (
-              <p className="mt-1 text-2xl font-bold text-emerald-600">{formatRupiah(data?.revenue ?? 0)}</p>
+              <p className="mt-1 text-2xl font-bold text-[#735c00]">{formatRupiah(data?.revenue ?? 0)}</p>
             )}
           </CardContent>
         </Card>
@@ -754,7 +754,7 @@ function LabaRugiTab() {
             ) : (
               <p className={cn(
                 'mt-1 text-2xl font-bold',
-                (data?.grossProfit ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-600'
+                (data?.grossProfit ?? 0) >= 0 ? 'text-[#735c00]' : 'text-red-600'
               )}>
                 {formatRupiah(data?.grossProfit ?? 0)}
               </p>
@@ -769,7 +769,7 @@ function LabaRugiTab() {
             ) : (
               <p className={cn(
                 'mt-1 text-2xl font-bold',
-                margin >= 0 ? 'text-emerald-600' : 'text-red-600'
+                margin >= 0 ? 'text-[#735c00]' : 'text-red-600'
               )}>
                 {margin.toFixed(1)}%
               </p>
@@ -1046,7 +1046,7 @@ function StokTab() {
                     } else if (p.stock <= p.minStock) {
                       status = { label: 'Rendah', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' };
                     } else {
-                      status = { label: 'Aman', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' };
+                      status = { label: 'Aman', color: 'bg-[#ffe088]/40 text-[#4a2c20] dark:bg-[#2c1810]/30 dark:text-[#e9c349]' };
                     }
                     return (
                       <TableRow key={p.id || idx}>
@@ -1229,15 +1229,15 @@ function TrafficTab() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-emerald-500/10 p-2.5">
-                <DollarSign className="h-5 w-5 text-emerald-600" />
+              <div className="rounded-lg bg-[#735c00]/10 p-2.5">
+                <DollarSign className="h-5 w-5 text-[#735c00]" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Pendapatan Hari Ini</p>
                 {dailyLoading ? (
                   <Skeleton className="h-6 w-24" />
                 ) : (
-                  <p className="text-lg font-bold text-emerald-600">{formatRupiah(todayTotalRevenue)}</p>
+                  <p className="text-lg font-bold text-[#735c00]">{formatRupiah(todayTotalRevenue)}</p>
                 )}
               </div>
             </div>
@@ -1339,7 +1339,7 @@ function TrafficTab() {
             </div>
             <div className="text-right">
               <p className="text-xs text-muted-foreground">Total Bulan Ini</p>
-              <p className="text-sm font-bold text-emerald-600">{formatRupiah(monthTotalRevenue)}</p>
+              <p className="text-sm font-bold text-[#735c00]">{formatRupiah(monthTotalRevenue)}</p>
             </div>
           </div>
         </CardHeader>

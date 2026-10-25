@@ -224,7 +224,7 @@ export default function AppSidebar() {
                         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                         collapsed ? 'justify-center px-2 py-2.5' : 'px-3 py-2.5',
                         isActive
-                          ? 'bg-emerald-600 text-white hover:bg-emerald-700 hover:text-white shadow-sm'
+                          ? 'bg-primary text-primary-foreground hover:bg-[#4a2c20] hover:text-primary-foreground shadow-warm-sm'
                           : 'text-foreground/70'
                       )}
                       title={collapsed ? item.label : undefined}
@@ -259,7 +259,7 @@ export default function AppSidebar() {
           <div className="flex items-center gap-3 px-2 py-2">
             <Avatar className="w-8 h-8">
               {user.avatar && <AvatarImage src={user.avatar} alt={user.name} />}
-              <AvatarFallback className="bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 text-xs font-semibold">
+              <AvatarFallback className="bg-[#ffe088]/40 dark:bg-[#2c1810] text-[#735c00] dark:text-[#e9c349] text-xs font-semibold">
                 {user.name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -320,7 +320,7 @@ export default function AppSidebar() {
     <motion.aside
       animate={{ width: collapsed ? 68 : 256 }}
       transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-      className="hidden md:flex flex-col h-full border-r bg-background shrink-0 relative overflow-hidden"
+      className="hidden md:flex flex-col h-full border-r bg-sidebar text-sidebar-foreground shrink-0 relative overflow-hidden"
     >
       {/* Collapse toggle */}
       <button

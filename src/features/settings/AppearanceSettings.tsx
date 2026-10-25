@@ -74,7 +74,7 @@ export default function AppearanceSettings({ onBack }: AppearanceSettingsProps) 
       <Card className="rounded-xl">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Palette className="h-5 w-5 text-emerald-600" />
+            <Palette className="h-5 w-5 text-[#735c00]" />
             Tema Aplikasi
           </CardTitle>
           <CardDescription>
@@ -99,7 +99,7 @@ export default function AppearanceSettings({ onBack }: AppearanceSettingsProps) 
                       'relative flex flex-col items-center gap-3 rounded-xl border-2 p-5 transition-all text-center cursor-pointer',
                       'hover:bg-muted/50',
                       isSelected
-                        ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20 shadow-sm'
+                        ? 'border-[#735c00] bg-[#ffe088]/50 dark:bg-[#2c1810]/20 shadow-sm'
                         : 'border-border'
                     )}
                   >
@@ -107,7 +107,7 @@ export default function AppearanceSettings({ onBack }: AppearanceSettingsProps) 
                       className={cn(
                         'flex items-center justify-center w-12 h-12 rounded-xl transition-colors',
                         isSelected
-                          ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300'
+                          ? 'bg-[#ffe088]/40 text-[#4a2c20] dark:bg-[#2c1810]/60 dark:text-[#ffe088]'
                           : 'bg-muted text-muted-foreground'
                       )}
                     >
@@ -121,7 +121,7 @@ export default function AppearanceSettings({ onBack }: AppearanceSettingsProps) 
                     </div>
                     {/* Selected indicator */}
                     {isSelected && (
-                      <div className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center">
+                      <div className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-[#735c00] flex items-center justify-center">
                         <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
@@ -149,7 +149,7 @@ export default function AppearanceSettings({ onBack }: AppearanceSettingsProps) 
       <Card className="rounded-xl">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
-            <svg className="h-5 w-5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg className="h-5 w-5 text-[#735c00]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10" />
               <path d="M2 12h20" />
               <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
@@ -167,17 +167,17 @@ export default function AppearanceSettings({ onBack }: AppearanceSettingsProps) 
               className={cn(
                 'relative flex-1 flex items-center gap-3 rounded-xl border-2 px-5 py-4 transition-all cursor-pointer',
                 'hover:bg-muted/50',
-                'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20'
+                'border-[#735c00] bg-[#ffe088]/50 dark:bg-[#2c1810]/20'
               )}
             >
-              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300">
+              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#ffe088]/40 text-[#4a2c20] dark:bg-[#2c1810]/60 dark:text-[#ffe088]">
                 <span className="text-lg font-bold">ID</span>
               </div>
               <div className="text-left">
                 <p className="text-sm font-medium">Bahasa Indonesia</p>
                 <p className="text-xs text-muted-foreground">Bahasa utama aplikasi</p>
               </div>
-              <div className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center">
+              <div className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-[#735c00] flex items-center justify-center">
                 <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>

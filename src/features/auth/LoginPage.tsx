@@ -179,10 +179,10 @@ export default function LoginPage() {
         initial={{ opacity: 0, x: -40 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6, ease: 'easeOut' }}
-        className="hidden lg:flex lg:w-1/2 xl:w-[55%] relative overflow-hidden bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900"
+        className="hidden lg:flex lg:w-1/2 xl:w-[55%] relative overflow-hidden bg-gradient-to-br from-[#2c1810] via-[#4a2c20] to-[#0e0b09]"
       >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.1),transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(0,0,0,0.15),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(233,195,73,0.1),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(0,0,0,0.2),transparent_50%)]" />
         <div className="relative z-10 flex flex-col items-center justify-center w-full p-12 text-white">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -193,10 +193,10 @@ export default function LoginPage() {
             <div className="w-20 h-20 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-8 border border-white/20 overflow-hidden">
               <img src="/logo.png" alt="Kasir Kopi Shop" className="w-full h-full object-cover" />
             </div>
-            <h1 className="text-4xl xl:text-5xl font-bold tracking-tight mb-4">
+            <h1 className="text-4xl xl:text-5xl font-bold tracking-tight mb-4 text-[#e9c349]">
               Kasir Kopi Shop
             </h1>
-            <p className="text-emerald-100 text-lg leading-relaxed">
+            <p className="text-[#e3bfb2] text-lg leading-relaxed">
               Sistem Kasir Coffee Shop modern untuk mengelola transaksi, stok, dan laporan bisnis kopi Anda dengan mudah dan efisien.
             </p>
             <div className="mt-12 grid grid-cols-3 gap-6 text-center">
@@ -206,13 +206,13 @@ export default function LoginPage() {
                 { label: 'Laporan', value: 'Lengkap' },
               ].map((item) => (
                 <div key={item.label}>
-                  <div className="text-2xl font-bold text-white">{item.value}</div>
-                  <div className="text-sm text-emerald-200 mt-1">{item.label}</div>
+                  <div className="text-2xl font-bold text-[#e9c349]">{item.value}</div>
+                  <div className="text-sm text-[#9e7e73] mt-1">{item.label}</div>
                 </div>
               ))}
             </div>
             <div className="mt-8 p-4 bg-white/10 rounded-xl border border-white/20">
-              <p className="text-sm text-emerald-100">
+              <p className="text-sm text-[#e3bfb2]">
                 ☕ Buat akun terpisah untuk setiap coffee shop Anda. Data antar toko tidak saling terhubung.
               </p>
             </div>
@@ -221,8 +221,8 @@ export default function LoginPage() {
       </motion.div>
 
       {/* Mobile top gradient section */}
-      <div className="lg:hidden relative h-48 bg-gradient-to-br from-emerald-600 to-emerald-800 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.1),transparent_50%)]" />
+      <div className="lg:hidden relative h-48 bg-gradient-to-br from-[#2c1810] to-[#0e0b09] overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(233,195,73,0.1),transparent_50%)]" />
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -232,8 +232,8 @@ export default function LoginPage() {
           <div className="w-14 h-14 bg-white/15 backdrop-blur-sm rounded-xl flex items-center justify-center mb-3 border border-white/20 overflow-hidden">
             <img src="/logo.png" alt="Kasir Kopi Shop" className="w-full h-full object-cover" />
           </div>
-          <h1 className="text-2xl font-bold">Kasir Kopi Shop</h1>
-          <p className="text-emerald-100 text-sm mt-1">Coffee Shop POS</p>
+          <h1 className="text-2xl font-bold text-[#e9c349]">Kasir Kopi Shop</h1>
+          <p className="text-[#e3bfb2] text-sm mt-1">Coffee Shop POS</p>
         </motion.div>
       </div>
 
@@ -259,10 +259,10 @@ export default function LoginPage() {
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center gap-3 p-3 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 rounded-lg"
+                    className="flex items-center gap-3 p-3 bg-[#ffe088]/30 dark:bg-[#2c1810]/50 border border-[#e9c349]/30 dark:border-[#e9c349]/30 rounded-lg"
                   >
-                    <Shield className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                    <p className="text-sm text-emerald-700 dark:text-emerald-300">
+                    <Shield className="w-5 h-5 text-[#735c00] dark:text-[#e9c349] shrink-0" />
+                    <p className="text-sm text-[#735c00] dark:text-[#ffe088]">
                       Pertama kali menggunakan sistem? Silakan buat akun Coffee Shop terlebih dahulu.
                     </p>
                   </motion.div>
@@ -342,7 +342,7 @@ export default function LoginPage() {
 
                     <Button
                       type="submit"
-                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white h-11 text-base font-semibold"
+                      className="w-full bg-[#2c1810] hover:bg-[#4a2c20] text-white h-11 text-base font-semibold shadow-warm-md"
                       disabled={isLoading}
                     >
                       {isLoading ? (
@@ -361,7 +361,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowRegister(true)}
-                    className="text-sm text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 font-medium transition-colors"
+                    className="text-sm text-[#735c00] hover:text-[#2c1810] dark:text-[#e9c349] dark:hover:text-[#ffe088] font-medium transition-colors"
                   >
                     ☕ Buat Akun Coffee Shop Baru
                   </button>
@@ -379,8 +379,8 @@ export default function LoginPage() {
                 <Form {...registerForm}>
                   <form onSubmit={registerForm.handleSubmit(onRegister)} className="space-y-4">
                     {/* Account Info Section */}
-                    <div className="space-y-4 p-4 bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-800/50 rounded-xl">
-                      <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
+                    <div className="space-y-4 p-4 bg-[#ffe088]/20 dark:bg-[#2c1810]/30 border border-[#e9c349]/30 dark:border-[#e9c349]/30 rounded-xl">
+                      <div className="flex items-center gap-2 text-[#735c00] dark:text-[#e9c349]">
                         <Store className="w-4 h-4" />
                         <span className="text-sm font-semibold">Informasi Coffee Shop</span>
                       </div>
@@ -513,7 +513,7 @@ export default function LoginPage() {
 
                     <Button
                       type="submit"
-                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white h-11 text-base font-semibold"
+                      className="w-full bg-[#2c1810] hover:bg-[#4a2c20] text-white h-11 text-base font-semibold shadow-warm-md"
                       disabled={isLoading}
                     >
                       {isLoading ? (

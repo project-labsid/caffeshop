@@ -112,7 +112,7 @@ function getStockColor(stock: number, minStock: number): string {
 function getStatusBadge(isActive: boolean) {
   if (isActive) {
     return (
-      <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100">
+      <Badge className="bg-[#ffe088]/40 text-[#4a2c20] border-[#e9c349]/40 hover:bg-[#ffe088]/40">
         Aktif
       </Badge>
     );
@@ -134,7 +134,7 @@ function getInitials(name: string): string {
 }
 
 const COLOR_PALETTE = [
-  'bg-emerald-500',
+  'bg-[#735c00]',
   'bg-violet-500',
   'bg-amber-500',
   'bg-rose-500',
@@ -921,7 +921,7 @@ export default function ProductsPage() {
             Kelola daftar produk toko Anda
           </p>
         </div>
-        <Button onClick={openAddDialog} className="bg-emerald-600 hover:bg-emerald-700">
+        <Button onClick={openAddDialog} className="bg-primary hover:bg-[#4a2c20]">
           <Plus className="size-4" />
           <span>Tambah Produk</span>
         </Button>
@@ -1124,7 +1124,7 @@ export default function ProductsPage() {
               type="button"
               onClick={form.handleSubmit(onSubmitForm)}
               disabled={isMutating}
-              className="bg-emerald-600 hover:bg-emerald-700"
+              className="bg-primary hover:bg-[#4a2c20]"
             >
               {isMutating && <Loader2 className="size-4 animate-spin" />}
               {isMutating ? 'Menyimpan...' : 'Simpan Produk'}
@@ -1155,7 +1155,7 @@ export default function ProductsPage() {
               type="button"
               onClick={form.handleSubmit(onSubmitForm)}
               disabled={isMutating}
-              className="bg-emerald-600 hover:bg-emerald-700"
+              className="bg-primary hover:bg-[#4a2c20]"
             >
               {isMutating && <Loader2 className="size-4 animate-spin" />}
               {isMutating ? 'Menyimpan...' : 'Perbarui Produk'}
@@ -1191,7 +1191,7 @@ export default function ProductsPage() {
             </Button>
             <Button
               type="button"
-              className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+              className="flex-1 bg-primary hover:bg-[#4a2c20]"
               onClick={form.handleSubmit(onSubmitForm)}
               disabled={isMutating}
             >

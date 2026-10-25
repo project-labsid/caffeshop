@@ -102,7 +102,7 @@ function getStatusBadge(status: string) {
   switch (status) {
     case 'completed':
       return (
-        <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100">
+        <Badge className="bg-[#ffe088]/40 text-[#4a2c20] border-[#e9c349]/40 hover:bg-[#ffe088]/40">
           Selesai
         </Badge>
       );
@@ -351,7 +351,7 @@ export default function TransactionsPage() {
           <Button
             variant="ghost"
             size="sm"
-            className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+            className="text-[#735c00] hover:text-[#2c1810] hover:bg-[#ffe088]/20"
             onClick={(e) => {
               e.stopPropagation();
               openDetail(row.original.id);
@@ -539,7 +539,7 @@ export default function TransactionsPage() {
         <Button
           variant={hasActiveFilters ? 'default' : 'outline'}
           onClick={() => setFiltersOpen((v) => !v)}
-          className={hasActiveFilters ? 'bg-emerald-600 hover:bg-emerald-700' : ''}
+          className={hasActiveFilters ? 'bg-primary hover:bg-[#4a2c20]' : ''}
         >
           <Filter className="size-4" />
           Filter

@@ -107,8 +107,8 @@ const USAGE_METRICS = [
     current: 165,
     limit: 200,
     unit: '',
-    color: 'text-emerald-600 dark:text-emerald-400',
-    barColor: '[&>div]:bg-emerald-500',
+    color: 'text-[#735c00] dark:text-[#e9c349]',
+    barColor: '[&>div]:bg-[#735c00]',
   },
   {
     label: 'Cabang',
@@ -253,7 +253,7 @@ const cardHover = {
 function getUsageColor(percent: number): string {
   if (percent >= 90) return '[&>div]:bg-red-500';
   if (percent >= 75) return '[&>div]:bg-amber-500';
-  return '[&>div]:bg-emerald-500';
+  return '[&>div]:bg-[#735c00]';
 }
 
 // ─── Component ──────────────────────────────────────────────────────────────
@@ -306,18 +306,18 @@ export default function SubscriptionSettings({ onBack }: SubscriptionSettingsPro
 
       {/* ─── Section 1: Current Plan Card ────────────────────────── */}
       <motion.div variants={item}>
-        <Card className="rounded-2xl border-0 shadow-md overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-teal-50 dark:from-emerald-950/30 dark:via-card dark:to-teal-950/20">
+        <Card className="rounded-2xl border-0 shadow-md overflow-hidden bg-gradient-to-br from-[#2c1810] via-white to-teal-50 dark:from-[#2c1810]/30 dark:via-card dark:to-teal-950/20">
           <CardContent className="p-6 sm:p-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
               <div className="flex items-start gap-4">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 dark:bg-emerald-900/50">
-                  <Gem className="h-7 w-7 text-emerald-600 dark:text-emerald-400" />
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#ffe088]/40 dark:bg-[#2c1810]/50">
+                  <Gem className="h-7 w-7 text-[#735c00] dark:text-[#e9c349]" />
                 </div>
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center gap-2">
                     <h2 className="text-xl font-bold">Paket {CURRENT_PLAN.name}</h2>
-                    <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/50 dark:text-emerald-400 border-0">
-                      <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <Badge className="bg-[#ffe088]/40 text-[#4a2c20] hover:bg-[#ffe088]/40 dark:bg-[#2c1810]/50 dark:text-[#e9c349] border-0">
+                      <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-[#735c00] animate-pulse" />
                       {CURRENT_PLAN.status}
                     </Badge>
                   </div>
@@ -336,7 +336,7 @@ export default function SubscriptionSettings({ onBack }: SubscriptionSettingsPro
               <div className="flex flex-col sm:items-end gap-2">
                 <Button
                   onClick={() => handleUpgrade(PRICING_PLANS[1])}
-                  className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-xl px-6 shadow-lg shadow-emerald-500/25"
+                  className="bg-gradient-to-r from-[#2c1810] to-teal-500 hover:from-[#2c1810] hover:to-teal-600 text-white rounded-xl px-6 shadow-lg shadow-[#735c00]/25"
                 >
                   <Zap className="mr-2 h-4 w-4" />
                   Upgrade ke Pro
@@ -438,18 +438,18 @@ export default function SubscriptionSettings({ onBack }: SubscriptionSettingsPro
                   className={`
                     rounded-2xl relative overflow-hidden transition-all duration-300
                     ${plan.highlighted
-                      ? 'border-2 border-emerald-500 dark:border-emerald-400 shadow-lg shadow-emerald-500/10'
+                      ? 'border-2 border-[#735c00] dark:border-[#e9c349] shadow-lg shadow-[#735c00]/10'
                       : plan.premium
                         ? 'border-2 border-amber-300 dark:border-amber-600/50 shadow-lg shadow-amber-500/10'
                         : 'border shadow-sm hover:shadow-md'
                     }
-                    ${isCurrentPlan ? 'ring-1 ring-emerald-500/20' : ''}
+                    ${isCurrentPlan ? 'ring-1 ring-primary/20' : ''}
                   `}
                 >
                   {/* Badge */}
                   {plan.badge && (
                     <div className="absolute top-0 right-0">
-                      <div className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[11px] font-bold px-4 py-1.5 rounded-bl-xl">
+                      <div className="bg-gradient-to-r from-[#2c1810] to-teal-500 text-white text-[11px] font-bold px-4 py-1.5 rounded-bl-xl">
                         {plan.badge}
                       </div>
                     </div>
@@ -467,7 +467,7 @@ export default function SubscriptionSettings({ onBack }: SubscriptionSettingsPro
                       <div className={
                         `flex h-11 w-11 items-center justify-center rounded-xl
                         ${plan.highlighted
-                          ? 'bg-emerald-100 dark:bg-emerald-900/50'
+                          ? 'bg-[#ffe088]/40 dark:bg-[#2c1810]/50'
                           : plan.premium
                             ? 'bg-amber-100 dark:bg-amber-900/50'
                             : 'bg-muted'
@@ -476,7 +476,7 @@ export default function SubscriptionSettings({ onBack }: SubscriptionSettingsPro
                         <Icon className={
                           `h-5 w-5
                           ${plan.highlighted
-                            ? 'text-emerald-600 dark:text-emerald-400'
+                            ? 'text-[#735c00] dark:text-[#e9c349]'
                             : plan.premium
                               ? 'text-amber-600 dark:text-amber-400'
                               : 'text-muted-foreground'
@@ -535,15 +535,15 @@ export default function SubscriptionSettings({ onBack }: SubscriptionSettingsPro
                                 `flex h-5 w-5 shrink-0 items-center justify-center rounded-full mt-0.5
                                 ${feature.included
                                   ? plan.highlighted
-                                    ? 'bg-emerald-100 dark:bg-emerald-900/50'
+                                    ? 'bg-[#ffe088]/40 dark:bg-[#2c1810]/50'
                                     : plan.premium
                                       ? 'bg-amber-100 dark:bg-amber-900/50'
-                                      : 'bg-emerald-100 dark:bg-emerald-900/50'
+                                      : 'bg-[#ffe088]/40 dark:bg-[#2c1810]/50'
                                   : 'bg-red-100 dark:bg-red-900/50'
                                 }`
                               }>
                                 {feature.included ? (
-                                  <Check className={`h-3 w-3 ${plan.highlighted ? 'text-emerald-600 dark:text-emerald-400' : plan.premium ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`} />
+                                  <Check className={`h-3 w-3 ${plan.highlighted ? 'text-[#735c00] dark:text-[#e9c349]' : plan.premium ? 'text-amber-600 dark:text-amber-400' : 'text-[#735c00] dark:text-[#e9c349]'}`} />
                                 ) : (
                                   <X className="h-3 w-3 text-red-500" />
                                 )}
@@ -569,7 +569,7 @@ export default function SubscriptionSettings({ onBack }: SubscriptionSettingsPro
                         ${isCurrentPlan
                           ? 'bg-muted text-muted-foreground cursor-default hover:bg-muted'
                           : plan.highlighted
-                            ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-lg shadow-emerald-500/25'
+                            ? 'bg-gradient-to-r from-[#2c1810] to-teal-500 hover:from-[#2c1810] hover:to-teal-600 text-white shadow-lg shadow-[#735c00]/25'
                             : plan.premium
                               ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg shadow-amber-500/25'
                               : 'bg-primary hover:bg-primary/90 text-primary-foreground'
@@ -615,14 +615,14 @@ export default function SubscriptionSettings({ onBack }: SubscriptionSettingsPro
                     <div className={
                       `flex h-12 w-12 items-center justify-center rounded-xl
                       ${selectedPlan.highlighted
-                        ? 'bg-emerald-100 dark:bg-emerald-900/50'
+                        ? 'bg-[#ffe088]/40 dark:bg-[#2c1810]/50'
                         : 'bg-amber-100 dark:bg-amber-900/50'
                       }`
                     }>
                       <selectedPlan.icon className={
                         `h-6 w-6
                         ${selectedPlan.highlighted
-                          ? 'text-emerald-600 dark:text-emerald-400'
+                          ? 'text-[#735c00] dark:text-[#e9c349]'
                           : 'text-amber-600 dark:text-amber-400'
                         }`
                       } />
@@ -670,7 +670,7 @@ export default function SubscriptionSettings({ onBack }: SubscriptionSettingsPro
                     className={
                       `rounded-xl flex-1
                       ${selectedPlan.highlighted
-                        ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-lg shadow-emerald-500/25'
+                        ? 'bg-gradient-to-r from-[#2c1810] to-teal-500 hover:from-[#2c1810] hover:to-teal-600 text-white shadow-lg shadow-[#735c00]/25'
                         : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg shadow-amber-500/25'
                       }`
                     }

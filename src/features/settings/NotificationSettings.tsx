@@ -201,10 +201,10 @@ export default function NotificationSettings({ onBack }: NotificationSettingsPro
       </div>
 
       {/* Description Card */}
-      <Card className="rounded-xl border-emerald-200 bg-emerald-50/50 dark:border-emerald-900 dark:bg-emerald-950/20">
+      <Card className="rounded-xl border-[#e9c349]/40 bg-[#ffe088]/50 dark:border-[#2c1810] dark:bg-[#2c1810]/20">
         <CardContent className="p-4 sm:p-5">
           <div className="flex items-start gap-3">
-            <Bell className="h-5 w-5 text-emerald-600 mt-0.5 shrink-0" />
+            <Bell className="h-5 w-5 text-[#735c00] mt-0.5 shrink-0" />
             <p className="text-sm text-muted-foreground">
               Aktifkan atau nonaktifkan notifikasi sesuai kebutuhan Anda. Notifikasi yang dipilih akan dikirim secara real-time saat peristiwa terjadi.
             </p>
@@ -216,7 +216,7 @@ export default function NotificationSettings({ onBack }: NotificationSettingsPro
       <Card className="rounded-xl">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Bell className="h-5 w-5 text-emerald-600" />
+            <Bell className="h-5 w-5 text-[#735c00]" />
             Preferensi Notifikasi
           </CardTitle>
           <CardDescription>
@@ -244,7 +244,7 @@ export default function NotificationSettings({ onBack }: NotificationSettingsPro
                   <div key={item.key}>
                     <div className="flex items-center justify-between py-3">
                       <div className="flex items-start gap-3 flex-1 min-w-0">
-                        <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 shrink-0 mt-0.5">
+                        <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-[#ffe088]/40 text-[#4a2c20] dark:bg-[#2c1810]/40 dark:text-[#e9c349] shrink-0 mt-0.5">
                           <Icon className="h-4 w-4" />
                         </div>
                         <div className="min-w-0">

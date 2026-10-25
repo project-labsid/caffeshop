@@ -47,7 +47,7 @@ interface AIAssistantSettingsProps {
 
 const MOCK_STATUS = {
   isActive: true,
-  provider: 'AI Cloud Dkriuk',
+  provider: 'AI Cloud Kasir Kopi',
   model: 'GPT-5',
   mode: 'Cloud AI',
   plan: 'Starter',
@@ -153,20 +153,20 @@ export default function AIAssistantSettings({ onBack }: AIAssistantSettingsProps
     >
       {/* ── AI Status Dashboard ──────────────────────────────────────── */}
       <motion.div variants={item}>
-        <Card className="rounded-2xl border-0 shadow-sm bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/20 overflow-hidden relative">
+        <Card className="rounded-2xl border-0 shadow-sm bg-gradient-to-br from-[#2c1810] to-teal-50 dark:from-[#2c1810]/30 dark:to-teal-950/20 overflow-hidden relative">
           {/* Decorative glow */}
-          <div className="absolute -top-20 -right-20 h-40 w-40 rounded-full bg-emerald-400/10 dark:bg-emerald-400/5 blur-3xl pointer-events-none" />
+          <div className="absolute -top-20 -right-20 h-40 w-40 rounded-full bg-[#e9c349]/10 dark:bg-[#e9c349]/5 blur-3xl pointer-events-none" />
           <CardContent className="p-5 sm:p-6 relative">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               {/* Left: Status info */}
               <div className="flex items-start gap-4">
                 <div className="relative mt-0.5">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500 shadow-lg shadow-emerald-500/20">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#735c00] shadow-lg shadow-[#735c00]/20">
                     <Brain className="h-6 w-6 text-white" />
                   </div>
                   <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex h-4 w-4 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-background" />
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#e9c349] opacity-75" />
+                    <span className="relative inline-flex h-4 w-4 rounded-full bg-[#735c00] ring-2 ring-white dark:ring-background" />
                   </span>
                 </div>
 
@@ -177,7 +177,7 @@ export default function AIAssistantSettings({ onBack }: AIAssistantSettingsProps
                     </h3>
                     <Badge
                       variant="secondary"
-                      className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 border-0 text-xs font-medium px-2 py-0.5"
+                      className="bg-[#ffe088]/40 text-[#4a2c20] dark:bg-[#2c1810]/50 dark:text-[#ffe088] border-0 text-xs font-medium px-2 py-0.5"
                     >
                       Active
                     </Badge>
@@ -185,15 +185,15 @@ export default function AIAssistantSettings({ onBack }: AIAssistantSettingsProps
 
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1.5">
-                      <Zap className="h-3.5 w-3.5 text-emerald-500" />
+                      <Zap className="h-3.5 w-3.5 text-[#735c00]" />
                       {MOCK_STATUS.provider}
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <Bot className="h-3.5 w-3.5 text-emerald-500" />
+                      <Bot className="h-3.5 w-3.5 text-[#735c00]" />
                       {MOCK_STATUS.model}
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <Sparkles className="h-3.5 w-3.5 text-emerald-500" />
+                      <Sparkles className="h-3.5 w-3.5 text-[#735c00]" />
                       {MOCK_STATUS.mode}
                     </span>
                   </div>
@@ -225,15 +225,15 @@ export default function AIAssistantSettings({ onBack }: AIAssistantSettingsProps
           <Card className="rounded-2xl border-0 shadow-sm">
             <CardContent className="p-5 sm:p-6">
               <div className="flex items-center gap-2 mb-4">
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/40">
-                  <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#ffe088]/40 dark:bg-[#2c1810]/40">
+                  <Sparkles className="h-4 w-4 text-[#735c00] dark:text-[#e9c349]" />
                 </div>
                 <h3 className="text-sm font-semibold text-foreground">
                   Fitur AI Tersedia
                 </h3>
                 <Badge
                   variant="secondary"
-                  className="ml-auto bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 border-0 text-xs"
+                  className="ml-auto bg-[#ffe088]/40 text-[#4a2c20] dark:bg-[#2c1810]/50 dark:text-[#ffe088] border-0 text-xs"
                 >
                   {AI_FEATURES.filter((f) => f.enabled).length}/{AI_FEATURES.length} Aktif
                 </Badge>
@@ -255,12 +255,12 @@ export default function AIAssistantSettings({ onBack }: AIAssistantSettingsProps
                     <div
                       className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors ${
                         feature.enabled
-                          ? 'bg-emerald-100 dark:bg-emerald-900/40'
+                          ? 'bg-[#ffe088]/40 dark:bg-[#2c1810]/40'
                           : 'bg-muted'
                       }`}
                     >
                       {feature.enabled ? (
-                        <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                        <Check className="h-3.5 w-3.5 text-[#735c00] dark:text-[#e9c349]" />
                       ) : (
                         <feature.icon className="h-3.5 w-3.5 text-muted-foreground" />
                       )}
@@ -283,8 +283,8 @@ export default function AIAssistantSettings({ onBack }: AIAssistantSettingsProps
           <Card className="rounded-2xl border-0 shadow-sm">
             <CardContent className="p-5 sm:p-6">
               <div className="flex items-center gap-2 mb-5">
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/40">
-                  <BarChart3 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#ffe088]/40 dark:bg-[#2c1810]/40">
+                  <BarChart3 className="h-4 w-4 text-[#735c00] dark:text-[#e9c349]" />
                 </div>
                 <h3 className="text-sm font-semibold text-foreground">
                   Penggunaan AI
@@ -304,7 +304,7 @@ export default function AIAssistantSettings({ onBack }: AIAssistantSettingsProps
                           ? 'text-red-600 dark:text-red-400'
                           : isQuotaLow
                             ? 'text-amber-600 dark:text-amber-400'
-                            : 'text-emerald-600 dark:text-emerald-400'
+                            : 'text-[#735c00] dark:text-[#e9c349]'
                       }`}
                     >
                       {MOCK_USAGE.chatToday}/{MOCK_USAGE.chatTodayLimit}
@@ -318,7 +318,7 @@ export default function AIAssistantSettings({ onBack }: AIAssistantSettingsProps
                           ? '[&>div]:bg-red-500 [&>div]:shadow-red-500/30 [&>div]:shadow-sm'
                           : isQuotaLow
                             ? '[&>div]:bg-amber-500 [&>div]:shadow-amber-500/30 [&>div]:shadow-sm'
-                            : '[&>div]:bg-emerald-500 [&>div]:shadow-emerald-500/30 [&>div]:shadow-sm'
+                            : '[&>div]:bg-[#735c00] [&>div]:shadow-[#735c00]/30 [&>div]:shadow-sm'
                       } [&>div]:rounded-full`}
                     />
                   </div>
@@ -346,7 +346,7 @@ export default function AIAssistantSettings({ onBack }: AIAssistantSettingsProps
                   <div className="flex items-center gap-2">
                     <Badge
                       variant="secondary"
-                      className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 border-0 text-xs font-medium"
+                      className="bg-[#ffe088]/40 text-[#4a2c20] dark:bg-[#2c1810]/50 dark:text-[#ffe088] border-0 text-xs font-medium"
                     >
                       Normal
                     </Badge>
@@ -424,7 +424,7 @@ export default function AIAssistantSettings({ onBack }: AIAssistantSettingsProps
         </Button>
 
         <Button
-          className="rounded-2xl flex-1 h-11 text-sm font-medium bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg shadow-emerald-500/20 transition-all hover:shadow-xl hover:shadow-emerald-500/30"
+          className="rounded-2xl flex-1 h-11 text-sm font-medium bg-gradient-to-r from-[#2c1810] to-teal-600 hover:from-[#2c1810] hover:to-teal-700 text-white shadow-lg shadow-[#735c00]/20 transition-all hover:shadow-xl hover:shadow-[#735c00]/30"
           onClick={() => setShowQuotaDialog(true)}
         >
           <Crown className="mr-2 h-4 w-4" />
@@ -437,7 +437,7 @@ export default function AIAssistantSettings({ onBack }: AIAssistantSettingsProps
       <Dialog open={showQuotaDialog} onOpenChange={setShowQuotaDialog}>
         <DialogContent className="rounded-2xl sm:max-w-md">
           <DialogHeader>
-            <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 shadow-lg shadow-emerald-500/25">
+            <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#2c1810] to-teal-500 shadow-lg shadow-[#735c00]/25">
               <Crown className="h-7 w-7 text-white" />
             </div>
             <DialogTitle className="text-center text-lg">
@@ -452,12 +452,12 @@ export default function AIAssistantSettings({ onBack }: AIAssistantSettingsProps
 
           <div className="space-y-3 py-2">
             {/* Pro Plan Card */}
-            <div className="rounded-xl border-2 border-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-950/20 p-4 space-y-2">
+            <div className="rounded-xl border-2 border-[#735c00]/30 bg-[#ffe088]/50 dark:bg-[#2c1810]/20 p-4 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="font-semibold text-sm text-foreground">
                   Pro Plan
                 </span>
-                <Badge className="bg-emerald-500 text-white border-0 text-xs">
+                <Badge className="bg-[#735c00] text-white border-0 text-xs">
                   Populer
                 </Badge>
               </div>
@@ -469,13 +469,13 @@ export default function AIAssistantSettings({ onBack }: AIAssistantSettingsProps
               </p>
               <div className="flex flex-wrap gap-2 pt-1">
                 <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                  <Check className="h-3 w-3 text-emerald-500" /> 50 chat/hari
+                  <Check className="h-3 w-3 text-[#735c00]" /> 50 chat/hari
                 </span>
                 <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                  <Check className="h-3 w-3 text-emerald-500" /> Semua fitur AI
+                  <Check className="h-3 w-3 text-[#735c00]" /> Semua fitur AI
                 </span>
                 <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                  <Check className="h-3 w-3 text-emerald-500" /> Prioritas respons
+                  <Check className="h-3 w-3 text-[#735c00]" /> Prioritas respons
                 </span>
               </div>
             </div>
@@ -498,13 +498,13 @@ export default function AIAssistantSettings({ onBack }: AIAssistantSettingsProps
               </p>
               <div className="flex flex-wrap gap-2 pt-1">
                 <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                  <Check className="h-3 w-3 text-emerald-500" /> Unlimited chat
+                  <Check className="h-3 w-3 text-[#735c00]" /> Unlimited chat
                 </span>
                 <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                  <Check className="h-3 w-3 text-emerald-500" /> AI khusus
+                  <Check className="h-3 w-3 text-[#735c00]" /> AI khusus
                 </span>
                 <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                  <Check className="h-3 w-3 text-emerald-500" /> Support 24/7
+                  <Check className="h-3 w-3 text-[#735c00]" /> Support 24/7
                 </span>
               </div>
             </div>
@@ -512,7 +512,7 @@ export default function AIAssistantSettings({ onBack }: AIAssistantSettingsProps
 
           <DialogFooter className="flex-col gap-2 sm:flex-col">
             <Button
-              className="w-full rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg shadow-emerald-500/20"
+              className="w-full rounded-xl bg-gradient-to-r from-[#2c1810] to-teal-600 hover:from-[#2c1810] hover:to-teal-700 text-white shadow-lg shadow-[#735c00]/20"
               onClick={() => setShowQuotaDialog(false)}
             >
               <Crown className="mr-2 h-4 w-4" />

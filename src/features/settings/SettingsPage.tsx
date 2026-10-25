@@ -211,7 +211,7 @@ export default function SettingsPage() {
                     'group cursor-pointer hover:shadow-md transition-all duration-200',
                     item.id === 'reset-data'
                       ? 'hover:border-red-200 dark:hover:border-red-800'
-                      : 'hover:border-emerald-200 dark:hover:border-emerald-800'
+                      : 'hover:border-[#e9c349]/40 dark:hover:border-[#4a2c20]'
                   )}
                   onClick={() => setSubPage(item.id)}
                 >
@@ -221,7 +221,7 @@ export default function SettingsPage() {
                         'shrink-0 w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-colors',
                         item.id === 'reset-data'
                           ? 'bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 group-hover:bg-red-100 dark:group-hover:bg-red-950/70'
-                          : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-950/70'
+                          : 'bg-[#ffe088]/20 dark:bg-[#2c1810]/40 text-[#735c00] dark:text-[#e9c349] group-hover:bg-[#ffe088]/40 dark:group-hover:bg-[#2c1810]/70'
                       )}
                     >
                       {item.icon}
@@ -348,7 +348,7 @@ function TaxSettingsInline({ onBack }: { onBack: () => void }) {
           </div>
           <div
             className={`w-11 h-6 rounded-full relative cursor-pointer transition-colors ${
-              taxEnabled ? 'bg-emerald-600' : 'bg-muted'
+              taxEnabled ? 'bg-primary' : 'bg-muted'
             }`}
             onClick={() => setTaxEnabled(!taxEnabled)}
           >
@@ -382,7 +382,7 @@ function TaxSettingsInline({ onBack }: { onBack: () => void }) {
                       onClick={() => setTaxMode(mode as 'include' | 'exclude')}
                       className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium border transition-colors ${
                         taxMode === mode
-                          ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400'
+                          ? 'border-[#735c00] bg-[#ffe088]/20 text-[#4a2c20] dark:bg-[#2c1810]/30 dark:text-[#e9c349]'
                           : 'border-border hover:bg-muted'
                       }`}
                     >
@@ -408,7 +408,7 @@ function TaxSettingsInline({ onBack }: { onBack: () => void }) {
           </div>
           <div
             className={`w-11 h-6 rounded-full relative cursor-pointer transition-colors ${
-              scEnabled ? 'bg-emerald-600' : 'bg-muted'
+              scEnabled ? 'bg-primary' : 'bg-muted'
             }`}
             onClick={() => setScEnabled(!scEnabled)}
           >
@@ -439,7 +439,7 @@ function TaxSettingsInline({ onBack }: { onBack: () => void }) {
         <Button
           onClick={handleSave}
           disabled={saveMutation.isPending}
-          className="bg-emerald-600 hover:bg-emerald-700"
+          className="bg-primary hover:bg-[#4a2c20]"
         >
           {saveMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
           <Save className="w-4 h-4 mr-2" />
