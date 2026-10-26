@@ -3,7 +3,7 @@
 -- ============================================================
 -- Run this AFTER the migration files.
 -- Passwords are bcrypt hashed:
---   admin123     -> $2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJt.d4KL0q2
+--   admin123     -> $2b$10$1BXPyY4AonIscTCrUQsbSeIONfzKQHdldn/ksuk/E1ChVFm4DTPDG
 --   cashier123   -> $2a$10$H8K5sQ7wR3mN6pV9xY2zAeBfCiDgEhJkLmNoPqRsTuVwXyZ
 -- ============================================================
 
@@ -33,10 +33,10 @@ VALUES
 -- Password: admin123 (bcrypt hash)
 INSERT INTO "user" (id, name, email, password, phone, role, branch_id, account_id, is_active)
 VALUES
-  ('u0000000-0000-0000-0000-000000000001', 'Super Admin', 'admin@kasirkopishop.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJt.d4KL0q2', '081234567890', 'super_admin', 'b0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', true),
-  ('u0000000-0000-0000-0000-000000000002', 'Rina Wijaya', 'rina@kasirkopishop.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJt.d4KL0q2', '081298765432', 'admin', 'b0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', true),
-  ('u0000000-0000-0000-0000-000000000003', 'Budi Santoso', 'budi@kasirkopishop.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJt.d4KL0q2', '082112345678', 'cashier', 'b0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', true),
-  ('u0000000-0000-0000-0000-000000000004', 'Siti Aminah', 'siti@kasirkopishop.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJt.d4KL0q2', '082298765432', 'cashier', 'b0000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000001', true);
+  ('u0000000-0000-0000-0000-000000000001', 'Super Admin', 'admin@kasirkopishop.com', '$2b$10$1BXPyY4AonIscTCrUQsbSeIONfzKQHdldn/ksuk/E1ChVFm4DTPDG', '081234567890', 'super_admin', 'b0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', true),
+  ('u0000000-0000-0000-0000-000000000002', 'Rina Wijaya', 'rina@kasirkopishop.com', '$2b$10$1BXPyY4AonIscTCrUQsbSeIONfzKQHdldn/ksuk/E1ChVFm4DTPDG', '081298765432', 'admin', 'b0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', true),
+  ('u0000000-0000-0000-0000-000000000003', 'Budi Santoso', 'budi@kasirkopishop.com', '$2b$10$1BXPyY4AonIscTCrUQsbSeIONfzKQHdldn/ksuk/E1ChVFm4DTPDG', '082112345678', 'cashier', 'b0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', true),
+  ('u0000000-0000-0000-0000-000000000004', 'Siti Aminah', 'siti@kasirkopishop.com', '$2b$10$1BXPyY4AonIscTCrUQsbSeIONfzKQHdldn/ksuk/E1ChVFm4DTPDG', '082298765432', 'cashier', 'b0000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000001', true);
 
 -- ============================================================
 -- 4. CATEGORIES
