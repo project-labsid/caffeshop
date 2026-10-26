@@ -6,12 +6,16 @@ export async function GET(request: NextRequest) {
   try {
     const accountId = request.headers.get('x-account-id')
     if (!accountId) {
-      // Return empty dashboard data when not authenticated
+      // Return empty dashboard data when not authenticated (consistent { data } wrapper)
       return NextResponse.json({
-        todaySales: 0, monthSales: 0, totalRevenue: 0,
-        totalProducts: 0, totalCustomers: 0, totalSuppliers: 0, totalTransactions: 0,
-        topProducts: [], recentTransactions: [], lowStockProducts: [],
-        salesChartData: [], revenueChartData: [],
+        data: {
+          todaySales: 0, todayTransactions: 0,
+          monthSales: 0, monthTransactions: 0,
+          totalRevenue: 0,
+          totalProducts: 0, totalCustomers: 0, totalSuppliers: 0, totalTransactions: 0,
+          topProducts: [], recentTransactions: [], lowStockProducts: [],
+          salesChartData: [], revenueChartData: [],
+        },
       })
     }
 

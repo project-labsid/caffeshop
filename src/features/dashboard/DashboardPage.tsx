@@ -242,7 +242,12 @@ function MiniStatCard({
 export default function DashboardPage() {
   const { data, isLoading, error } = useQuery<DashboardStats>({
     queryKey: ['dashboard'],
-    queryFn: () => apiFetch('/api/dashboard').then((r) => r.json()).then((j) => j.data),
+    queryFn: async () => {
+      const res = await apiFetch('/api/dashboard');
+      if (!res.ok) throw new Error('Gagal memuat data');
+      const json = await res.json();
+      return json.data;
+    },
     refetchInterval: 30_000,
   });
 
