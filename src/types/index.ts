@@ -158,10 +158,19 @@ export interface StoreSetting {
 
 export interface DashboardStats {
   todaySales: number;
+  todayTransactions: number;
   monthSales: number;
+  monthTransactions: number;
   totalRevenue: number;
+  todayExpense: number;
+  monthExpense: number;
+  totalExpense: number;
+  todayPurchaseExpense: number;
+  monthPurchaseExpense: number;
+  totalPurchaseExpense: number;
   totalProducts: number;
   totalTransactions: number;
+  totalBranches: number;
   topProducts: { productId: string; productName: string; quantity: number; revenue: number }[];
   recentTransactions: Transaction[];
   lowStockProducts: Product[];

@@ -15,6 +15,9 @@ export async function GET(request: NextRequest) {
           todayExpense: 0,
           monthExpense: 0,
           totalExpense: 0,
+          todayPurchaseExpense: 0,
+          monthPurchaseExpense: 0,
+          totalPurchaseExpense: 0,
           totalProducts: 0, totalTransactions: 0,
           topProducts: [], recentTransactions: [], lowStockProducts: [],
           salesChartData: [], revenueChartData: [],
@@ -44,11 +47,15 @@ export async function GET(request: NextRequest) {
       todaySalesResult,
       monthSalesResult,
       totalRevenueResult,
-      todayExpenseResult,
-      monthExpenseResult,
-      totalExpenseResult,
+      todayTxItems,
+      monthTxItems,
+      totalTxItems,
+      todayPurchaseExpense,
+      monthPurchaseExpense,
+      totalPurchaseExpense,
       totalProducts,
       totalTransactions,
+      totalBranches,
       topProducts,
       recentTransactions,
       lowStockProducts,
@@ -80,41 +87,69 @@ export async function GET(request: NextRequest) {
         { _sum: { grandTotal: 0 } }
       ),
 
-      // Today expense (cost of goods sold)
+      // Today expense items (costPrice * quantity)
       safeQuery(
-        () => db.transactionItem.aggregate({
+        () => db.transactionItem.findMany({
           where: {
             transaction: { accountId, status: 'completed', type: 'sale', createdAt: { gte: today } },
           },
-          _sum: { costPrice: true },
+          select: { costPrice: true, quantity: true },
         }),
-        { _sum: { costPrice: 0 } }
+        []
       ),
 
-      // Month expense
+      // Month expense items
       safeQuery(
-        () => db.transactionItem.aggregate({
+        () => db.transactionItem.findMany({
           where: {
             transaction: { accountId, status: 'completed', type: 'sale', createdAt: { gte: startOfMonth } },
           },
-          _sum: { costPrice: true },
+          select: { costPrice: true, quantity: true },
         }),
-        { _sum: { costPrice: 0 } }
+        []
       ),
 
-      // Total expense
+      // Total expense items
       safeQuery(
-        () => db.transactionItem.aggregate({
+        () => db.transactionItem.findMany({
           where: {
             transaction: { accountId, status: 'completed', type: 'sale' },
           },
-          _sum: { costPrice: true },
+          select: { costPrice: true, quantity: true },
         }),
-        { _sum: { costPrice: 0 } }
+        []
+      ),
+
+      // Today purchase expense
+      safeQuery(
+        () => db.purchase.aggregate({
+          where: { accountId, status: 'received', createdAt: { gte: today } },
+          _sum: { totalAmount: true },
+        }),
+        { _sum: { totalAmount: 0 } }
+      ),
+
+      // Month purchase expense
+      safeQuery(
+        () => db.purchase.aggregate({
+          where: { accountId, status: 'received', createdAt: { gte: startOfMonth } },
+          _sum: { totalAmount: true },
+        }),
+        { _sum: { totalAmount: 0 } }
+      ),
+
+      // Total purchase expense
+      safeQuery(
+        () => db.purchase.aggregate({
+          where: { accountId, status: 'received' },
+          _sum: { totalAmount: true },
+        }),
+        { _sum: { totalAmount: 0 } }
       ),
 
       safeQuery(() => db.product.count({ where: { accountId, isActive: true } }), 0),
       safeQuery(() => db.transaction.count({ where: { accountId } }), 0),
+      safeQuery(() => db.branch.count({ where: { accountId, isActive: true } }), 0),
 
       safeQuery(
         () => db.transactionItem.groupBy({
@@ -160,6 +195,19 @@ export async function GET(request: NextRequest) {
       ),
     ])
 
+    // Calculate COGS (costPrice * quantity) — same formula as reports
+    const calcCOGS = (items: Array<{ costPrice: number; quantity: number }>) =>
+      items.reduce((sum, item) => sum + (item.costPrice * item.quantity), 0)
+
+    const todayCOGS = calcCOGS(todayTxItems as any[])
+    const monthCOGS = calcCOGS(monthTxItems as any[])
+    const totalCOGS = calcCOGS(totalTxItems as any[])
+
+    // Combine COGS + purchase expenses for total expense
+    const todayPurchaseTotal = (todayPurchaseExpense as any)._sum?.totalAmount ?? 0
+    const monthPurchaseTotal = (monthPurchaseExpense as any)._sum?.totalAmount ?? 0
+    const totalPurchaseTotal = (totalPurchaseExpense as any)._sum?.totalAmount ?? 0
+
     // Process sales chart data
     const dailyMap = new Map<string, { total: number; count: number }>()
     for (const tx of salesChartData) {
@@ -192,11 +240,15 @@ export async function GET(request: NextRequest) {
         monthSales: (monthSalesResult as any)._sum?.grandTotal ?? 0,
         monthTransactions: (monthSalesResult as any)._count ?? 0,
         totalRevenue: (totalRevenueResult as any)._sum?.grandTotal ?? 0,
-        todayExpense: (todayExpenseResult as any)._sum?.costPrice ?? 0,
-        monthExpense: (monthExpenseResult as any)._sum?.costPrice ?? 0,
-        totalExpense: (totalExpenseResult as any)._sum?.costPrice ?? 0,
+        todayExpense: todayCOGS + todayPurchaseTotal,
+        monthExpense: monthCOGS + monthPurchaseTotal,
+        totalExpense: totalCOGS + totalPurchaseTotal,
+        todayPurchaseExpense: todayPurchaseTotal,
+        monthPurchaseExpense: monthPurchaseTotal,
+        totalPurchaseExpense: totalPurchaseTotal,
         totalProducts,
         totalTransactions,
+        totalBranches,
         topProducts,
         recentTransactions,
         lowStockProducts: filteredLowStock,

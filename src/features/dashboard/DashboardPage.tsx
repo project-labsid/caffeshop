@@ -358,7 +358,8 @@ export default function DashboardPage() {
       <motion.div className="grid grid-cols-2 gap-4 sm:grid-cols-4" variants={itemVariants}>
         <MiniStatCard icon={Wallet} label="Pendapatan" value={formatShortRupiah(data.totalRevenue)} />
         <MiniStatCard icon={Receipt} label="Pengeluaran" value={formatShortRupiah(data.totalExpense ?? 0)} />
-        <MiniStatCard icon={Building2} label="Cabang" value={2} />
+        <MiniStatCard icon={TrendingUp} label="Laba Kotor" value={formatShortRupiah(data.totalRevenue - (data.totalExpense ?? 0))} />
+        <MiniStatCard icon={Building2} label="Cabang" value={data.totalBranches ?? 0} />
       </motion.div>
 
       {/* ── Charts Section ──────────────────────────────────────────────── */}

@@ -91,14 +91,24 @@ export async function GET(request: NextRequest) {
       case 'weekly':
       case 'monthly':
       case 'yearly': {
-        const transactions = await db.transaction.findMany({
-          where: baseWhere,
-          orderBy: { createdAt: 'asc' },
-          include: {
-            user: { select: { id: true, name: true } },
-            items: true,
-          },
-        })
+        const [transactions, purchases] = await Promise.all([
+          db.transaction.findMany({
+            where: baseWhere,
+            orderBy: { createdAt: 'asc' },
+            include: {
+              user: { select: { id: true, name: true } },
+              items: true,
+            },
+          }),
+          db.purchase.findMany({
+            where: {
+              accountId,
+              status: 'received',
+              createdAt: { gte: start, lte: end },
+              ...(branchId ? { branchId } : {}),
+            },
+          }),
+        ])
 
         const totalSales = transactions.reduce((sum, tx) => sum + tx.grandTotal, 0)
         const totalDiscount = transactions.reduce((sum, tx) => sum + tx.discountAmount, 0)
@@ -107,6 +117,8 @@ export async function GET(request: NextRequest) {
           (sum, tx) => sum + tx.items.reduce((itemSum, item) => itemSum + (item.costPrice * item.quantity), 0),
           0
         )
+        const totalPurchaseExpense = purchases.reduce((sum, p) => sum + p.totalAmount, 0)
+        const totalExpense = totalCost + totalPurchaseExpense
 
         return NextResponse.json({
           data: {
@@ -119,7 +131,9 @@ export async function GET(request: NextRequest) {
               totalDiscount,
               totalTax,
               totalCost,
-              grossProfit: totalSales - totalCost,
+              totalPurchaseExpense,
+              totalExpense,
+              grossProfit: totalSales - totalExpense,
             },
             transactions,
           },
@@ -169,11 +183,22 @@ export async function GET(request: NextRequest) {
           include: { items: true },
         })
 
+        // Include purchase expenses in the same date range
+        const purchases = await db.purchase.findMany({
+          where: {
+            accountId,
+            status: 'received',
+            createdAt: { gte: start, lte: end },
+          },
+        })
+
         const totalRevenue = transactions.reduce((sum, tx) => sum + tx.grandTotal, 0)
         const totalCost = transactions.reduce(
           (sum, tx) => sum + tx.items.reduce((s, item) => s + (item.costPrice * item.quantity), 0),
           0
         )
+        const totalPurchaseExpense = purchases.reduce((sum, p) => sum + p.totalAmount, 0)
+        const totalExpense = totalCost + totalPurchaseExpense
         const totalDiscount = transactions.reduce((sum, tx) => sum + tx.discountAmount, 0)
         const totalTax = transactions.reduce((sum, tx) => sum + tx.taxAmount, 0)
         const totalServiceCharge = transactions.reduce((sum, tx) => sum + tx.serviceCharge, 0)
@@ -185,11 +210,13 @@ export async function GET(request: NextRequest) {
             endDate: end,
             revenue: totalRevenue,
             costOfGoodsSold: totalCost,
-            grossProfit: totalRevenue - totalCost,
+            totalPurchaseExpense,
+            totalExpense,
+            grossProfit: totalRevenue - totalExpense,
             totalDiscount,
             totalTax,
             totalServiceCharge,
-            netProfit: totalRevenue - totalCost,
+            netProfit: totalRevenue - totalExpense,
             transactionCount: transactions.length,
           },
         })

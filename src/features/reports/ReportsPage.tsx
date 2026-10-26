@@ -686,7 +686,7 @@ function LabaRugiTab() {
     const summaryObj = data
       ? {
           'Total Pendapatan': formatRupiah(data.revenue ?? 0),
-          'Total Pengeluaran': formatRupiah(data.costOfGoodsSold ?? 0),
+          'Total Pengeluaran': formatRupiah(data.totalExpense ?? 0),
           'Laba Kotor': formatRupiah(data.grossProfit ?? 0),
           'Margin': `${margin.toFixed(1)}%`,
         }
@@ -742,7 +742,7 @@ function LabaRugiTab() {
             {isLoading ? (
               <Skeleton className="mt-1 h-6 w-28" />
             ) : (
-              <p className="mt-1 text-2xl font-bold text-red-600">{formatRupiah(data?.costOfGoodsSold ?? 0)}</p>
+              <p className="mt-1 text-2xl font-bold text-red-600">{formatRupiah(data?.totalExpense ?? 0)}</p>
             )}
           </CardContent>
         </Card>

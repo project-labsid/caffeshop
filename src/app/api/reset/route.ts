@@ -1,12 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 
-// DELETE /api/reset - Reset all data for a specific accountId (except current user's account)
+// DELETE /api/reset - Reset all data for a specific accountId (only for super_admin and owner)
 export async function DELETE(request: NextRequest) {
   try {
     const accountId = request.headers.get('x-account-id')
     if (!accountId) {
       return NextResponse.json({ error: 'Account ID diperlukan' }, { status: 400 })
+    }
+
+    // Check user role — only super_admin and owner can reset data
+    const userRole = request.headers.get('x-user-role')
+    if (userRole !== 'super_admin' && userRole !== 'owner') {
+      return NextResponse.json(
+        { error: 'Hanya super admin atau pemilik akun yang dapat mereset data' },
+        { status: 403 }
+      )
     }
 
     // Get the user ID from the request body to preserve that user
