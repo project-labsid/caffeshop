@@ -119,3 +119,21 @@ Stage Summary:
 - All 11 user requirements successfully implemented
 - No console errors or lint errors in src/
 - App fully functional with all changes
+---
+Task ID: 14-16
+Agent: main
+Task: Fix dashboard/reports consistency, restrict reset data, fix product creation
+
+Work Log:
+- Fixed product creation error: regenerated Prisma client (npx prisma generate) to sync with schema changes (unit column removed)
+- Added expense data to dashboard API: todayExpense, monthExpense, totalExpense (cost of goods sold from TransactionItem.costPrice)
+- Renamed dashboard labels: "Penjualan" → "Pendapatan", chart title → "Tren Pendapatan 30 Hari"
+- Added "Pengeluaran" mini stat card on dashboard
+- Renamed reports Laba Rugi: "HPP" → "Pengeluaran" throughout (chart config, labels, export columns, card text)
+- Verified Reset Data already restricted to owner and super_admin only (line 185 in SettingsPage.tsx)
+- All API endpoints tested and working
+
+Stage Summary:
+- Dashboard now shows "Pendapatan" and "Pengeluaran" matching reports terminology
+- Product creation fixed (Prisma client was stale after schema changes)
+- Reset Data already restricted to super_admin and owner roles

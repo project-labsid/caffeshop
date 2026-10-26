@@ -318,7 +318,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
           icon={DollarSign}
-          label="Penjualan Hari Ini"
+          label="Pendapatan Hari Ini"
           value={formatRupiah(data.todaySales)}
           trend={12.5}
           trendLabel="vs kemarin"
@@ -327,7 +327,7 @@ export default function DashboardPage() {
         />
         <KpiCard
           icon={TrendingUp}
-          label="Penjualan Bulan Ini"
+          label="Pendapatan Bulan Ini"
           value={formatRupiah(data.monthSales)}
           trend={8.2}
           trendLabel="vs bulan lalu"
@@ -356,8 +356,8 @@ export default function DashboardPage() {
 
       {/* ── Additional Stats Row ────────────────────────────────────────── */}
       <motion.div className="grid grid-cols-2 gap-4 sm:grid-cols-4" variants={itemVariants}>
-        <MiniStatCard icon={Receipt} label="Total Transaksi" value={data.totalTransactions.toLocaleString('id-ID')} />
         <MiniStatCard icon={Wallet} label="Pendapatan" value={formatShortRupiah(data.totalRevenue)} />
+        <MiniStatCard icon={Receipt} label="Pengeluaran" value={formatShortRupiah(data.totalExpense ?? 0)} />
         <MiniStatCard icon={Building2} label="Cabang" value={2} />
       </motion.div>
 
@@ -367,7 +367,7 @@ export default function DashboardPage() {
         <motion.div variants={itemVariants}>
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Tren Penjualan 30 Hari</CardTitle>
+              <CardTitle className="text-base">Tren Pendapatan 30 Hari</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-[300px] w-full">

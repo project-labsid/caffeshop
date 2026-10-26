@@ -169,7 +169,7 @@ const bestSellingChartConfig = {
 
 const profitLossChartConfig = {
   laba: { label: 'Laba', color: 'hsl(var(--chart-1))' },
-  hpp: { label: 'HPP', color: 'hsl(var(--chart-3))' },
+  hpp: { label: 'Pengeluaran', color: 'hsl(var(--chart-3))' },
 } satisfies ChartConfig;
 
 const dailyTrafficChartConfig = {
@@ -677,7 +677,7 @@ function LabaRugiTab() {
   const margin = data?.revenue ? ((data.grossProfit / data.revenue) * 100) : 0;
 
   const getExportData = useCallback(() => {
-    const columns = ['Tanggal', 'Laba', 'HPP'];
+    const columns = ['Tanggal', 'Laba', 'Pengeluaran'];
     const rows = chartDailyData.map((d) => [
       formatDate(d.date),
       formatRupiah(d.laba),
@@ -686,7 +686,7 @@ function LabaRugiTab() {
     const summaryObj = data
       ? {
           'Total Pendapatan': formatRupiah(data.revenue ?? 0),
-          'Total HPP': formatRupiah(data.costOfGoodsSold ?? 0),
+          'Total Pengeluaran': formatRupiah(data.costOfGoodsSold ?? 0),
           'Laba Kotor': formatRupiah(data.grossProfit ?? 0),
           'Margin': `${margin.toFixed(1)}%`,
         }
@@ -738,7 +738,7 @@ function LabaRugiTab() {
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Total HPP</p>
+            <p className="text-sm text-muted-foreground">Total Pengeluaran</p>
             {isLoading ? (
               <Skeleton className="mt-1 h-6 w-28" />
             ) : (
@@ -781,7 +781,7 @@ function LabaRugiTab() {
       {/* Bar Chart: Profit vs Cost */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">Grafik Laba vs HPP Harian</CardTitle>
+          <CardTitle className="text-base">Grafik Laba vs Pengeluaran Harian</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (

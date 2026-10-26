@@ -12,6 +12,9 @@ export async function GET(request: NextRequest) {
           todaySales: 0, todayTransactions: 0,
           monthSales: 0, monthTransactions: 0,
           totalRevenue: 0,
+          todayExpense: 0,
+          monthExpense: 0,
+          totalExpense: 0,
           totalProducts: 0, totalTransactions: 0,
           topProducts: [], recentTransactions: [], lowStockProducts: [],
           salesChartData: [], revenueChartData: [],
@@ -41,6 +44,9 @@ export async function GET(request: NextRequest) {
       todaySalesResult,
       monthSalesResult,
       totalRevenueResult,
+      todayExpenseResult,
+      monthExpenseResult,
+      totalExpenseResult,
       totalProducts,
       totalTransactions,
       topProducts,
@@ -72,6 +78,39 @@ export async function GET(request: NextRequest) {
           _sum: { grandTotal: true },
         }),
         { _sum: { grandTotal: 0 } }
+      ),
+
+      // Today expense (cost of goods sold)
+      safeQuery(
+        () => db.transactionItem.aggregate({
+          where: {
+            transaction: { accountId, status: 'completed', type: 'sale', createdAt: { gte: today } },
+          },
+          _sum: { costPrice: true },
+        }),
+        { _sum: { costPrice: 0 } }
+      ),
+
+      // Month expense
+      safeQuery(
+        () => db.transactionItem.aggregate({
+          where: {
+            transaction: { accountId, status: 'completed', type: 'sale', createdAt: { gte: startOfMonth } },
+          },
+          _sum: { costPrice: true },
+        }),
+        { _sum: { costPrice: 0 } }
+      ),
+
+      // Total expense
+      safeQuery(
+        () => db.transactionItem.aggregate({
+          where: {
+            transaction: { accountId, status: 'completed', type: 'sale' },
+          },
+          _sum: { costPrice: true },
+        }),
+        { _sum: { costPrice: 0 } }
       ),
 
       safeQuery(() => db.product.count({ where: { accountId, isActive: true } }), 0),
@@ -153,6 +192,9 @@ export async function GET(request: NextRequest) {
         monthSales: (monthSalesResult as any)._sum?.grandTotal ?? 0,
         monthTransactions: (monthSalesResult as any)._count ?? 0,
         totalRevenue: (totalRevenueResult as any)._sum?.grandTotal ?? 0,
+        todayExpense: (todayExpenseResult as any)._sum?.costPrice ?? 0,
+        monthExpense: (monthExpenseResult as any)._sum?.costPrice ?? 0,
+        totalExpense: (totalExpenseResult as any)._sum?.costPrice ?? 0,
         totalProducts,
         totalTransactions,
         topProducts,
