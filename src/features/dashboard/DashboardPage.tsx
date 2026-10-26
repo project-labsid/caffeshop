@@ -18,7 +18,6 @@ import {
   DollarSign,
   TrendingUp,
   Package,
-  Users,
   Receipt,
   Wallet,
   Building2,
@@ -345,11 +344,11 @@ export default function DashboardPage() {
           iconColor="text-violet-600"
         />
         <KpiCard
-          icon={Users}
-          label="Total Pelanggan"
-          value={data.totalCustomers.toLocaleString('id-ID')}
+          icon={Receipt}
+          label="Total Transaksi"
+          value={data.totalTransactions.toLocaleString('id-ID')}
           trend={5.4}
-          trendLabel="pelanggan baru"
+          trendLabel="bulan ini"
           iconBg="bg-orange-100"
           iconColor="text-orange-600"
         />
@@ -492,7 +491,7 @@ export default function DashboardPage() {
                             {getStatusBadge(tx.status)}
                           </div>
                           <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                            {tx.customer?.name ?? 'Pelanggan Umum'} · {formatTime(tx.createdAt)}
+                            {tx.customerName ?? 'Pelanggan Umum'} · {formatTime(tx.createdAt)}
                           </p>
                         </div>
                         <p className="ml-3 shrink-0 text-sm font-semibold">
@@ -535,7 +534,7 @@ export default function DashboardPage() {
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-sm font-medium">{product.name}</p>
                             <p className="mt-0.5 text-xs text-muted-foreground">
-                              Stok: <span className="font-medium text-foreground">{product.stock}</span> / {product.minStock} {product.unit}
+                              Stok: <span className="font-medium text-foreground">{product.stock}</span> / {product.minStock}
                             </p>
                           </div>
                           {isCritical ? (

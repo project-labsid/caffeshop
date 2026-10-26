@@ -175,7 +175,7 @@ function ProductSearchSelect({
                 {data?.map((product) => (
                   <CommandItem
                     key={product.id}
-                  value={`${product.name} ${product.sku || ''} ${product.barcode || ''}`}
+                  value={`${product.name}`}
                   onSelect={() => {
                     onChange(product.id);
                     setOpen(false);
@@ -503,7 +503,7 @@ function StokMasukTab() {
                 <div className="rounded-lg border bg-muted/50 p-3 text-sm">
                   <div className="grid grid-cols-2 gap-2">
                     <span className="text-muted-foreground">Stok Saat Ini</span>
-                    <span className="font-mono font-medium">{selectedProduct.stock} {selectedProduct.unit}</span>
+                    <span className="font-mono font-medium">{selectedProduct.stock}</span>
                     <span className="text-muted-foreground">Harga Jual</span>
                     <span className="font-mono">{formatRupiah(selectedProduct.sellPrice)}</span>
                   </div>
@@ -652,7 +652,7 @@ function StokKeluarTab() {
                   <div className="grid grid-cols-2 gap-2">
                     <span className="text-muted-foreground">Stok Saat Ini</span>
                     <span className={cn('font-mono font-medium', currentStock <= selectedProduct.minStock && 'text-red-600')}>
-                      {currentStock} {selectedProduct.unit}
+                      {currentStock}
                     </span>
                     <span className="text-muted-foreground">Harga Jual</span>
                     <span className="font-mono">{formatRupiah(selectedProduct.sellPrice)}</span>
@@ -676,7 +676,7 @@ function StokKeluarTab() {
                     </FormControl>
                     {currentStock > 0 && (
                       <p className="text-xs text-muted-foreground">
-                        Maksimal: {currentStock} {selectedProduct?.unit}
+                        Maksimal: {currentStock}
                       </p>
                     )}
                     <FormMessage />

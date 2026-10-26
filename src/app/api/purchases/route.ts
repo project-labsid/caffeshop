@@ -7,7 +7,6 @@ const listPurchasesSchema = z.object({
   perPage: z.coerce.number().min(1).max(100).default(20),
   search: z.string().optional(),
   status: z.string().optional(),
-  supplierId: z.string().optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
 })
@@ -20,7 +19,6 @@ const purchaseItemSchema = z.object({
 })
 
 const createPurchaseSchema = z.object({
-  supplierId: z.string().min(1, 'Supplier wajib diisi'),
   userId: z.string().min(1, 'User wajib diisi'),
   branchId: z.string().optional(),
   totalAmount: z.number().min(0).default(0),
@@ -56,7 +54,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const { page, perPage, search, status, supplierId, startDate, endDate } = parsed.data
+    const { page, perPage, search, status, startDate, endDate } = parsed.data
     const skip = (page - 1) * perPage
 
     const where: Record<string, unknown> = { accountId }
@@ -67,10 +65,6 @@ export async function GET(request: NextRequest) {
 
     if (status) {
       where.status = status
-    }
-
-    if (supplierId) {
-      where.supplierId = supplierId
     }
 
     if (startDate || endDate) {
@@ -91,7 +85,6 @@ export async function GET(request: NextRequest) {
         take: perPage,
         orderBy: { createdAt: 'desc' },
         include: {
-          supplier: true,
           user: { select: { id: true, name: true, email: true } },
           items: { include: { product: true } },
           branch: true,
@@ -147,7 +140,6 @@ export async function POST(request: NextRequest) {
         },
       },
       include: {
-        supplier: true,
         user: { select: { id: true, name: true, email: true } },
         items: { include: { product: true } },
         branch: true,

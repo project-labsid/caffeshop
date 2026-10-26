@@ -45,13 +45,7 @@ export async function DELETE(request: NextRequest) {
     // 10. Store settings
     await db.storeSetting.deleteMany({ where: { accountId } })
 
-    // 11. Customers
-    await db.customer.deleteMany({ where: { accountId } })
-
-    // 12. Suppliers
-    await db.supplier.deleteMany({ where: { accountId } })
-
-    // 13. Categories
+    // 11. Categories
     await db.category.deleteMany({ where: { accountId } })
 
     // 14. Payment methods

@@ -3,7 +3,7 @@ import { db } from '@/lib/db'
 import { z } from 'zod'
 
 const reportQuerySchema = z.object({
-  type: z.enum(['daily', 'weekly', 'monthly', 'yearly', 'best_selling', 'profit_loss', 'customer', 'supplier', 'stock']),
+  type: z.enum(['daily', 'weekly', 'monthly', 'yearly', 'best_selling', 'profit_loss', 'stock']),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
   branchId: z.string().optional(),
@@ -96,7 +96,6 @@ export async function GET(request: NextRequest) {
           orderBy: { createdAt: 'asc' },
           include: {
             user: { select: { id: true, name: true } },
-            customer: { select: { id: true, name: true } },
             items: true,
           },
         })
@@ -196,80 +195,6 @@ export async function GET(request: NextRequest) {
         })
       }
 
-      case 'customer': {
-        const customerStats = await db.transaction.groupBy({
-          by: ['customerId'],
-          where: {
-            ...baseWhere,
-            customerId: { not: null },
-          },
-          _sum: { grandTotal: true },
-          _count: true,
-          orderBy: { _sum: { grandTotal: 'desc' } },
-          take: 20,
-        })
-
-        const customers = await Promise.all(
-          customerStats.map(async (stat) => {
-            const customer = await db.customer.findUnique({
-              where: { id: stat.customerId! },
-            })
-            return {
-              customerId: stat.customerId,
-              customerName: customer?.name ?? 'Unknown',
-              totalSpent: stat._sum.grandTotal ?? 0,
-              transactionCount: stat._count,
-            }
-          })
-        )
-
-        return NextResponse.json({
-          data: {
-            type,
-            startDate: start,
-            endDate: end,
-            customers,
-          },
-        })
-      }
-
-      case 'supplier': {
-        const purchaseStats = await db.purchase.groupBy({
-          by: ['supplierId'],
-          where: {
-            accountId,
-            status: 'received',
-            createdAt: { gte: start, lte: end },
-          },
-          _sum: { totalAmount: true },
-          _count: true,
-          orderBy: { _sum: { totalAmount: 'desc' } },
-        })
-
-        const suppliers = await Promise.all(
-          purchaseStats.map(async (stat) => {
-            const supplier = await db.supplier.findUnique({
-              where: { id: stat.supplierId },
-            })
-            return {
-              supplierId: stat.supplierId,
-              supplierName: supplier?.name ?? 'Unknown',
-              totalPurchased: stat._sum.totalAmount ?? 0,
-              purchaseCount: stat._count,
-            }
-          })
-        )
-
-        return NextResponse.json({
-          data: {
-            type,
-            startDate: start,
-            endDate: end,
-            suppliers,
-          },
-        })
-      }
-
       case 'stock': {
         const products = await db.product.findMany({
           where: { accountId, isActive: true },
@@ -295,7 +220,6 @@ export async function GET(request: NextRequest) {
             products: products.map((p) => ({
               id: p.id,
               name: p.name,
-              sku: p.sku,
               category: p.category?.name ?? null,
               stock: p.stock,
               minStock: p.minStock,

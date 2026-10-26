@@ -33,10 +33,8 @@ const fadeIn = {
 interface DbStats {
   totalProducts: number;
   totalTransactions: number;
-  totalCustomers: number;
   totalPurchases: number;
   totalCategories: number;
-  totalSuppliers: number;
   totalBranches: number;
   totalUsers: number;
   totalStockAdjustments: number;
@@ -46,8 +44,6 @@ interface DbStats {
 interface BackupTables {
   branches: unknown[];
   categories: unknown[];
-  suppliers: unknown[];
-  customers: unknown[];
   users: unknown[];
   products: unknown[];
   taxSettings: unknown[];
@@ -196,8 +192,6 @@ export default function BackupSettings() {
   const tableLabels: { key: keyof BackupTables; label: string }[] = [
     { key: 'branches', label: 'Cabang' },
     { key: 'categories', label: 'Kategori' },
-    { key: 'suppliers', label: 'Supplier' },
-    { key: 'customers', label: 'Pelanggan' },
     { key: 'users', label: 'Pengguna' },
     { key: 'products', label: 'Produk' },
     { key: 'taxSettings', label: 'Pengaturan Pajak' },
@@ -239,10 +233,8 @@ export default function BackupSettings() {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               <StatItem label="Produk" value={stats.totalProducts} />
               <StatItem label="Transaksi" value={stats.totalTransactions} />
-              <StatItem label="Pelanggan" value={stats.totalCustomers} />
               <StatItem label="Pembelian" value={stats.totalPurchases} />
               <StatItem label="Kategori" value={stats.totalCategories} />
-              <StatItem label="Supplier" value={stats.totalSuppliers} />
               <StatItem label="Cabang" value={stats.totalBranches} />
               <StatItem label="Pengguna" value={stats.totalUsers} />
               <StatItem label="Penyesuaian Stok" value={stats.totalStockAdjustments} />

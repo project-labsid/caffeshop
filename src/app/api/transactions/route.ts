@@ -26,7 +26,7 @@ const transactionItemSchema = z.object({
 
 const createTransactionSchema = z.object({
   userId: z.string().min(1, 'User wajib diisi'),
-  customerId: z.string().optional(),
+  customerName: z.string().optional(),
   branchId: z.string().optional(),
   type: z.enum(['sale', 'refund']).default('sale'),
   status: z.enum(['pending', 'completed', 'cancelled', 'held']).default('completed'),
@@ -113,7 +113,6 @@ export async function GET(request: NextRequest) {
         orderBy: { createdAt: 'desc' },
         include: {
           user: { select: { id: true, name: true, email: true } },
-          customer: true,
           items: true,
           branch: true,
         },
@@ -171,12 +170,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Beberapa produk tidak ditemukan, refresh halaman kasir' }, { status: 400 })
     }
 
-    if (transactionData.customerId) {
-      const existingCustomer = await db.customer.findFirst({ where: { id: transactionData.customerId, accountId }, select: { id: true } })
-      if (!existingCustomer) {
-        return NextResponse.json({ error: 'Pelanggan tidak ditemukan' }, { status: 400 })
-      }
-    }
 
     const now = new Date()
     const isCompleted = transactionData.status === 'completed'
@@ -195,7 +188,6 @@ export async function POST(request: NextRequest) {
       },
       include: {
         user: { select: { id: true, name: true, email: true } },
-        customer: true,
         items: true,
         branch: true,
       },
@@ -221,16 +213,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Add member points for customer
-    if (isCompleted && transactionData.customerId && transactionData.type === 'sale') {
-      const points = Math.floor(transactionData.grandTotal / 10000)
-      if (points > 0) {
-        await db.customer.update({
-          where: { id: transactionData.customerId },
-          data: { memberPoint: { increment: points } },
-        })
-      }
-    }
+    // No member points logic since we use customerName instead of customerId
 
     return NextResponse.json({ data: transaction }, { status: 201 })
   } catch (error: unknown) {

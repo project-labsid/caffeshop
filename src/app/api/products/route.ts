@@ -15,10 +15,7 @@ const listProductsSchema = z.object({
 
 const createProductSchema = z.object({
   name: z.string().min(1, 'Nama produk wajib diisi'),
-  barcode: z.string().optional(),
-  sku: z.string().optional(),
   categoryId: z.string().optional(),
-  unit: z.string().default('pcs'),
   costPrice: z.number().min(0).default(0),
   sellPrice: z.number().min(0).default(0),
   stock: z.number().int().min(0).default(0),
@@ -53,8 +50,6 @@ export async function GET(request: NextRequest) {
     if (search) {
       where.OR = [
         { name: { contains: search } },
-        { barcode: { contains: search } },
-        { sku: { contains: search } },
       ]
     }
 
@@ -129,7 +124,7 @@ export async function POST(request: NextRequest) {
     console.error('Create product error:', error)
     if (error instanceof Error && error.message.includes('Unique constraint')) {
       return NextResponse.json(
-        { error: 'Barcode atau SKU sudah digunakan' },
+        { error: 'Data produk sudah digunakan' },
         { status: 409 }
       )
     }

@@ -4,12 +4,10 @@ import { db } from '@/lib/db'
 // GET /api/settings/backup - Export all data as JSON
 export async function GET() {
   try {
-    const [users, branches, categories, suppliers, customers, products, transactions, transactionItems, purchases, purchaseItems, stockAdjustments, storeSettings, taxSettings, serviceChargeSettings, activityLogs, notifications, notificationSettings] = await Promise.all([
+    const [users, branches, categories, products, transactions, transactionItems, purchases, purchaseItems, stockAdjustments, storeSettings, taxSettings, serviceChargeSettings, activityLogs, notifications, notificationSettings] = await Promise.all([
       db.user.findMany({ select: { id: true, name: true, email: true, phone: true, avatar: true, role: true, branchId: true, isActive: true, createdAt: true, updatedAt: true } }),
       db.branch.findMany(),
       db.category.findMany(),
-      db.supplier.findMany(),
-      db.customer.findMany(),
       db.product.findMany(),
       db.transaction.findMany({ include: { items: true } }),
       db.transactionItem.findMany(),
@@ -32,8 +30,6 @@ export async function GET() {
         users: users.length,
         branches: branches.length,
         categories: categories.length,
-        suppliers: suppliers.length,
-        customers: customers.length,
         products: products.length,
         transactions: transactions.length,
         purchases: purchases.length,
@@ -43,8 +39,6 @@ export async function GET() {
         users,
         branches,
         categories,
-        suppliers,
-        customers,
         products,
         transactions,
         transactionItems,
@@ -109,30 +103,6 @@ export async function POST(request: NextRequest) {
       for (const branch of data.branches) {
         const { id, ...rest } = branch
         await db.branch.create({ data: rest })
-        importCount++
-      }
-    }
-
-    // Import suppliers
-    if (data.suppliers && (modules.length === 0 || modules.includes('suppliers'))) {
-      if (replaceAll) {
-        await db.supplier.deleteMany()
-      }
-      for (const sup of data.suppliers) {
-        const { id, ...rest } = sup
-        await db.supplier.create({ data: rest })
-        importCount++
-      }
-    }
-
-    // Import customers
-    if (data.customers && (modules.length === 0 || modules.includes('customers'))) {
-      if (replaceAll) {
-        await db.customer.deleteMany()
-      }
-      for (const cust of data.customers) {
-        const { id, ...rest } = cust
-        await db.customer.create({ data: rest })
         importCount++
       }
     }

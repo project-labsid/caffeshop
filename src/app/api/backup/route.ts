@@ -10,8 +10,6 @@ interface BackupData {
   tables: {
     branches: Record<string, unknown>[]
     categories: Record<string, unknown>[]
-    suppliers: Record<string, unknown>[]
-    customers: Record<string, unknown>[]
     users: Record<string, unknown>[]
     products: Record<string, unknown>[]
     taxSettings: Record<string, unknown>[]
@@ -32,8 +30,6 @@ const backupImportSchema = z.object({
     tables: z.object({
       branches: z.array(z.record(z.unknown())),
       categories: z.array(z.record(z.unknown())),
-      suppliers: z.array(z.record(z.unknown())),
-      customers: z.array(z.record(z.unknown())),
       users: z.array(z.record(z.unknown())),
       products: z.array(z.record(z.unknown())),
       taxSettings: z.array(z.record(z.unknown())),
@@ -58,20 +54,16 @@ export async function GET(request: NextRequest) {
       const [
         totalProducts,
         totalTransactions,
-        totalCustomers,
         totalPurchases,
         totalCategories,
-        totalSuppliers,
         totalBranches,
         totalUsers,
         totalStockAdjustments,
       ] = await Promise.all([
         db.product.count(),
         db.transaction.count(),
-        db.customer.count(),
         db.purchase.count(),
         db.category.count(),
-        db.supplier.count(),
         db.branch.count(),
         db.user.count(),
         db.stockAdjustment.count(),
@@ -81,10 +73,8 @@ export async function GET(request: NextRequest) {
         data: {
           totalProducts,
           totalTransactions,
-          totalCustomers,
           totalPurchases,
           totalCategories,
-          totalSuppliers,
           totalBranches,
           totalUsers,
           totalStockAdjustments,
@@ -97,8 +87,6 @@ export async function GET(request: NextRequest) {
     const [
       branches,
       categories,
-      suppliers,
-      customers,
       users,
       products,
       taxSettings,
@@ -110,8 +98,6 @@ export async function GET(request: NextRequest) {
     ] = await Promise.all([
       db.branch.findMany(),
       db.category.findMany(),
-      db.supplier.findMany(),
-      db.customer.findMany(),
       db.user.findMany({
         select: {
           id: true,
@@ -147,8 +133,6 @@ export async function GET(request: NextRequest) {
       tables: {
         branches: branches as unknown as Record<string, unknown>[],
         categories: categories as unknown as Record<string, unknown>[],
-        suppliers: suppliers as unknown as Record<string, unknown>[],
-        customers: customers as unknown as Record<string, unknown>[],
         users: users as unknown as Record<string, unknown>[],
         products: products as unknown as Record<string, unknown>[],
         taxSettings: taxSettings as unknown as Record<string, unknown>[],
@@ -198,8 +182,6 @@ export async function POST(request: NextRequest) {
       await tx.purchaseItem.deleteMany({})
       await tx.purchase.deleteMany({})
       await tx.product.deleteMany({})
-      await tx.customer.deleteMany({})
-      await tx.supplier.deleteMany({})
       await tx.category.deleteMany({})
       await tx.branch.deleteMany({})
       await tx.user.deleteMany({})
@@ -213,12 +195,6 @@ export async function POST(request: NextRequest) {
       }
       if (tables.categories.length > 0) {
         await tx.category.createMany({ data: tables.categories as any })
-      }
-      if (tables.suppliers.length > 0) {
-        await tx.supplier.createMany({ data: tables.suppliers as any })
-      }
-      if (tables.customers.length > 0) {
-        await tx.customer.createMany({ data: tables.customers as any })
       }
       // Users: restore with a default password since passwords are not exported
       if (tables.users.length > 0) {
@@ -315,8 +291,6 @@ export async function POST(request: NextRequest) {
       return {
         branches: tables.branches.length,
         categories: tables.categories.length,
-        suppliers: tables.suppliers.length,
-        customers: tables.customers.length,
         users: tables.users.length,
         products: tables.products.length,
         taxSettings: tables.taxSettings.length,

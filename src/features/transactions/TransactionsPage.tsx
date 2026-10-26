@@ -312,7 +312,7 @@ export default function TransactionsPage() {
         header: 'Pelanggan',
         size: 140,
         cell: ({ row }) => (
-          <span className="text-sm">{row.original.customer?.name || '-'}</span>
+          <span className="text-sm">{row.original.customerName || '-'}</span>
         ),
       },
       {
@@ -402,7 +402,7 @@ export default function TransactionsPage() {
             </div>
             <div className="space-y-1">
               <Label className="text-muted-foreground text-xs">Pelanggan</Label>
-              <p className="text-sm">{detailData.customer?.name || 'Umum'}</p>
+              <p className="text-sm">{detailData.customerName || 'Umum'}</p>
             </div>
             <div className="space-y-1">
               <Label className="text-muted-foreground text-xs">Kasir</Label>

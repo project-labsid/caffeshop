@@ -21,8 +21,7 @@ model Account {
   users              User[]
   branches           Branch[]
   categories         Category[]
-  suppliers          Supplier[]
-  customers          Customer[]
+
   products           Product[]
   transactions       Transaction[]
   purchases          Purchase[]
@@ -105,50 +104,14 @@ model Category {
   taxSettings TaxSetting[]
 }
 
-// ===================== SUPPLIER =====================
 
-model Supplier {
-  id        String   @id @default(cuid())
-  name      String
-  phone     String?
-  email     String?
-  address   String?
-  isActive  Boolean  @default(true)
-  accountId String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  account   Account   @relation(fields: [accountId], references: [id])
-  purchases Purchase[]
-}
-
-// ===================== CUSTOMER =====================
-
-model Customer {
-  id          String   @id @default(cuid())
-  name        String
-  phone       String?
-  email       String?
-  address     String?
-  memberPoint Int      @default(0)
-  isActive    Boolean  @default(true)
-  accountId   String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  account      Account      @relation(fields: [accountId], references: [id])
-  transactions Transaction[]
-}
 
 // ===================== PRODUCT =====================
 
 model Product {
   id            String   @id @default(cuid())
   name          String
-  barcode       String?
-  sku           String?
   categoryId    String?
-  unit          String   @default("pcs")
   costPrice     Float    @default(0)
   sellPrice     Float    @default(0)
   stock         Int      @default(0)
@@ -174,7 +137,7 @@ model Transaction {
   id              String   @id @default(cuid())
   invoiceNumber   String   @unique
   userId          String
-  customerId      String?
+  customerName    String?
   branchId        String?
   type            String   @default("sale") // sale, refund
   status          String   @default("completed") // pending, completed, cancelled, held
@@ -196,7 +159,6 @@ model Transaction {
 
   account        Account    @relation(fields: [accountId], references: [id])
   user           User       @relation(fields: [userId], references: [id])
-  customer       Customer?  @relation(fields: [customerId], references: [id])
   branch         Branch?    @relation(fields: [branchId], references: [id])
   items          TransactionItem[]
 }
@@ -225,7 +187,6 @@ model TransactionItem {
 model Purchase {
   id            String   @id @default(cuid())
   invoiceNumber String   @unique
-  supplierId    String
   userId        String
   branchId      String?
   totalAmount   Float    @default(0)
@@ -236,7 +197,6 @@ model Purchase {
   updatedAt     DateTime @updatedAt
 
   account       Account   @relation(fields: [accountId], references: [id])
-  supplier      Supplier  @relation(fields: [supplierId], references: [id])
   user          User      @relation(fields: [userId], references: [id])
   branch        Branch?   @relation(fields: [branchId], references: [id])
   items         PurchaseItem[]

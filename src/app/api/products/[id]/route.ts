@@ -4,10 +4,7 @@ import { z } from 'zod'
 
 const updateProductSchema = z.object({
   name: z.string().min(1).optional(),
-  barcode: z.string().nullable().optional(),
-  sku: z.string().nullable().optional(),
   categoryId: z.string().nullable().optional(),
-  unit: z.string().optional(),
   costPrice: z.number().min(0).optional(),
   sellPrice: z.number().min(0).optional(),
   stock: z.number().int().min(0).optional(),
@@ -88,7 +85,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     console.error('Update product error:', error)
     if (error instanceof Error && error.message.includes('Unique constraint')) {
       return NextResponse.json(
-        { error: 'Barcode atau SKU sudah digunakan' },
+        { error: 'Data produk sudah digunakan' },
         { status: 409 }
       )
     }

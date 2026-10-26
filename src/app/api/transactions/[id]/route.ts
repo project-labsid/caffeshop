@@ -4,7 +4,7 @@ import { z } from 'zod'
 
 const updateTransactionSchema = z.object({
   status: z.enum(['pending', 'completed', 'cancelled', 'held']).optional(),
-  customerId: z.string().nullable().optional(),
+  customerName: z.string().nullable().optional(),
   discountAmount: z.number().min(0).optional(),
   taxAmount: z.number().min(0).optional(),
   serviceCharge: z.number().min(0).optional(),
@@ -99,16 +99,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         })
       }
 
-      // Add member points
-      if (existing.customerId && existing.type === 'sale') {
-        const points = Math.floor((existing.grandTotal) / 10000)
-        if (points > 0) {
-          await db.customer.update({
-            where: { id: existing.customerId },
-            data: { memberPoint: { increment: points } },
-          })
-        }
-      }
+      // Customer name is stored directly on transaction
     }
 
     // If cancelling, restore stock

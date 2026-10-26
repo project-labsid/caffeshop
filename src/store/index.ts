@@ -21,7 +21,7 @@ interface NavigationState {
 
 interface CartState {
   items: CartItem[];
-  customerId: string | null;
+  customerName: string | null;
   discountTotal: number;
   notes: string;
   isHeld: boolean;
@@ -31,7 +31,7 @@ interface CartState {
   updateQuantity: (productId: string, quantity: number) => void;
   updateItemDiscount: (productId: string, discount: number) => void;
   updateItemNotes: (productId: string, notes: string) => void;
-  setCustomerId: (id: string | null) => void;
+  setCustomerName: (name: string | null) => void;
   setDiscountTotal: (discount: number) => void;
   setNotes: (notes: string) => void;
   setHeld: (held: boolean, transactionId?: string) => void;
@@ -99,7 +99,7 @@ export const useNavStore = create<NavigationState>((set) => ({
 // Cart Store
 export const useCartStore = create<CartState>((set, get) => ({
   items: [],
-  customerId: null,
+  customerName: null,
   discountTotal: 0,
   notes: '',
   isHeld: false,
@@ -143,7 +143,7 @@ export const useCartStore = create<CartState>((set, get) => ({
         i.product.id === productId ? { ...i, notes } : i
       ),
     })),
-  setCustomerId: (id) => set({ customerId: id }),
+  setCustomerName: (name) => set({ customerName: name }),
   setDiscountTotal: (discount) => set({ discountTotal: discount }),
   setNotes: (notes) => set({ notes }),
   setHeld: (held, transactionId) =>
@@ -151,7 +151,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   clearCart: () =>
     set({
       items: [],
-      customerId: null,
+      customerName: null,
       discountTotal: 0,
       notes: '',
       isHeld: false,

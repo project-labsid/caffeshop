@@ -78,7 +78,7 @@ export async function checkAndNotifyLowStock() {
         await createNotification({
           type: 'low_stock',
           title: 'Stok Menipis',
-          message: `${product.name} tersisa ${product.stock} ${product.unit} (min: ${product.minStock}).`,
+          message: `${product.name} tersisa ${product.stock} (min: ${product.minStock}).`,
           data: { productId: product.id, stock: product.stock, minStock: product.minStock },
         })
       }

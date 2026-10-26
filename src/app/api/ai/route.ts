@@ -378,7 +378,7 @@ async function handleStockPrediction() {
       category: p.category?.name ?? 'Tanpa kategori',
       currentStock: p.stock,
       minStock: p.minStock,
-      unit: p.unit,
+      unit: null,
       soldLast30Days: demand?.totalQty ?? 0,
       dailyAvgSales: Number(dailyAvg),
       estimatedDaysLeft: demand && demand.totalQty > 0 ? Math.floor(p.stock / (demand.totalQty / 30)) : null,

@@ -12,7 +12,6 @@ import {
   Warehouse,
   BarChart3,
   Store,
-  Percent,
   GitBranch,
   UserCog,
   LogOut,
@@ -77,7 +76,6 @@ const navSections: NavSection[] = [
     roles: ['super_admin', 'owner', 'admin'],
     items: [
       { label: 'Pengaturan Toko', page: 'settings', icon: Store },
-      { label: 'Pajak & Service Charge', page: 'tax-settings', icon: Percent },
     ],
   },
   {
@@ -105,7 +103,7 @@ const cashierTransaksiItems: NavItem[] = [
 export default function AppSidebar() {
   const { currentPage, setCurrentPage, sidebarOpen, setSidebarOpen } = useNavStore();
   const { user, logout } = useAuthStore();
-  const { storeName } = useSettingsStore();
+  const { storeName, storeLogo } = useSettingsStore();
   const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -185,7 +183,7 @@ export default function AppSidebar() {
       {/* Logo area */}
       <div className="flex items-center gap-3 px-4 py-5 shrink-0">
         <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0">
-          <img src="/logo.png" alt="Kasir Kopi Shop" className="w-full h-full object-cover" />
+          <img src={storeLogo || '/logo.png'} alt="Kasir Kopi Shop" className="w-full h-full object-cover" />
         </div>
         <AnimatePresence>
           {!collapsed && (

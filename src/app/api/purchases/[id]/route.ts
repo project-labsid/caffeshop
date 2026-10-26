@@ -3,7 +3,6 @@ import { db } from '@/lib/db'
 import { z } from 'zod'
 
 const updatePurchaseSchema = z.object({
-  supplierId: z.string().optional(),
   totalAmount: z.number().min(0).optional(),
   status: z.enum(['pending', 'received', 'cancelled']).optional(),
   notes: z.string().nullable().optional(),
@@ -23,7 +22,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const purchase = await db.purchase.findFirst({
       where: { id, accountId },
       include: {
-        supplier: true,
         user: { select: { id: true, name: true, email: true } },
         items: { include: { product: true } },
         branch: true,
@@ -95,7 +93,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       where: { id },
       data: parsed.data,
       include: {
-        supplier: true,
         user: { select: { id: true, name: true, email: true } },
         items: { include: { product: true } },
         branch: true,

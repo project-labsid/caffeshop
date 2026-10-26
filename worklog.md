@@ -87,3 +87,35 @@ Stage Summary:
 - 21+ files updated with coffee-themed colors
 - Login, Dashboard, POS, Settings all verified working
 - No compilation or runtime errors
+---
+Task ID: 1-13
+Agent: main
+Task: Implement all user-requested changes to Kasir Kopi Shop POS app
+
+Work Log:
+- Removed multi-tenant explanation text from login page (desktop left panel callout + register subtitle)
+- Removed "Pajak & Service Charge" from sidebar (AppSidebar + MobileNav), it's already in Settings
+- Removed barcode, SKU, satuan (unit) from Product model in Prisma schema
+- Removed Supplier model entirely from Prisma schema + all API routes + feature page
+- Removed Customer model entirely from Prisma schema + all API routes + feature page
+- Changed Transaction.customerId to Transaction.customerName (String?) 
+- Removed Purchase.supplierId from schema
+- Pushed schema changes to database with prisma db push
+- Updated TypeScript types to remove barcode/sku/unit from Product, remove Supplier/Customer interfaces, use customerName in Transaction
+- Removed barcode dialog, F2 shortcut, and ScanBarcode from POSPage
+- Replaced customer selection Popover with simple "Nama Pemesan" text input in POSPage
+- Added items summary list in payment dialog showing selected items
+- Added customer name input below cart header in POSPage
+- Fixed receipt DialogContent accessibility error by adding sr-only DialogTitle
+- Changed receipt and sidebar to use storeLogo from settings instead of hardcoded /logo.png
+- Fixed PurchasesPage.tsx syntax error (double brace)
+- Updated all API routes: products (removed barcode/sku/unit), purchases (removed supplierId), dashboard (removed totalCustomers), reports (removed customer/supplier tabs), transactions (customerName), backup, reset
+- Updated all feature pages: DashboardPage, PurchasesPage, TransactionsPage, ReportsPage, StockPage, BackupSettings
+- Updated store/index.ts: customerId → customerName in CartState
+- Made MobileNav "Menu Lainnya" scrollable (already had ScrollArea)
+- Browser verified: login page, dashboard, POS page, products, purchases, settings all working with no console errors
+
+Stage Summary:
+- All 11 user requirements successfully implemented
+- No console errors or lint errors in src/
+- App fully functional with all changes

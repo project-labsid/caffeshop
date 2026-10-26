@@ -9,12 +9,10 @@ import {
   BarChart3,
   MoreHorizontal,
   FolderOpen,
-  Users,
   Truck,
   Receipt,
   Warehouse,
   Store,
-  Percent,
   GitBranch,
   UserCog,
 } from 'lucide-react';
@@ -61,8 +59,6 @@ const moreSections: MobileNavSection[] = [
     roles: ['super_admin', 'owner', 'admin'],
     items: [
       { label: 'Kategori', page: 'categories', icon: FolderOpen },
-      { label: 'Pelanggan', page: 'customers', icon: Users },
-      { label: 'Supplier', page: 'suppliers', icon: Truck },
     ],
   },
   {
@@ -79,7 +75,6 @@ const moreSections: MobileNavSection[] = [
     roles: ['super_admin', 'owner', 'admin'],
     items: [
       { label: 'Pengaturan Toko', page: 'settings', icon: Store },
-      { label: 'Pajak & Service Charge', page: 'tax-settings', icon: Percent },
     ],
   },
   {

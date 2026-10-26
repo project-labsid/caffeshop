@@ -28,7 +28,7 @@ import {
   PackageOpen,
   Trash2,
 } from 'lucide-react';
-import type { Purchase, PurchaseItem, Supplier, Product, PaginatedResponse } from '@/types';
+import type { Purchase, PurchaseItem, Product, PaginatedResponse } from '@/types';
 import { cn, formatRupiah, apiFetch } from '@/lib/utils';
 import { RupiahInput } from '@/components/ui/rupiah-input';
 
@@ -135,7 +135,6 @@ const purchaseItemSchema = z.object({
 type PurchaseItemFormData = z.infer<typeof purchaseItemSchema>;
 
 const purchaseFormSchema = z.object({
-  supplierId: z.string().min(1, 'Supplier wajib dipilih'),
   notes: z.string().optional().or(z.literal('')),
   items: z.array(purchaseItemSchema).min(1, 'Minimal 1 item pembelian'),
 });
@@ -178,7 +177,7 @@ function ProductSelectField({ control, index, products, productsLoading, onProdu
                     <div className="flex items-center justify-between gap-4 w-full">
                       <span className="truncate">{product.name}</span>
                       <span className="text-xs text-muted-foreground whitespace-nowrap">
-                        Stok: {product.stock} {product.unit}
+                        Stok: {product.stock}
                       </span>
                     </div>
                   </SelectItem>
@@ -212,7 +211,6 @@ export default function PurchasesPage() {
   const form = useForm<PurchaseFormData>({
     resolver: zodResolver(purchaseFormSchema),
     defaultValues: {
-      supplierId: '',
       notes: '',
       items: [{ productId: '', quantity: 1, costPrice: 0 }],
     },
@@ -236,16 +234,6 @@ export default function PurchasesPage() {
       const res = await apiFetch(`/api/purchases?${params.toString()}`);
       if (!res.ok) throw new Error('Gagal memuat pembelian');
       return res.json();
-    },
-  });
-
-  const suppliersQuery = useQuery<Supplier[]>({
-    queryKey: ['suppliers-list'],
-    queryFn: async () => {
-      const res = await apiFetch('/api/suppliers?perPage=100');
-      if (!res.ok) throw new Error('Gagal memuat supplier');
-      const data = await res.json();
-      return data.data ?? data;
     },
   });
 
@@ -276,7 +264,6 @@ export default function PurchasesPage() {
   const createMutation = useMutation({
     mutationFn: async (data: PurchaseFormData) => {
       const payload = {
-        supplierId: data.supplierId,
         notes: data.notes || undefined,
         items: data.items.map((item) => ({
           productId: item.productId,
@@ -313,7 +300,6 @@ export default function PurchasesPage() {
   const totalPages = purchasesQuery.data?.totalPages ?? 1;
   const isLoading = purchasesQuery.isLoading || purchasesQuery.isFetching;
   const isMutating = createMutation.isPending;
-  const suppliers = suppliersQuery.data ?? [];
   const products = productsQuery.data ?? [];
   const detailData = detailQuery.data;
 
@@ -330,7 +316,6 @@ export default function PurchasesPage() {
 
   const openAddDialog = useCallback(() => {
     form.reset({
-      supplierId: '',
       notes: '',
       items: [{ productId: '', quantity: 1, costPrice: 0 }],
     });
@@ -411,14 +396,6 @@ export default function PurchasesPage() {
         ),
       },
       {
-        accessorKey: 'supplier',
-        header: 'Supplier',
-        size: 160,
-        cell: ({ row }) => (
-          <span className="text-sm">{row.original.supplier?.name || '-'}</span>
-        ),
-      },
-      {
         accessorKey: 'totalAmount',
         header: 'Total',
         size: 150,
@@ -486,7 +463,7 @@ export default function PurchasesPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Pembelian Barang</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Kelola pembelian barang dari supplier
+            Kelola pembelian barang
           </p>
         </div>
         <Button onClick={openAddDialog} className="bg-primary hover:bg-[#4a2c20]">
@@ -625,38 +602,14 @@ export default function PurchasesPage() {
           <DialogHeader>
             <DialogTitle>Tambah Pembelian</DialogTitle>
             <DialogDescription>
-              Isi detail pembelian barang dari supplier
+              Isi detail pembelian barang
             </DialogDescription>
           </DialogHeader>
 
           <Form {...form}>
             <form onSubmit={(e) => e.preventDefault()} className="space-y-5">
-              {/* Supplier & Notes */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="supplierId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Supplier</FormLabel>
-                      <FormControl>
-                        <Select value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Pilih supplier" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {suppliers.map((supplier) => (
-                              <SelectItem key={supplier.id} value={supplier.id}>
-                                {supplier.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              {/* Notes */}
+              <div className="grid grid-cols-1 gap-4">
                 <FormField
                   control={form.control}
                   name="notes"
@@ -829,10 +782,6 @@ export default function PurchasesPage() {
                 <div className="space-y-1">
                   <Label className="text-muted-foreground text-xs">Tanggal</Label>
                   <p className="text-sm">{formatDate(detailData.createdAt)}</p>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-muted-foreground text-xs">Supplier</Label>
-                  <p className="text-sm font-medium">{detailData.supplier?.name || '-'}</p>
                 </div>
                 <div className="space-y-1">
                   <Label className="text-muted-foreground text-xs">Status</Label>

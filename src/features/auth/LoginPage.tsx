@@ -211,11 +211,7 @@ export default function LoginPage() {
                 </div>
               ))}
             </div>
-            <div className="mt-8 p-4 bg-white/10 rounded-xl border border-white/20">
-              <p className="text-sm text-[#e3bfb2]">
-                ☕ Buat akun terpisah untuk setiap coffee shop Anda. Data antar toko tidak saling terhubung.
-              </p>
-            </div>
+
           </motion.div>
         </div>
       </motion.div>
@@ -372,7 +368,7 @@ export default function LoginPage() {
                 <div>
                   <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Buat Akun Baru</h2>
                   <p className="text-muted-foreground mt-2">
-                    Daftar untuk membuat akun Coffee Shop Anda. Setiap toko memiliki data terpisah.
+                    Buat akun Coffee Shop Anda untuk mulai menggunakan aplikasi.
                   </p>
                 </div>
 

@@ -823,113 +823,7 @@ function LabaRugiTab() {
   );
 }
 
-// ─── Pelanggan Tab ─────────────────────────────────────────────────────────────
-
-function PelangganTab() {
-  const defaults = getDefaultDates();
-  const [startDate, setStartDate] = useState(defaults.start);
-  const [endDate, setEndDate] = useState(defaults.end);
-
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['report-customer', startDate, endDate],
-    queryFn: async () => {
-      const params = new URLSearchParams({ type: 'customer' });
-      if (startDate) params.set('startDate', startDate);
-      if (endDate) params.set('endDate', endDate);
-      const res = await apiFetch(`/api/reports?${params}`);
-      if (!res.ok) throw new Error('Gagal memuat data');
-      const json = await res.json();
-      return json.data;
-    },
-  });
-
-  // Also fetch all customers to get member points
-  const { data: allCustomers } = useQuery({
-    queryKey: ['customers-list'],
-    queryFn: async () => {
-      const res = await apiFetch('/api/customers?perPage=100');
-      if (!res.ok) return [];
-      const json = await res.json();
-      return json.data;
-    },
-  });
-
-  const customerMap = useMemo(() => {
-    const map: Record<string, number> = {};
-    for (const c of allCustomers ?? []) {
-      map[c.id] = c.memberPoint;
-    }
-    return map;
-  }, [allCustomers]);
-
-  return (
-    <div className="space-y-4">
-      <Card>
-        <CardContent className="p-4">
-          <DateRangeFilter
-            startDate={startDate}
-            endDate={endDate}
-            onStartChange={setStartDate}
-            onEndChange={setEndDate}
-          />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">Laporan Pelanggan</CardTitle>
-          <CardDescription>Pelanggan dengan transaksi terbanyak</CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="max-h-96 overflow-y-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="sticky top-0 bg-background z-10">
-                  <TableHead>No</TableHead>
-                  <TableHead>Nama Pelanggan</TableHead>
-                  <TableHead className="text-right">Total Transaksi</TableHead>
-                  <TableHead className="text-right">Total Belanja</TableHead>
-                  <TableHead className="text-right">Poin Member</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  Array.from({ length: 5 }).map((_, i) => (
-                    <TableRow key={i}>
-                      <TableCell><Skeleton className="h-4 w-8" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-36" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-12 ml-auto" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-28 ml-auto" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-12 ml-auto" /></TableCell>
-                    </TableRow>
-                  ))
-                ) : isError || !data?.customers?.length ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                      {isError ? 'Gagal memuat data' : 'Tidak ada data pelanggan'}
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  data.customers.map((c: { customerId: string; customerName: string; totalSpent: number; transactionCount: number }, idx: number) => (
-                    <TableRow key={c.customerId}>
-                      <TableCell className="text-muted-foreground">{idx + 1}</TableCell>
-                      <TableCell className="font-medium">{c.customerName}</TableCell>
-                      <TableCell className="text-right font-mono">{c.transactionCount}</TableCell>
-                      <TableCell className="text-right font-mono">{formatRupiah(c.totalSpent)}</TableCell>
-                      <TableCell className="text-right">
-                        <Badge variant="secondary">{customerMap[c.customerId] ?? 0}</Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+// ─── Pelanggan Tab (removed - Customer model no longer exists) ────────────────
 
 // ─── Stok Tab ──────────────────────────────────────────────────────────────────
 
@@ -1475,10 +1369,6 @@ export default function ReportsPage() {
             <DollarSign className="mr-2 h-4 w-4" />
             Laba Rugi
           </TabsTrigger>
-          <TabsTrigger value="customer" className="flex-1 min-w-[100px]">
-            <Users className="mr-2 h-4 w-4" />
-            Pelanggan
-          </TabsTrigger>
           <TabsTrigger value="stock" className="flex-1 min-w-[100px]">
             <Package className="mr-2 h-4 w-4" />
             Stok
@@ -1519,15 +1409,6 @@ export default function ReportsPage() {
             transition={{ duration: 0.2 }}
           >
             <LabaRugiTab />
-          </motion.div>
-        </TabsContent>
-        <TabsContent value="customer">
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <PelangganTab />
           </motion.div>
         </TabsContent>
         <TabsContent value="stock">

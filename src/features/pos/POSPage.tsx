@@ -6,7 +6,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
   Search,
-  ScanBarcode,
   Package,
   Trash2,
   Pause,
@@ -37,7 +36,7 @@ import {
 
 import { cn, formatRupiah, formatNominal, parseNominal, apiFetch } from '@/lib/utils';
 import { useCartStore, useSettingsStore, useAuthStore } from '@/store';
-import type { Product, Category, Customer, CartItem, PaymentSplit, Transaction } from '@/types';
+import type { Product, Category, CartItem, PaymentSplit, Transaction } from '@/types';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -176,15 +175,15 @@ export default function POSPage() {
   const cartUpdateQuantity = useCartStore((s) => s.updateQuantity);
   const cartUpdateItemDiscount = useCartStore((s) => s.updateItemDiscount);
   const cartUpdateItemNotes = useCartStore((s) => s.updateItemNotes);
-  const cartSetCustomerId = useCartStore((s) => s.setCustomerId);
+  const cartSetCustomerName = useCartStore((s) => s.setCustomerName);
   const cartSetDiscountTotal = useCartStore((s) => s.setDiscountTotal);
   const cartSetNotes = useCartStore((s) => s.setNotes);
   const cartSetHeld = useCartStore((s) => s.setHeld);
   const cartClear = useCartStore((s) => s.clearCart);
-  const cartCustomerId = useCartStore((s) => s.customerId);
+  const cartCustomerName = useCartStore((s) => s.customerName);
   const cartDiscountTotal = useCartStore((s) => s.discountTotal);
   const cartNotesVal = useCartStore((s) => s.notes);
-  const { taxConfig, serviceChargeConfig, storeName, storeAddress, storePhone } = useSettingsStore();
+  const { taxConfig, serviceChargeConfig, storeName, storeAddress, storePhone, storeLogo } = useSettingsStore();
 
   // Printer settings
   const [printerConfig, setPrinterConfig] = useState<{
@@ -197,7 +196,7 @@ export default function POSPage() {
   }>({ paperWidth: '80', autoPrint: false, copies: 1, headerText: '', footerText: '', showLogo: true });
 
   // Reassemble cart object for convenience
-  const cart = { items, discountTotal: cartDiscountTotal, notes: cartNotesVal, customerId: cartCustomerId, addItem: cartAddItem, removeItem: cartRemoveItem, updateQuantity: cartUpdateQuantity, updateItemDiscount: cartUpdateItemDiscount, updateItemNotes: cartUpdateItemNotes, setCustomerId: cartSetCustomerId, setDiscountTotal: cartSetDiscountTotal, setNotes: cartSetNotes, setHeld: cartSetHeld, clearCart: cartClear };
+  const cart = { items, discountTotal: cartDiscountTotal, notes: cartNotesVal, customerName: cartCustomerName, addItem: cartAddItem, removeItem: cartRemoveItem, updateQuantity: cartUpdateQuantity, updateItemDiscount: cartUpdateItemDiscount, updateItemNotes: cartUpdateItemNotes, setCustomerName: cartSetCustomerName, setDiscountTotal: cartSetDiscountTotal, setNotes: cartSetNotes, setHeld: cartSetHeld, clearCart: cartClear };
 
   // Local UI state
   const [searchQuery, setSearchQuery] = useState('');
@@ -205,7 +204,6 @@ export default function POSPage() {
   const [cartSheetOpen, setCartSheetOpen] = useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
-  const [barcodeDialogOpen, setBarcodeDialogOpen] = useState(false);
   const [holdDialogOpen, setHoldDialogOpen] = useState(false);
   const [lastTransaction, setLastTransaction] = useState<Transaction | null>(null);
   const [lastPaidAmount, setLastPaidAmount] = useState(0);
@@ -216,17 +214,12 @@ export default function POSPage() {
   const [paymentSplits, setPaymentSplits] = useState<PaymentSplit[]>([]);
   const [cashAmount, setCashAmount] = useState('');
   const [paymentNotes, setPaymentNotes] = useState('');
-  const [selectedCustomerId, setSelectedCustomerId] = useState('');
-  const [customerSearch, setCustomerSearch] = useState('');
-
-  // Barcode input
-  const [barcodeInput, setBarcodeInput] = useState('');
+  const [customerName, setCustomerName] = useState('');
 
   // Success animation
   const [showSuccess, setShowSuccess] = useState(false);
 
   const searchRef = useRef<HTMLInputElement>(null);
-  const barcodeInputRef = useRef<HTMLInputElement>(null);
 
   // ─── Data Fetching ───────────────────────────────────────────────────────
 
@@ -298,19 +291,6 @@ export default function POSPage() {
       return json.data;
     },
   });
-
-  const { data: customersRaw = [] } = useQuery<Customer[]>({
-    queryKey: ['customers-short'],
-    queryFn: async () => {
-      const res = await apiFetch('/api/customers?perPage=100');
-      if (!res.ok) return [];
-      const json = await res.json();
-      const data = json.data;
-      return Array.isArray(data) ? data : [];
-    },
-  });
-
-  const customers = Array.isArray(customersRaw) ? customersRaw : [];
 
   const { data: heldTransactionsRaw = [], refetch: refetchHeld } = useQuery<Transaction[]>({
     queryKey: ['held-transactions', user?.id],
@@ -480,7 +460,7 @@ export default function POSPage() {
       }));
       const payload = {
         userId: user!.id,
-        customerId: cart.customerId || undefined,
+        customerName: customerName || undefined,
         branchId: user!.branchId || undefined,
         type: 'sale',
         status: 'held',
@@ -550,35 +530,12 @@ export default function POSPage() {
     [cart]
   );
 
-  const handleBarcodeSearch = useCallback(async () => {
-    if (!barcodeInput.trim()) return;
-    try {
-      const res = await apiFetch(`/api/products/barcode/${encodeURIComponent(barcodeInput.trim())}`);
-      const json = await res.json();
-      if (!res.ok) {
-        toast.error(json.error || 'Produk tidak ditemukan');
-        return;
-      }
-      const product = json.data as Product;
-      if (product.stock <= 0) {
-        toast.error('Stok produk habis');
-        return;
-      }
-      addToCart(product);
-      setBarcodeInput('');
-      setBarcodeDialogOpen(false);
-    } catch {
-      toast.error('Gagal mencari produk');
-    }
-  }, [barcodeInput, addToCart]);
-
   const resetPaymentState = useCallback(() => {
     setSelectedPaymentMethod('cash');
     setPaymentSplits([]);
     setCashAmount('');
     setPaymentNotes('');
-    setSelectedCustomerId('');
-    setCustomerSearch('');
+    setCustomerName('');
   }, []);
 
   const handleOpenPayment = useCallback(() => {
@@ -642,7 +599,7 @@ export default function POSPage() {
 
     createTransactionMutation.mutate({
       userId: user!.id,
-      customerId: selectedCustomerId || cart.customerId || undefined,
+      customerName: customerName || undefined,
       branchId: user!.branchId || undefined,
       type: 'sale',
       status: 'completed',
@@ -660,7 +617,7 @@ export default function POSPage() {
     });
   }, [
     cart, selectedPaymentMethod, paymentSplits, paymentSplitsTotal, cashAmount,
-    calculations, selectedCustomerId, user, paymentNotes, createTransactionMutation,
+    calculations, customerName, user, paymentNotes, createTransactionMutation,
   ]);
 
   const handleResumeHeld = useCallback(
@@ -676,10 +633,7 @@ export default function POSPage() {
             costPrice: item.costPrice,
             stock: 999,
             minStock: 0,
-            unit: 'pcs',
             isActive: true,
-            barcode: undefined,
-            sku: undefined,
             categoryId: undefined,
             image: undefined,
             branchId: undefined,
@@ -689,7 +643,6 @@ export default function POSPage() {
           notes: item.notes,
         });
       }
-      if (transaction.customerId) cart.setCustomerId(transaction.customerId);
       if (transaction.notes) cart.setNotes(transaction.notes);
       cart.setDiscountTotal(transaction.discountAmount);
       cart.setHeld(true, transaction.id);
@@ -756,40 +709,21 @@ export default function POSPage() {
     return products;
   }, [products]);
 
-  // ─── Customer search filter ──────────────────────────────────────────────
-
-  const filteredCustomers = useMemo(() => {
-    if (!customerSearch) return customers.slice(0, 10);
-    const q = customerSearch.toLowerCase();
-    return customers.filter(
-      (c) =>
-        c.name.toLowerCase().includes(q) ||
-        (c.phone && c.phone.includes(q)) ||
-        (c.email && c.email.toLowerCase().includes(q))
-    ).slice(0, 10);
-  }, [customers, customerSearch]);
-
   // ─── Keyboard Shortcuts ──────────────────────────────────────────────────
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'F2' && !barcodeDialogOpen && !paymentDialogOpen) {
-        e.preventDefault();
-        setBarcodeDialogOpen(true);
-        setTimeout(() => barcodeInputRef.current?.focus(), 100);
-      }
-      if (e.key === 'F9' && !paymentDialogOpen && !barcodeDialogOpen) {
+      if (e.key === 'F9' && !paymentDialogOpen) {
         e.preventDefault();
         handleOpenPayment();
       }
       if (e.key === 'Escape') {
-        if (barcodeDialogOpen) setBarcodeDialogOpen(false);
         if (paymentDialogOpen && !showSuccess) setPaymentDialogOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [barcodeDialogOpen, paymentDialogOpen, showSuccess, handleOpenPayment]);
+  }, [paymentDialogOpen, showSuccess, handleOpenPayment]);
 
 
   // ─── Render: Product Grid Card ───────────────────────────────────────────
@@ -835,7 +769,7 @@ export default function POSPage() {
         {/* Stock badge */}
         <div className="mt-2 flex items-center justify-between">
           <span className="text-xs text-muted-foreground">
-            Stok: {product.stock} {product.unit}
+            Stok: {product.stock}
           </span>
           {isLowStock && (
             <Badge variant="outline" className="border-amber-500 text-amber-600 text-[10px] px-1.5 py-0">
@@ -1031,6 +965,19 @@ export default function POSPage() {
         </div>
       </div>
 
+      {/* Customer Name Input */}
+      <div className="px-3 pb-2">
+        <div className="relative">
+          <User className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+          <Input
+            placeholder="Nama pemesan..."
+            className="pl-8 h-8 text-sm"
+            value={customerName}
+            onChange={(e) => setCustomerName(e.target.value)}
+          />
+        </div>
+      </div>
+
       {/* Cart Items */}
       <ScrollArea className="flex-1 min-h-0">
         <div className="p-3 space-y-2">
@@ -1128,23 +1075,12 @@ export default function POSPage() {
               <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 ref={searchRef}
-                placeholder="Cari produk atau barcode... (F2)"
+                placeholder="Cari produk..."
                 className="pl-9 h-10"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Button
-              variant="outline"
-              className="h-10 gap-2"
-              onClick={() => {
-                setBarcodeDialogOpen(true);
-                setTimeout(() => barcodeInputRef.current?.focus(), 100);
-              }}
-            >
-              <ScanBarcode className="size-4" />
-              <span className="hidden sm:inline">Barcode</span>
-            </Button>
           </div>
 
           {/* Category Pills */}
@@ -1267,43 +1203,6 @@ export default function POSPage() {
         </Sheet>
       </div>
 
-      {/* ═══ BARCODE DIALOG ═══ */}
-      <Dialog open={barcodeDialogOpen} onOpenChange={setBarcodeDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <ScanBarcode className="size-5" />
-              Scan Barcode
-            </DialogTitle>
-            <DialogDescription>
-              Masukkan kode barcode untuk mencari produk
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex gap-2">
-            <Input
-              ref={barcodeInputRef}
-              placeholder="Ketik atau scan barcode..."
-              value={barcodeInput}
-              onChange={(e) => setBarcodeInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleBarcodeSearch();
-              }}
-              className="flex-1"
-              autoFocus
-            />
-            <Button
-              onClick={handleBarcodeSearch}
-              disabled={!barcodeInput.trim()}
-            >
-              Cari
-            </Button>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Tekan <kbd className="rounded border bg-muted px-1 py-0.5 text-[10px] font-mono">Enter</kbd> untuk mencari atau <kbd className="rounded border bg-muted px-1 py-0.5 text-[10px] font-mono">Esc</kbd> untuk menutup
-          </p>
-        </DialogContent>
-      </Dialog>
-
       {/* ═══ HOLD TRANSACTIONS DIALOG ═══ */}
       <Dialog open={holdDialogOpen} onOpenChange={setHoldDialogOpen}>
         <DialogContent className="sm:max-w-sm">
@@ -1422,6 +1321,16 @@ export default function POSPage() {
               Total: {formatRupiah(calculations.grandTotal)}
             </DialogDescription>
           </DialogHeader>
+
+          {/* Items Summary */}
+          <div className="max-h-32 overflow-y-auto border rounded-lg p-2 space-y-1">
+            {cart.items.map((item) => (
+              <div key={item.product.id} className="flex justify-between text-xs">
+                <span className="truncate flex-1">{item.product.name} ×{item.quantity}</span>
+                <span className="ml-2 shrink-0">{formatRupiah(item.product.sellPrice * item.quantity - item.discount)}</span>
+              </div>
+            ))}
+          </div>
 
           {/* Payment Method Grid */}
           <div className="space-y-4">
@@ -1700,63 +1609,16 @@ export default function POSPage() {
               </motion.div>
             )}
 
-            {/* Customer Selection (Optional) */}
+            {/* Customer Name (Optional) */}
             <div>
               <Label className="text-sm font-medium mb-2 block">
-                Pelanggan (Opsional)
+                Nama Pemesan (Opsional)
               </Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-between text-left font-normal"
-                  >
-                    {selectedCustomerId
-                      ? customers.find((c) => c.id === selectedCustomerId)?.name || 'Pilih pelanggan...'
-                      : 'Pilih pelanggan...'}
-                    <ChevronDown className="ml-2 size-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-72 p-2" align="start">
-                  <Input
-                    placeholder="Cari nama/telp..."
-                    className="mb-2 h-8 text-sm"
-                    value={customerSearch}
-                    onChange={(e) => setCustomerSearch(e.target.value)}
-                  />
-                  <ScrollArea className="max-h-48">
-                    <div className="space-y-0.5">
-                      {filteredCustomers.map((c) => (
-                        <button
-                          key={c.id}
-                          className={cn(
-                            'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-left hover:bg-accent transition-colors',
-                            selectedCustomerId === c.id && 'bg-accent'
-                          )}
-                          onClick={() => {
-                            setSelectedCustomerId(c.id);
-                          }}
-                        >
-                          <User className="size-3.5 text-muted-foreground shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <p className="truncate font-medium">{c.name}</p>
-                            {c.phone && (
-                              <p className="text-xs text-muted-foreground">
-                                {c.phone}
-                              </p>
-                            )}
-                          </div>
-                        </button>
-                      ))}
-                      {filteredCustomers.length === 0 && (
-                        <p className="py-4 text-center text-xs text-muted-foreground">
-                          Pelanggan tidak ditemukan
-                        </p>
-                      )}
-                    </div>
-                  </ScrollArea>
-                </PopoverContent>
-              </Popover>
+              <Input
+                placeholder="Nama pemesan..."
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+              />
             </div>
 
             {/* Notes */}
@@ -1814,11 +1676,15 @@ export default function POSPage() {
 
       <Dialog open={receiptDialogOpen} onOpenChange={setReceiptDialogOpen}>
         <DialogContent className="sm:max-w-sm p-0 overflow-hidden" showCloseButton={false}>
+          {/* Visually hidden title for accessibility */}
+          <DialogHeader className="sr-only">
+            <DialogTitle>Struk Pembayaran</DialogTitle>
+          </DialogHeader>
           {/* Thermal receipt style */}
           <div id="receipt-print" className="bg-white text-black p-6 font-mono text-xs">
             {/* Store Info */}
             <div className="text-center mb-4">
-              {printerConfig.showLogo && <img src="/logo.png" alt="Logo" style={{ width: 64, height: 64, objectFit: 'contain', display: 'block', margin: '0 auto 8px', borderRadius: 8 }} />}
+              {printerConfig.showLogo && <img src={storeLogo || '/logo.png'} alt="Logo" style={{ width: 64, height: 64, objectFit: 'contain', display: 'block', margin: '0 auto 8px', borderRadius: 8 }} />}
               {printerConfig.headerText && (
                 <p className="text-[10px] text-gray-600 mb-1 font-semibold">{printerConfig.headerText}</p>
               )}
@@ -1850,10 +1716,10 @@ export default function POSPage() {
                 <span>Kasir</span>
                 <span>{user?.name || '-'}</span>
               </div>
-              {lastTransaction?.customer && (
+              {lastTransaction?.customerName && (
                 <div className="flex justify-between">
                   <span>Pelanggan</span>
-                  <span>{lastTransaction.customer.name}</span>
+                  <span>{lastTransaction.customerName}</span>
                 </div>
               )}
             </div>
