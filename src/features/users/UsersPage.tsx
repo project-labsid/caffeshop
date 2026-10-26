@@ -98,12 +98,15 @@ import {
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 const roleLabels: Record<string, string> = {
+  owner: 'Owner',
   super_admin: 'Super Admin',
   admin: 'Admin',
   cashier: 'Kasir',
 };
 
 const roleBadgeStyles: Record<string, string> = {
+  owner:
+    'bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-100 dark:bg-purple-900/50 dark:text-purple-400 dark:border-purple-800',
   super_admin:
     'bg-red-100 text-red-700 border-red-200 hover:bg-red-100 dark:bg-red-900/50 dark:text-red-400 dark:border-red-800',
   admin: 'bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100 dark:bg-blue-900/50 dark:text-blue-400 dark:border-blue-800',
@@ -118,7 +121,7 @@ const createUserSchema = z.object({
   email: z.string().email('Email tidak valid'),
   password: z.string().min(6, 'Password minimal 6 karakter'),
   phone: z.string().optional().or(z.literal('')),
-  role: z.enum(['super_admin', 'admin', 'cashier']).default('cashier'),
+  role: z.enum(['owner', 'admin', 'cashier']).default('cashier'),
   branchId: z.string().optional().or(z.literal('')),
   isActive: z.boolean().default(true),
 });
@@ -128,7 +131,7 @@ const editUserSchema = z.object({
   email: z.string().email('Email tidak valid'),
   password: z.string().optional().or(z.literal('')),
   phone: z.string().optional().or(z.literal('')),
-  role: z.enum(['super_admin', 'admin', 'cashier']),
+  role: z.enum(['owner', 'admin', 'cashier']),
   branchId: z.string().optional().or(z.literal('')),
   isActive: z.boolean().default(true),
 });
@@ -654,8 +657,8 @@ export default function UsersPage() {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="super_admin">
-                      Super Admin
+                    <SelectItem value="owner">
+                      Owner
                     </SelectItem>
                     <SelectItem value="admin">Admin</SelectItem>
                     <SelectItem value="cashier">Kasir</SelectItem>
@@ -803,8 +806,8 @@ export default function UsersPage() {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="super_admin">
-                      Super Admin
+                    <SelectItem value="owner">
+                      Owner
                     </SelectItem>
                     <SelectItem value="admin">Admin</SelectItem>
                     <SelectItem value="cashier">Kasir</SelectItem>

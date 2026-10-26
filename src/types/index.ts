@@ -1,4 +1,4 @@
-export type UserRole = 'super_admin' | 'admin' | 'cashir';
+export type UserRole = 'super_admin' | 'owner' | 'admin' | 'cashir';
 
 export interface Account {
   id: string;
@@ -186,7 +186,6 @@ export interface DashboardStats {
   totalRevenue: number;
   totalProducts: number;
   totalCustomers: number;
-  totalSuppliers: number;
   totalTransactions: number;
   topProducts: { productId: string; productName: string; quantity: number; revenue: number }[];
   recentTransactions: Transaction[];
@@ -208,8 +207,6 @@ export type PageName =
   | 'pos'
   | 'products'
   | 'categories'
-  | 'suppliers'
-  | 'customers'
   | 'transactions'
   | 'purchases'
   | 'stock'
@@ -217,7 +214,8 @@ export type PageName =
   | 'settings'
   | 'tax-settings'
   | 'branches'
-  | 'users';
+  | 'users'
+  | 'accounts';
 
 export interface CartItem {
   product: Product;

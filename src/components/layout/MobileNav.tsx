@@ -58,7 +58,7 @@ const cashierBottomItems: MobileNavItem[] = [
 const moreSections: MobileNavSection[] = [
   {
     title: 'Master Data',
-    roles: ['super_admin', 'admin'],
+    roles: ['super_admin', 'owner', 'admin'],
     items: [
       { label: 'Kategori', page: 'categories', icon: FolderOpen },
       { label: 'Pelanggan', page: 'customers', icon: Users },
@@ -67,7 +67,7 @@ const moreSections: MobileNavSection[] = [
   },
   {
     title: 'Transaksi',
-    roles: ['super_admin', 'admin', 'cashir'],
+    roles: ['super_admin', 'owner', 'admin', 'cashir'],
     items: [
       { label: 'Riwayat Transaksi', page: 'transactions', icon: Receipt },
       { label: 'Pembelian', page: 'purchases', icon: Truck },
@@ -76,7 +76,7 @@ const moreSections: MobileNavSection[] = [
   },
   {
     title: 'Pengaturan',
-    roles: ['super_admin', 'admin'],
+    roles: ['super_admin', 'owner', 'admin'],
     items: [
       { label: 'Pengaturan Toko', page: 'settings', icon: Store },
       { label: 'Pajak & Service Charge', page: 'tax-settings', icon: Percent },
@@ -84,7 +84,7 @@ const moreSections: MobileNavSection[] = [
   },
   {
     title: 'Administrasi',
-    roles: ['super_admin'],
+    roles: ['owner'],
     items: [
       { label: 'Cabang', page: 'branches', icon: GitBranch },
       { label: 'Pengguna', page: 'users', icon: UserCog },

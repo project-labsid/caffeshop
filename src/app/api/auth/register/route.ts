@@ -7,7 +7,7 @@ const registerSchema = z.object({
   name: z.string().min(2, 'Nama minimal 2 karakter'),
   email: z.string().email('Email tidak valid'),
   password: z.string().min(6, 'Password minimal 6 karakter'),
-  role: z.enum(['super_admin', 'admin', 'cashier']).default('cashier'),
+  role: z.enum(['owner', 'admin', 'cashier']).default('cashier'),
   phone: z.string().optional(),
   branchId: z.string().optional(),
   // Account fields (only for new account creation)
@@ -71,9 +71,9 @@ export async function POST(request: NextRequest) {
       const requesterRole = request.headers.get('x-user-role')
       const requesterAccountId = request.headers.get('x-account-id')
 
-      if (requesterRole !== 'super_admin' && requesterRole !== 'admin') {
+      if (requesterRole !== 'super_admin' && requesterRole !== 'owner' && requesterRole !== 'admin') {
         return NextResponse.json(
-          { error: 'Hanya admin yang dapat mendaftarkan pengguna baru' },
+          { error: 'Hanya owner atau admin yang dapat mendaftarkan pengguna baru' },
           { status: 403 }
         )
       }
@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
         name,
         email,
         password: hashedPassword,
-        role: isAccountOwner ? 'super_admin' : role,
+        role: isAccountOwner ? 'owner' : role,
         phone,
         branchId,
         accountId,

@@ -8,7 +8,7 @@ const updateUserSchema = z.object({
   email: z.string().email('Email tidak valid').optional(),
   phone: z.string().optional(),
   avatar: z.string().optional(),
-  role: z.enum(['super_admin', 'admin', 'cashier']).optional(),
+  role: z.enum(['owner', 'super_admin', 'admin', 'cashier']).optional(),
   branchId: z.string().nullable().optional(),
   isActive: z.boolean().optional(),
 })

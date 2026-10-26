@@ -181,8 +181,8 @@ export default function SettingsPage() {
 
   // Filter items by role
   const visibleItems = menuItems.filter((item) => {
-    if (item.id === 'users' && role !== 'super_admin') return false;
-    if (item.id === 'reset-data' && role !== 'super_admin') return false;
+    if (item.id === 'users' && role !== 'owner' && role !== 'super_admin') return false;
+    if (item.id === 'reset-data' && role !== 'owner' && role !== 'super_admin') return false;
     return true;
   });
 
@@ -533,7 +533,7 @@ function ResetDataSection({ onBack }: { onBack: () => void }) {
               Konfirmasi Reset Data
             </DialogTitle>
             <DialogDescription>
-              Tindakan ini akan menghapus <strong>SEMUA</strong> data dari sistem. Akun Anda akan tetap tersimpan sebagai Super Admin, tetapi semua data lainnya akan hilang secara permanen.
+              Tindakan ini akan menghapus <strong>SEMUA</strong> data dari sistem. Akun Anda akan tetap tersimpan sebagai Owner, tetapi semua data lainnya akan hilang secara permanen.
             </DialogDescription>
           </DialogHeader>
 

@@ -7,7 +7,6 @@ import {
   ShoppingCart,
   Package,
   FolderOpen,
-  Users,
   Truck,
   Receipt,
   Warehouse,
@@ -43,25 +42,23 @@ interface NavSection {
 const navSections: NavSection[] = [
   {
     title: 'Menu Utama',
-    roles: ['super_admin', 'admin', 'cashir'],
+    roles: ['super_admin', 'owner', 'admin', 'cashir'],
     items: [
-      { label: 'Dashboard', page: 'dashboard', icon: LayoutDashboard, roles: ['super_admin', 'admin'] },
+      { label: 'Dashboard', page: 'dashboard', icon: LayoutDashboard, roles: ['super_admin', 'owner', 'admin'] },
       { label: 'Kasir (POS)', page: 'pos', icon: ShoppingCart },
     ],
   },
   {
     title: 'Master Data',
-    roles: ['super_admin', 'admin'],
+    roles: ['super_admin', 'owner', 'admin'],
     items: [
       { label: 'Produk', page: 'products', icon: Package },
       { label: 'Kategori', page: 'categories', icon: FolderOpen },
-      { label: 'Pelanggan', page: 'customers', icon: Users },
-      { label: 'Supplier', page: 'suppliers', icon: Truck },
     ],
   },
   {
     title: 'Transaksi',
-    roles: ['super_admin', 'admin', 'cashir'],
+    roles: ['super_admin', 'owner', 'admin', 'cashir'],
     items: [
       { label: 'Riwayat Transaksi', page: 'transactions', icon: Receipt },
       { label: 'Pembelian', page: 'purchases', icon: Truck },
@@ -70,14 +67,14 @@ const navSections: NavSection[] = [
   },
   {
     title: 'Laporan',
-    roles: ['super_admin', 'admin'],
+    roles: ['super_admin', 'owner', 'admin'],
     items: [
       { label: 'Laporan', page: 'reports', icon: BarChart3 },
     ],
   },
   {
     title: 'Pengaturan',
-    roles: ['super_admin', 'admin'],
+    roles: ['super_admin', 'owner', 'admin'],
     items: [
       { label: 'Pengaturan Toko', page: 'settings', icon: Store },
       { label: 'Pajak & Service Charge', page: 'tax-settings', icon: Percent },
@@ -85,10 +82,17 @@ const navSections: NavSection[] = [
   },
   {
     title: 'Administrasi',
+    roles: ['owner', 'admin'],
+    items: [
+      { label: 'Cabang', page: 'branches', icon: GitBranch, roles: ['owner'] },
+      { label: 'Pengguna', page: 'users', icon: UserCog },
+    ],
+  },
+  {
+    title: 'Sistem',
     roles: ['super_admin'],
     items: [
-      { label: 'Cabang', page: 'branches', icon: GitBranch },
-      { label: 'Pengguna', page: 'users', icon: UserCog },
+      { label: 'Semua Akun', page: 'accounts', icon: UserCog },
     ],
   },
 ];
@@ -266,7 +270,7 @@ export default function AppSidebar() {
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">{user.name}</p>
               <p className="text-xs text-muted-foreground capitalize truncate">
-                {role === 'cashir' ? 'Kasir' : role === 'admin' ? 'Admin' : 'Super Admin'}
+                {role === 'cashir' ? 'Kasir' : role === 'admin' ? 'Admin' : role === 'owner' ? 'Owner' : 'Super Admin'}
               </p>
             </div>
           </div>

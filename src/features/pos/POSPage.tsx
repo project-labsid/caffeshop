@@ -1822,7 +1822,10 @@ export default function POSPage() {
               {printerConfig.headerText && (
                 <p className="text-[10px] text-gray-600 mb-1 font-semibold">{printerConfig.headerText}</p>
               )}
-              <p className="text-sm font-bold text-base">{storeName || 'Kasir Kopi Shop'}</p>
+              <p className="text-sm font-bold text-base">{storeName || user?.account?.name || 'Kasir Kopi Shop'}</p>
+              {user?.account?.name && storeName && storeName !== user.account.name && (
+                <p className="text-[10px] text-gray-600 mt-0.5">{user.account.name}</p>
+              )}
               {storeAddress && (
                 <p className="text-[10px] text-gray-600 mt-0.5">{storeAddress}</p>
               )}

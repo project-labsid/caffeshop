@@ -27,14 +27,6 @@ const CategoriesPage = dynamic(() => import('@/features/categories/CategoriesPag
   loading: () => <PageSkeleton />,
   ssr: false,
 });
-const SuppliersPage = dynamic(() => import('@/features/suppliers/SuppliersPage'), {
-  loading: () => <PageSkeleton />,
-  ssr: false,
-});
-const CustomersPage = dynamic(() => import('@/features/customers/CustomersPage'), {
-  loading: () => <PageSkeleton />,
-  ssr: false,
-});
 const TransactionsPage = dynamic(() => import('@/features/transactions/TransactionsPage'), {
   loading: () => <PageSkeleton />,
   ssr: false,
@@ -63,28 +55,32 @@ const UsersPage = dynamic(() => import('@/features/users/UsersPage'), {
   loading: () => <PageSkeleton />,
   ssr: false,
 });
+const AccountsPage = dynamic(() => import('@/features/accounts/AccountsPage'), {
+  loading: () => <PageSkeleton />,
+  ssr: false,
+});
 
 // Role-based page access control
 const pageAccess: Record<PageName, UserRole[]> = {
-  'dashboard':    ['super_admin', 'admin'],
-  'pos':          ['super_admin', 'admin', 'cashir'],
-  'products':     ['super_admin', 'admin'],
-  'categories':   ['super_admin', 'admin'],
-  'suppliers':    ['super_admin', 'admin'],
-  'customers':    ['super_admin', 'admin'],
-  'transactions': ['super_admin', 'admin', 'cashir'],
-  'purchases':    ['super_admin', 'admin'],
-  'stock':        ['super_admin', 'admin'],
-  'reports':      ['super_admin', 'admin'],
-  'settings':     ['super_admin', 'admin'],
-  'tax-settings': ['super_admin', 'admin'],
-  'branches':     ['super_admin'],
-  'users':        ['super_admin'],
+  'dashboard':    ['super_admin', 'owner', 'admin'],
+  'pos':          ['super_admin', 'owner', 'admin', 'cashir'],
+  'products':     ['super_admin', 'owner', 'admin'],
+  'categories':   ['super_admin', 'owner', 'admin'],
+  'transactions': ['super_admin', 'owner', 'admin', 'cashir'],
+  'purchases':    ['super_admin', 'owner', 'admin'],
+  'stock':        ['super_admin', 'owner', 'admin'],
+  'reports':      ['super_admin', 'owner', 'admin'],
+  'settings':     ['super_admin', 'owner', 'admin'],
+  'tax-settings': ['super_admin', 'owner', 'admin'],
+  'branches':     ['owner'],
+  'users':        ['owner', 'admin'],
+  'accounts':     ['super_admin'],
 };
 
 // Default page for each role when redirected
 const defaultPageForRole: Record<UserRole, PageName> = {
-  'super_admin': 'dashboard',
+  'super_admin': 'accounts',
+  'owner': 'dashboard',
   'admin': 'dashboard',
   'cashir': 'pos',
 };
@@ -213,10 +209,6 @@ function PageContent({ page }: { page: PageName }) {
       return <ProductsPage />;
     case 'categories':
       return <CategoriesPage />;
-    case 'suppliers':
-      return <SuppliersPage />;
-    case 'customers':
-      return <CustomersPage />;
     case 'transactions':
       return <TransactionsPage />;
     case 'purchases':
@@ -232,6 +224,8 @@ function PageContent({ page }: { page: PageName }) {
       return <BranchesPage />;
     case 'users':
       return <UsersPage />;
+    case 'accounts':
+      return <AccountsPage />;
     default:
       return <DashboardPage />;
   }

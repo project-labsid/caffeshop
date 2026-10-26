@@ -167,7 +167,7 @@ export default function ProfileDialog({ open, onOpenChange }: ProfileDialogProps
           <div>
             <p className="font-medium">{user?.name || 'Pengguna'}</p>
             <p className="text-sm text-muted-foreground capitalize">
-              {user?.role === 'cashir' ? 'Kasir' : user?.role === 'admin' ? 'Admin' : 'Super Admin'}
+              {user?.role === 'owner' ? 'Owner' : user?.role === 'cashir' ? 'Kasir' : user?.role === 'admin' ? 'Admin' : 'Super Admin'}
             </p>
             {user?.branch && (
               <p className="text-xs text-muted-foreground">{user.branch.name}</p>

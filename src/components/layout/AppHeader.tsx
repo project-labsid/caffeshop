@@ -122,11 +122,13 @@ export default function AppHeader({ onOpenProfile }: AppHeaderProps) {
     : '??';
 
   const roleLabel =
-    user?.role === 'cashir'
-      ? 'Kasir'
-      : user?.role === 'admin'
-        ? 'Admin'
-        : 'Super Admin';
+    user?.role === 'owner'
+      ? 'Owner'
+      : user?.role === 'cashir'
+        ? 'Kasir'
+        : user?.role === 'admin'
+          ? 'Admin'
+          : 'Super Admin';
 
   const markAllRead = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));

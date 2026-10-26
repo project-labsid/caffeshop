@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
           todaySales: 0, todayTransactions: 0,
           monthSales: 0, monthTransactions: 0,
           totalRevenue: 0,
-          totalProducts: 0, totalCustomers: 0, totalSuppliers: 0, totalTransactions: 0,
+          totalProducts: 0, totalCustomers: 0, totalTransactions: 0,
           topProducts: [], recentTransactions: [], lowStockProducts: [],
           salesChartData: [], revenueChartData: [],
         },
@@ -43,7 +43,6 @@ export async function GET(request: NextRequest) {
       totalRevenueResult,
       totalProducts,
       totalCustomers,
-      totalSuppliers,
       totalTransactions,
       topProducts,
       recentTransactions,
@@ -78,7 +77,6 @@ export async function GET(request: NextRequest) {
 
       safeQuery(() => db.product.count({ where: { accountId, isActive: true } }), 0),
       safeQuery(() => db.customer.count({ where: { accountId, isActive: true } }), 0),
-      safeQuery(() => db.supplier.count({ where: { accountId, isActive: true } }), 0),
       safeQuery(() => db.transaction.count({ where: { accountId } }), 0),
 
       safeQuery(
@@ -160,7 +158,6 @@ export async function GET(request: NextRequest) {
         totalRevenue: (totalRevenueResult as any)._sum?.grandTotal ?? 0,
         totalProducts,
         totalCustomers,
-        totalSuppliers,
         totalTransactions,
         topProducts,
         recentTransactions,

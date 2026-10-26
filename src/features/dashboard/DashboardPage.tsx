@@ -19,7 +19,6 @@ import {
   TrendingUp,
   Package,
   Users,
-  Truck,
   Receipt,
   Wallet,
   Building2,
@@ -358,7 +357,6 @@ export default function DashboardPage() {
 
       {/* ── Additional Stats Row ────────────────────────────────────────── */}
       <motion.div className="grid grid-cols-2 gap-4 sm:grid-cols-4" variants={itemVariants}>
-        <MiniStatCard icon={Truck} label="Total Supplier" value={data.totalSuppliers} />
         <MiniStatCard icon={Receipt} label="Total Transaksi" value={data.totalTransactions.toLocaleString('id-ID')} />
         <MiniStatCard icon={Wallet} label="Pendapatan" value={formatShortRupiah(data.totalRevenue)} />
         <MiniStatCard icon={Building2} label="Cabang" value={2} />

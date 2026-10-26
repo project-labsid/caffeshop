@@ -65,10 +65,10 @@ export async function DELETE(request: NextRequest) {
       await db.user.deleteMany({
         where: { accountId, id: { not: preserveUserId } },
       })
-      // Reset the preserved user back to super_admin
+      // Reset the preserved user back to owner
       await db.user.update({
         where: { id: preserveUserId },
-        data: { role: 'super_admin', branchId: null },
+        data: { role: 'owner', branchId: null },
       })
     } else {
       await db.user.deleteMany({ where: { accountId } })

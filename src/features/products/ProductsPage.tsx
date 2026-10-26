@@ -156,10 +156,7 @@ function getColorForName(name: string): string {
 
 const productFormSchema = z.object({
   name: z.string().min(2, 'Nama produk minimal 2 karakter'),
-  barcode: z.string().optional().or(z.literal('')),
-  sku: z.string().optional().or(z.literal('')),
   categoryId: z.string().optional().or(z.literal('')),
-  unit: z.string().min(1, 'Satuan wajib diisi').default('pcs'),
   costPrice: z.coerce.number().min(0, 'Harga modal tidak boleh negatif'),
   sellPrice: z.coerce.number().min(1, 'Harga jual harus lebih dari 0'),
   stock: z.coerce.number().int().min(0).default(0),
@@ -239,10 +236,7 @@ export default function ProductsPage() {
     resolver: zodResolver(productFormSchema),
     defaultValues: {
       name: '',
-      barcode: '',
-      sku: '',
       categoryId: '',
-      unit: 'pcs',
       costPrice: 0,
       sellPrice: 0,
       stock: 0,
@@ -288,8 +282,6 @@ export default function ProductsPage() {
   const createMutation = useMutation({
     mutationFn: async (data: ProductFormData) => {
       const payload: Record<string, unknown> = { ...data };
-      if (!payload.barcode) delete payload.barcode;
-      if (!payload.sku) delete payload.sku;
       if (!payload.categoryId) delete payload.categoryId;
       if (!payload.image) delete payload.image;
       const res = await apiFetch('/api/products', {
@@ -317,8 +309,6 @@ export default function ProductsPage() {
     mutationFn: async (data: ProductFormData) => {
       if (!editingProduct) return;
       const payload: Record<string, unknown> = { ...data };
-      if (!payload.barcode) payload.barcode = null;
-      if (!payload.sku) payload.sku = null;
       if (!payload.categoryId) payload.categoryId = null;
       if (!payload.image) payload.image = null;
       const res = await apiFetch(`/api/products/${editingProduct.id}`, {
@@ -381,10 +371,7 @@ export default function ProductsPage() {
     setEditingProduct(null);
     form.reset({
       name: '',
-      barcode: '',
-      sku: '',
       categoryId: '',
-      unit: 'pcs',
       costPrice: 0,
       sellPrice: 0,
       stock: 0,
@@ -400,10 +387,7 @@ export default function ProductsPage() {
       setEditingProduct(product);
       form.reset({
         name: product.name,
-        barcode: product.barcode ?? '',
-        sku: product.sku ?? '',
         categoryId: product.categoryId ?? '',
-        unit: product.unit,
         costPrice: product.costPrice,
         sellPrice: product.sellPrice,
         stock: product.stock,
@@ -518,26 +502,7 @@ export default function ProductsPage() {
           </div>
         ),
       },
-      {
-        accessorKey: 'barcode',
-        header: 'Barcode',
-        size: 120,
-        cell: ({ row }) => (
-          <span className="font-mono text-xs text-muted-foreground">
-            {row.original.barcode || '-'}
-          </span>
-        ),
-      },
-      {
-        accessorKey: 'sku',
-        header: 'SKU',
-        size: 100,
-        cell: ({ row }) => (
-          <span className="font-mono text-xs text-muted-foreground">
-            {row.original.sku || '-'}
-          </span>
-        ),
-      },
+
       {
         accessorKey: 'category',
         header: 'Kategori',
@@ -626,7 +591,7 @@ export default function ProductsPage() {
               getStockColor(row.original.stock, row.original.minStock)
             )}
           >
-            {row.original.stock} {row.original.unit}
+            {row.original.stock}
           </span>
         ),
       },
@@ -706,34 +671,6 @@ export default function ProductsPage() {
             </FormItem>
           )}
         />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="barcode"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Barcode</FormLabel>
-                <FormControl>
-                  <Input placeholder="Scan atau ketik barcode" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="sku"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>SKU</FormLabel>
-                <FormControl>
-                  <Input placeholder="Kode SKU produk" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
         <FormField
           control={form.control}
           name="categoryId"
@@ -761,24 +698,10 @@ export default function ProductsPage() {
             </FormItem>
           )}
         />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="unit"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Satuan</FormLabel>
-                <FormControl>
-                  <Input placeholder="pcs" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="image"
-            render={({ field }) => (
+        <FormField
+          control={form.control}
+          name="image"
+          render={({ field }) => (
               <FormItem>
                 <FormLabel>Foto</FormLabel>
                 <div className="flex items-center gap-2">
@@ -802,7 +725,6 @@ export default function ProductsPage() {
               </FormItem>
             )}
           />
-        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -935,7 +857,7 @@ export default function ProductsPage() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
-            placeholder="Cari nama, barcode, atau SKU..."
+            placeholder="Cari nama produk..."
             value={search}
             onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-9"
