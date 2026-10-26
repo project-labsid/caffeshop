@@ -1,0 +1,44 @@
+# ============================================================
+# Kasir Kopi Shop - Supabase CLI Configuration
+# ============================================================
+# Used by: supabase init, supabase start, supabase db push
+# ============================================================
+
+[api]
+port = 54321
+schemas = ["public"]
+extra_search_path = ["public"]
+
+[db]
+port = 54322
+
+[studio]
+port = 54323
+
+[inbucket]
+port = 54324
+
+[auth]
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/auth/callback"]
+jwt_expiry = 3600
+enable_signup = true
+email_double_confirm_changes = true
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+
+[auth.hooks]
+# Register the custom access token hook
+# This injects account_id and role into JWT claims
+# Uncomment after creating the function:
+# custom_access_token = "pg-functions://public/custom_access_token"
+
+[storage]
+file_size_limit = "50MB"
+
+[realtime]
+# Realtime is enabled for specific tables via SQL
+# (see 00006_realtime.sql)
+enabled = true

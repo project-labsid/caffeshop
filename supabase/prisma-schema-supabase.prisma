@@ -1,0 +1,450 @@
+// ============================================================
+// Kasir Kopi Shop - Prisma Schema for Supabase PostgreSQL
+// ============================================================
+// To use with Supabase:
+// 1. Set DATABASE_URL in .env to your Supabase connection string
+//    Format: postgresql://postgres:[PASSWORD]@db.[REF].supabase.co:5432/postgres
+// 2. Set DIRECT_URL for Prisma Migrate (pooler-free connection)
+// 3. Run: npx prisma db push
+// 4. Run: npx prisma generate
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Account {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  ownerEmail  String   @map("owner_email")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  users                  User[]
+  branches               Branch[]
+  categories             Category[]
+  products               Product[]
+  transactions           Transaction[]
+  purchases              Purchase[]
+  stockAdjustments       StockAdjustment[]
+  storeSettings          StoreSetting[]
+  taxSettings            TaxSetting[]
+  serviceChargeSettings  ServiceChargeSetting[]
+  activityLogs           ActivityLog[]
+  paymentMethods         PaymentMethod[]
+  subscriptionPlans      SubscriptionPlan[]
+  subscriptions          Subscription[]
+  aiUsages               AiUsage[]
+  aiChatLogs             AiChatLog[]
+  aiProviderConfigs      AiProviderConfig[]
+
+  @@map("account")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  password  String
+  phone     String?
+  avatar    String?
+  role      String   @default("cashier")
+  branchId  String?  @map("branch_id")
+  accountId String   @map("account_id")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([email, accountId])
+
+  account          Account           @relation(fields: [accountId], references: [id])
+  branch           Branch?           @relation(fields: [branchId], references: [id])
+  transactions     Transaction[]
+  activityLogs     ActivityLog[]
+  purchases        Purchase[]
+  stockAdjustments StockAdjustment[]
+  subscriptions    Subscription[]
+  aiUsages         AiUsage[]
+  aiChatLogs       AiChatLog[]
+
+  @@map("user")
+}
+
+model Branch {
+  id        String   @id @default(uuid())
+  name      String
+  address   String?
+  phone     String?
+  email     String?
+  isActive  Boolean  @default(true) @map("is_active")
+  accountId String   @map("account_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  account          Account           @relation(fields: [accountId], references: [id])
+  users            User[]
+  products         Product[]
+  transactions     Transaction[]
+  purchases        Purchase[]
+  stockAdjustments StockAdjustment[]
+
+  @@map("branch")
+}
+
+model Category {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  accountId   String   @map("account_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  account     Account     @relation(fields: [accountId], references: [id])
+  products    Product[]
+  taxSettings TaxSetting[]
+
+  @@map("category")
+}
+
+model Product {
+  id         String   @id @default(uuid())
+  name       String
+  categoryId String?  @map("category_id")
+  costPrice  Float    @default(0) @map("cost_price")
+  sellPrice  Float    @default(0) @map("sell_price")
+  stock      Int      @default(0)
+  minStock   Int      @default(5) @map("min_stock")
+  image      String?
+  isActive   Boolean  @default(true) @map("is_active")
+  branchId   String?  @map("branch_id")
+  accountId  String   @map("account_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  account          Account           @relation(fields: [accountId], references: [id])
+  category         Category?         @relation(fields: [categoryId], references: [id])
+  branch           Branch?           @relation(fields: [branchId], references: [id])
+  transactionItems TransactionItem[]
+  purchaseItems    PurchaseItem[]
+  stockAdjustments StockAdjustment[]
+
+  @@map("product")
+}
+
+model Transaction {
+  id             String    @id @default(uuid())
+  invoiceNumber  String    @unique @map("invoice_number")
+  userId         String    @map("user_id")
+  customerName   String?   @map("customer_name")
+  branchId       String?   @map("branch_id")
+  type           String    @default("sale")
+  status         String    @default("completed")
+  subtotal       Float     @default(0)
+  discountAmount Float     @default(0) @map("discount_amount")
+  taxAmount      Float     @default(0) @map("tax_amount")
+  serviceCharge  Float     @default(0) @map("service_charge")
+  grandTotal     Float     @default(0) @map("grand_total")
+  paidAmount     Float     @default(0) @map("paid_amount")
+  changeAmount   Float     @default(0) @map("change_amount")
+  paymentMethod  String    @default("cash") @map("payment_method")
+  paymentDetails String?   @map("payment_details")
+  notes          String?
+  accountId      String    @map("account_id")
+  heldAt         DateTime? @map("held_at")
+  completedAt    DateTime? @map("completed_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  account Account          @relation(fields: [accountId], references: [id])
+  user    User             @relation(fields: [userId], references: [id])
+  branch  Branch?          @relation(fields: [branchId], references: [id])
+  items   TransactionItem[]
+
+  @@map("transaction")
+}
+
+model TransactionItem {
+  id            String   @id @default(uuid())
+  transactionId String   @map("transaction_id")
+  productId     String   @map("product_id")
+  productName   String   @map("product_name")
+  quantity      Int
+  price         Float
+  costPrice     Float    @default(0) @map("cost_price")
+  discount      Float    @default(0)
+  total         Float
+  notes         String?
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  product     Product     @relation(fields: [productId], references: [id])
+
+  @@map("transaction_item")
+}
+
+model Purchase {
+  id            String   @id @default(uuid())
+  invoiceNumber String   @unique @map("invoice_number")
+  userId        String   @map("user_id")
+  branchId      String?  @map("branch_id")
+  totalAmount   Float    @default(0) @map("total_amount")
+  status        String   @default("received")
+  notes         String?
+  accountId     String   @map("account_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  account Account        @relation(fields: [accountId], references: [id])
+  user    User           @relation(fields: [userId], references: [id])
+  branch  Branch?        @relation(fields: [branchId], references: [id])
+  items   PurchaseItem[]
+
+  @@map("purchase")
+}
+
+model PurchaseItem {
+  id         String   @id @default(uuid())
+  purchaseId String   @map("purchase_id")
+  productId  String   @map("product_id")
+  quantity   Int
+  costPrice  Float    @map("cost_price")
+  total      Float
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  purchase Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id])
+
+  @@map("purchase_item")
+}
+
+model StockAdjustment {
+  id            String   @id @default(uuid())
+  productId     String   @map("product_id")
+  userId        String   @map("user_id")
+  branchId      String?  @map("branch_id")
+  type          String
+  quantity      Int
+  previousStock Int      @map("previous_stock")
+  newStock      Int      @map("new_stock")
+  reason        String?
+  accountId     String   @map("account_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  account Account @relation(fields: [accountId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+  branch  Branch? @relation(fields: [branchId], references: [id])
+
+  @@map("stock_adjustment")
+}
+
+model StoreSetting {
+  id          String   @id @default(uuid())
+  key         String
+  value       String
+  description String?
+  accountId   String   @map("account_id")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([key, accountId])
+
+  account Account @relation(fields: [accountId], references: [id])
+
+  @@map("store_setting")
+}
+
+model TaxSetting {
+  id          String    @id @default(uuid())
+  isEnabled   Boolean   @default(false) @map("is_enabled")
+  percentage  Float     @default(11)
+  mode        String    @default("exclude")
+  applyToAll  Boolean   @default(true) @map("apply_to_all")
+  categoryId  String?   @map("category_id")
+  accountId   String    @map("account_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  account  Account   @relation(fields: [accountId], references: [id])
+  category Category? @relation(fields: [categoryId], references: [id])
+
+  @@map("tax_setting")
+}
+
+model ServiceChargeSetting {
+  id         String   @id @default(uuid())
+  isEnabled  Boolean  @default(false) @map("is_enabled")
+  percentage Float    @default(5)
+  accountId  String   @map("account_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  account Account @relation(fields: [accountId], references: [id])
+
+  @@map("service_charge_setting")
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  userId    String?  @map("user_id")
+  action    String
+  module    String
+  details   String?
+  ipAddress String?  @map("ip_address")
+  accountId String   @map("account_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  account Account @relation(fields: [accountId], references: [id])
+  user    User?   @relation(fields: [userId], references: [id])
+
+  @@map("activity_log")
+}
+
+model SubscriptionPlan {
+  id             String   @id @default(uuid())
+  name           String
+  price          Float    @default(0)
+  period         String   @default("monthly")
+  maxProducts    Int      @default(200) @map("max_products")
+  maxBranches    Int      @default(1) @map("max_branches")
+  maxUsers       Int      @default(2) @map("max_users")
+  maxStorage     Int      @default(500) @map("max_storage")
+  aiChatDaily    Int      @default(10) @map("ai_chat_daily")
+  aiChatMonthly  Int      @default(300) @map("ai_chat_monthly")
+  features       String
+  isActive       Boolean  @default(true) @map("is_active")
+  sortOrder      Int      @default(0) @map("sort_order")
+  accountId      String   @map("account_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  account        Account        @relation(fields: [accountId], references: [id])
+  subscriptions  Subscription[]
+
+  @@map("subscription_plan")
+}
+
+model Subscription {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  planId    String    @map("plan_id")
+  status    String    @default("active")
+  startDate DateTime  @default(now()) @map("start_date")
+  endDate   DateTime? @map("end_date")
+  accountId String    @map("account_id")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  account Account           @relation(fields: [accountId], references: [id])
+  user    User              @relation(fields: [userId], references: [id])
+  plan    SubscriptionPlan  @relation(fields: [planId], references: [id])
+  usages  SubscriptionUsage[]
+
+  @@map("subscription")
+}
+
+model SubscriptionUsage {
+  id             String    @id @default(uuid())
+  subscriptionId String    @map("subscription_id")
+  metric         String
+  currentValue   Int       @default(0) @map("current_value")
+  maxValue       Int       @default(0) @map("max_value")
+  resetAt        DateTime? @map("reset_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@map("subscription_usage")
+}
+
+model PaymentMethod {
+  id             String    @id @default(uuid())
+  name           String
+  type           String
+  description    String?
+  status         String    @default("active")
+  isDefault      Boolean   @default(false) @map("is_default")
+  sortOrder      Int       @default(0) @map("sort_order")
+  icon           String?
+  logo           String?
+  bankName       String?   @map("bank_name")
+  accountNumber  String?   @map("account_number")
+  accountHolder  String?   @map("account_holder")
+  branch         String?
+  swiftCode      String?   @map("swift_code")
+  phone          String?
+  provider       String?
+  merchantId     String?   @map("merchant_id")
+  merchantName   String?   @map("merchant_name")
+  qrImage        String?   @map("qr_image")
+  instructions   String?
+  paymentGateway String?   @map("payment_gateway")
+  cardProvider   String?   @map("card_provider")
+  accountId      String    @map("account_id")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+
+  account Account @relation(fields: [accountId], references: [id])
+
+  @@map("payment_method")
+}
+
+model AiUsage {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  type       String
+  tokensUsed Int      @default(0) @map("tokens_used")
+  modelUsed  String?  @map("model_used")
+  provider   String?
+  cost       Float    @default(0)
+  accountId  String   @map("account_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  account Account @relation(fields: [accountId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@map("ai_usage")
+}
+
+model AiChatLog {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  role       String
+  content    String
+  tokensUsed Int      @default(0) @map("tokens_used")
+  modelUsed  String?  @map("model_used")
+  accountId  String   @map("account_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  account Account @relation(fields: [accountId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@map("ai_chat_log")
+}
+
+model AiProviderConfig {
+  id            String   @id @default(uuid())
+  provider      String
+  apiKey        String   @map("api_key")
+  modelDefault  String   @map("model_default")
+  modelFallback String?  @map("model_fallback")
+  maxTokens     Int      @default(4096) @map("max_tokens")
+  isActive      Boolean  @default(true) @map("is_active")
+  accountId     String   @map("account_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  account Account @relation(fields: [accountId], references: [id])
+
+  @@map("ai_provider_config")
+}
