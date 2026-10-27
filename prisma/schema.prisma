@@ -1,10 +1,12 @@
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client-js" 
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("https://jpsntjctyvtxiyrrnjap.supabase.co")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+
 }
 
 // ===================== ACCOUNT (Multi-Tenancy) =====================
