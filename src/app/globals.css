@@ -115,13 +115,13 @@
   --chart-5: #ba1a1a;
 
   /* Sidebar — Warm espresso sidebar */
-  --sidebar: #1a120d;
+  --sidebar: #ebe6e4;
   --sidebar-foreground: #e3bfb2;
   --sidebar-primary: #e9c349;
-  --sidebar-primary-foreground: #1a120d;
-  --sidebar-accent: #2c1810;
+  --sidebar-primary-foreground: #f7f4f2;
+  --sidebar-accent: rgb(250, 248, 248);
   --sidebar-accent-foreground: #e3bfb2;
-  --sidebar-border: #3d2a1e;
+  --sidebar-border: #fcf6f3;
   --sidebar-ring: #e9c349;
 }
 
