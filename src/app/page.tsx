@@ -71,30 +71,31 @@ const UsersPage = dynamic(() => import('@/features/users/UsersPage'), {
   ssr: false,
 });
 
-// Role-based page access control
+// Role-based page access control (owner = pemilik toko, akses penuh)
 const pageAccess: Record<PageName, UserRole[]> = {
-  'dashboard':    ['super_admin', 'admin'],
-  'pos':          ['super_admin', 'admin', 'cashir'],
-  'products':     ['super_admin', 'admin'],
-  'product-form': ['super_admin', 'admin'],
-  'categories':   ['super_admin', 'admin'],
-  'suppliers':    ['super_admin', 'admin'],
-  'customers':    ['super_admin', 'admin'],
-  'transactions': ['super_admin', 'admin', 'cashir'],
-  'purchases':    ['super_admin', 'admin'],
-  'stock':        ['super_admin', 'admin'],
-  'reports':      ['super_admin', 'admin'],
-  'settings':     ['super_admin', 'admin'],
-  'tax-settings': ['super_admin', 'admin'],
-  'branches':     ['super_admin'],
-  'users':        ['super_admin'],
+  'dashboard':    ['super_admin', 'owner', 'admin'],
+  'pos':          ['super_admin', 'owner', 'admin', 'cashier'],
+  'products':     ['super_admin', 'owner', 'admin'],
+  'product-form': ['super_admin', 'owner', 'admin'],
+  'categories':   ['super_admin', 'owner', 'admin'],
+  'suppliers':    ['super_admin', 'owner', 'admin'],
+  'customers':    ['super_admin', 'owner', 'admin'],
+  'transactions': ['super_admin', 'owner', 'admin', 'cashier'],
+  'purchases':    ['super_admin', 'owner', 'admin'],
+  'stock':        ['super_admin', 'owner', 'admin'],
+  'reports':      ['super_admin', 'owner', 'admin'],
+  'settings':     ['super_admin', 'owner', 'admin'],
+  'tax-settings': ['super_admin', 'owner', 'admin'],
+  'branches':     ['super_admin', 'owner'],
+  'users':        ['super_admin', 'owner'],
 };
 
 // Default page for each role when redirected
 const defaultPageForRole: Record<UserRole, PageName> = {
   'super_admin': 'dashboard',
+  'owner': 'dashboard',
   'admin': 'dashboard',
-  'cashir': 'pos',
+  'cashier': 'pos',
 };
 
 function PageSkeleton() {

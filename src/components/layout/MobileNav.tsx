@@ -9,10 +9,12 @@ import {
   BarChart3,
   MoreHorizontal,
   FolderOpen,
+  Users,
   Truck,
   Receipt,
   Warehouse,
   Store,
+  Percent,
   GitBranch,
   UserCog,
 } from 'lucide-react';
@@ -26,6 +28,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useNavStore, useAuthStore } from '@/store';
+import { normalizeRole } from '@/lib/utils';
 import type { PageName, UserRole } from '@/types';
 
 interface MobileNavItem {
@@ -59,11 +62,13 @@ const moreSections: MobileNavSection[] = [
     roles: ['super_admin', 'owner', 'admin'],
     items: [
       { label: 'Kategori', page: 'categories', icon: FolderOpen },
+      { label: 'Pelanggan', page: 'customers', icon: Users },
+      { label: 'Supplier', page: 'suppliers', icon: Truck },
     ],
   },
   {
     title: 'Transaksi',
-    roles: ['super_admin', 'owner', 'admin', 'cashir'],
+    roles: ['super_admin', 'owner', 'admin', 'cashier'],
     items: [
       { label: 'Riwayat Transaksi', page: 'transactions', icon: Receipt },
       { label: 'Pembelian', page: 'purchases', icon: Truck },
@@ -75,11 +80,12 @@ const moreSections: MobileNavSection[] = [
     roles: ['super_admin', 'owner', 'admin'],
     items: [
       { label: 'Pengaturan Toko', page: 'settings', icon: Store },
+      { label: 'Pajak & Service Charge', page: 'tax-settings', icon: Percent },
     ],
   },
   {
     title: 'Administrasi',
-    roles: ['owner'],
+    roles: ['super_admin', 'owner'],
     items: [
       { label: 'Cabang', page: 'branches', icon: GitBranch },
       { label: 'Pengguna', page: 'users', icon: UserCog },
@@ -92,9 +98,9 @@ export default function MobileNav() {
   const { user } = useAuthStore();
   const [moreOpen, setMoreOpen] = useState(false);
 
-  const role = (user?.role || 'cashir') as UserRole;
+  const role = normalizeRole(user?.role || 'cashier');
 
-  const visibleBottomItems = role === 'cashir' ? cashierBottomItems : bottomNavItems.filter((item) => {
+  const visibleBottomItems = role === 'cashier' ? cashierBottomItems : bottomNavItems.filter((item) => {
     return true;
   });
 
@@ -102,7 +108,7 @@ export default function MobileNav() {
     .filter((s) => s.roles.includes(role))
     .map((s) => {
       // Cashier: only show Riwayat Transaksi in Transaksi section
-      if (s.title === 'Transaksi' && role === 'cashir') {
+      if (s.title === 'Transaksi' && role === 'cashier') {
         return { ...s, items: s.items.filter(i => i.page === 'transactions') };
       }
       return s;

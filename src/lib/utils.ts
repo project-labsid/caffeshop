@@ -1,9 +1,44 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import type { UserRole } from "@/types"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
+
+// ─── Role Normalization ───────────────────────────────────────────────────────
+
+/** Alias role lama / variasi penulisan → role standar aplikasi */
+const ROLE_ALIASES: Record<string, UserRole> = {
+  super_admin: 'super_admin',
+  superadmin: 'super_admin',
+  owner: 'owner',
+  pemilik: 'owner',
+  admin: 'admin',
+  cashier: 'cashier',
+  cashir: 'cashier', // typo lama
+  kasir: 'cashier',
+};
+
+/**
+ * Menormalkan role apa pun (mis. "Owner", "CASHIER", "cashir") menjadi
+ * role standar: super_admin | admin | cashier | owner.
+ * Role yang tidak dikenal dikembalikan apa adanya (huruf kecil) sehingga
+ * tetap gagal di pengecekan izin (fail-closed).
+ */
+export function normalizeRole(role?: string | null): UserRole {
+  if (!role) return 'cashier';
+  const key = String(role).toLowerCase().trim();
+  return ROLE_ALIASES[key] ?? (key as UserRole);
+}
+
+/** Label role yang rapi untuk ditampilkan di UI */
+export const ROLE_LABELS: Record<UserRole, string> = {
+  super_admin: 'Super Admin',
+  owner: 'Owner',
+  admin: 'Admin',
+  cashier: 'Kasir',
+};
 
 // ─── Rupiah Formatting ─────────────────────────────────────────────────────────
 

@@ -7,17 +7,19 @@ import {
   ShoppingCart,
   Package,
   FolderOpen,
+  Users,
   Truck,
   Receipt,
   Warehouse,
   BarChart3,
   Store,
+  Percent,
   GitBranch,
   UserCog,
   LogOut,
   ChevronLeft,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, ROLE_LABELS, normalizeRole } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
@@ -41,7 +43,7 @@ interface NavSection {
 const navSections: NavSection[] = [
   {
     title: 'Menu Utama',
-    roles: ['super_admin', 'owner', 'admin', 'cashir'],
+    roles: ['super_admin', 'owner', 'admin', 'cashier'],
     items: [
       { label: 'Dashboard', page: 'dashboard', icon: LayoutDashboard, roles: ['super_admin', 'owner', 'admin'] },
       { label: 'Kasir (POS)', page: 'pos', icon: ShoppingCart },
@@ -53,11 +55,13 @@ const navSections: NavSection[] = [
     items: [
       { label: 'Produk', page: 'products', icon: Package },
       { label: 'Kategori', page: 'categories', icon: FolderOpen },
+      { label: 'Pelanggan', page: 'customers', icon: Users },
+      { label: 'Supplier', page: 'suppliers', icon: Truck },
     ],
   },
   {
     title: 'Transaksi',
-    roles: ['super_admin', 'owner', 'admin', 'cashir'],
+    roles: ['super_admin', 'owner', 'admin', 'cashier'],
     items: [
       { label: 'Riwayat Transaksi', page: 'transactions', icon: Receipt },
       { label: 'Pembelian', page: 'purchases', icon: Truck },
@@ -76,21 +80,15 @@ const navSections: NavSection[] = [
     roles: ['super_admin', 'owner', 'admin'],
     items: [
       { label: 'Pengaturan Toko', page: 'settings', icon: Store },
+      { label: 'Pajak & Service Charge', page: 'tax-settings', icon: Percent },
     ],
   },
   {
     title: 'Administrasi',
-    roles: ['owner', 'admin'],
+    roles: ['super_admin', 'owner'],
     items: [
-      { label: 'Cabang', page: 'branches', icon: GitBranch, roles: ['owner'] },
+      { label: 'Cabang', page: 'branches', icon: GitBranch },
       { label: 'Pengguna', page: 'users', icon: UserCog },
-    ],
-  },
-  {
-    title: 'Sistem',
-    roles: ['super_admin'],
-    items: [
-      { label: 'Semua Akun', page: 'accounts', icon: UserCog },
     ],
   },
 ];
@@ -103,7 +101,7 @@ const cashierTransaksiItems: NavItem[] = [
 export default function AppSidebar() {
   const { currentPage, setCurrentPage, sidebarOpen, setSidebarOpen } = useNavStore();
   const { user, logout } = useAuthStore();
-  const { storeName, storeLogo } = useSettingsStore();
+  const { storeName } = useSettingsStore();
   const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -120,7 +118,7 @@ export default function AppSidebar() {
     return () => window.removeEventListener('resize', check);
   }, [sidebarOpen]);
 
-  const role = (user?.role || 'cashir') as UserRole;
+  const role = normalizeRole(user?.role || 'cashier');
 
   function getFilteredSections(): NavSection[] {
     const sections: NavSection[] = [];
@@ -138,7 +136,7 @@ export default function AppSidebar() {
         if (filteredItems.length === 0) continue;
 
         // Special handling: cashier only sees certain items in Transaksi
-        if (section.title === 'Transaksi' && role === 'cashir') {
+        if (section.title === 'Transaksi' && role === 'cashier') {
           sections.push({
             ...section,
             items: cashierTransaksiItems,
@@ -153,10 +151,10 @@ export default function AppSidebar() {
     }
 
     // Cashier should see a transaksi section with only riwayat
-    if (role === 'cashir' && !sections.find(s => s.title === 'Transaksi')) {
+    if (role === 'cashier' && !sections.find(s => s.title === 'Transaksi')) {
       sections.push({
         title: 'Transaksi',
-        roles: ['cashir'],
+        roles: ['cashier'],
         items: cashierTransaksiItems,
       });
     }
@@ -183,7 +181,7 @@ export default function AppSidebar() {
       {/* Logo area */}
       <div className="flex items-center gap-3 px-4 py-5 shrink-0">
         <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0">
-          <img src={storeLogo || '/logo.png'} alt="Kasir Kopi Shop" className="w-full h-full object-cover" />
+          <img src="/logo.png" alt="Kasir Kopi Shop" className="w-full h-full object-cover" />
         </div>
         <AnimatePresence>
           {!collapsed && (
@@ -267,8 +265,8 @@ export default function AppSidebar() {
             </Avatar>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">{user.name}</p>
-              <p className="text-xs text-muted-foreground capitalize truncate">
-                {role === 'cashir' ? 'Kasir' : role === 'admin' ? 'Admin' : role === 'owner' ? 'Owner' : 'Super Admin'}
+              <p className="text-xs text-muted-foreground truncate">
+                {ROLE_LABELS[role] ?? role}
               </p>
             </div>
           </div>

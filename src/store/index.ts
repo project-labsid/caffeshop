@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { normalizeRole } from '@/lib/utils';
 import type { User, Account, PageName, CartItem, PaymentSplit, TaxConfig, ServiceChargeConfig } from '@/types';
 
 interface AuthState {
@@ -64,14 +65,16 @@ export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: false,
   accountId: null,
   login: (user) => {
+    // Normalkan role agar varian lama ("Owner", "cashir", "CASHIER", dll) dikenali
+    const normalized = { ...user, role: normalizeRole(user.role) } as User;
     if (typeof window !== 'undefined') {
-      localStorage.setItem('pos_user', JSON.stringify(user));
+      localStorage.setItem('pos_user', JSON.stringify(normalized));
     }
     // Redirect cashier to POS page on login
-    if (user.role === 'cashir') {
+    if (normalized.role === 'cashier') {
       useNavStore.getState().setCurrentPage('pos');
     }
-    set({ user, isAuthenticated: true, accountId: user.accountId || null });
+    set({ user: normalized, isAuthenticated: true, accountId: normalized.accountId || null });
   },
   logout: () => {
     if (typeof window !== 'undefined') {
@@ -82,6 +85,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   updateUser: (updates) =>
     set((state) => {
       const newUser = { ...state.user, ...updates } as User;
+      if (updates.role) {
+        newUser.role = normalizeRole(updates.role);
+      }
       if (typeof window !== 'undefined') {
         localStorage.setItem('pos_user', JSON.stringify(newUser));
       }
