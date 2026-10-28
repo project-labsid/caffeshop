@@ -187,6 +187,7 @@ export interface DashboardStats {
   totalProducts: number;
   totalCustomers: number;
   totalSuppliers: number;
+  totalBranches: number;
   totalTransactions: number;
   topProducts: { productId: string; productName: string; quantity: number; revenue: number }[];
   recentTransactions: Transaction[];

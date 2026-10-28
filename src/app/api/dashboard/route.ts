@@ -6,19 +6,11 @@ export async function GET(request: NextRequest) {
   try {
     const accountId = request.headers.get('x-account-id')
     if (!accountId) {
-      // Return empty dashboard data when not authenticated (consistent { data } wrapper)
+      // Return empty dashboard data when not authenticated
       return NextResponse.json({
         data: {
-          todaySales: 0, todayTransactions: 0,
-          monthSales: 0, monthTransactions: 0,
-          totalRevenue: 0,
-          todayExpense: 0,
-          monthExpense: 0,
-          totalExpense: 0,
-          todayPurchaseExpense: 0,
-          monthPurchaseExpense: 0,
-          totalPurchaseExpense: 0,
-          totalProducts: 0, totalTransactions: 0,
+          todaySales: 0, monthSales: 0, totalRevenue: 0,
+          totalProducts: 0, totalCustomers: 0, totalSuppliers: 0, totalBranches: 0, totalTransactions: 0,
           topProducts: [], recentTransactions: [], lowStockProducts: [],
           salesChartData: [], revenueChartData: [],
         },
@@ -47,15 +39,11 @@ export async function GET(request: NextRequest) {
       todaySalesResult,
       monthSalesResult,
       totalRevenueResult,
-      todayTxItems,
-      monthTxItems,
-      totalTxItems,
-      todayPurchaseExpense,
-      monthPurchaseExpense,
-      totalPurchaseExpense,
       totalProducts,
-      totalTransactions,
+      totalCustomers,
+      totalSuppliers,
       totalBranches,
+      totalTransactions,
       topProducts,
       recentTransactions,
       lowStockProducts,
@@ -87,69 +75,11 @@ export async function GET(request: NextRequest) {
         { _sum: { grandTotal: 0 } }
       ),
 
-      // Today expense items (costPrice * quantity)
-      safeQuery(
-        () => db.transactionItem.findMany({
-          where: {
-            transaction: { accountId, status: 'completed', type: 'sale', createdAt: { gte: today } },
-          },
-          select: { costPrice: true, quantity: true },
-        }),
-        []
-      ),
-
-      // Month expense items
-      safeQuery(
-        () => db.transactionItem.findMany({
-          where: {
-            transaction: { accountId, status: 'completed', type: 'sale', createdAt: { gte: startOfMonth } },
-          },
-          select: { costPrice: true, quantity: true },
-        }),
-        []
-      ),
-
-      // Total expense items
-      safeQuery(
-        () => db.transactionItem.findMany({
-          where: {
-            transaction: { accountId, status: 'completed', type: 'sale' },
-          },
-          select: { costPrice: true, quantity: true },
-        }),
-        []
-      ),
-
-      // Today purchase expense
-      safeQuery(
-        () => db.purchase.aggregate({
-          where: { accountId, status: 'received', createdAt: { gte: today } },
-          _sum: { totalAmount: true },
-        }),
-        { _sum: { totalAmount: 0 } }
-      ),
-
-      // Month purchase expense
-      safeQuery(
-        () => db.purchase.aggregate({
-          where: { accountId, status: 'received', createdAt: { gte: startOfMonth } },
-          _sum: { totalAmount: true },
-        }),
-        { _sum: { totalAmount: 0 } }
-      ),
-
-      // Total purchase expense
-      safeQuery(
-        () => db.purchase.aggregate({
-          where: { accountId, status: 'received' },
-          _sum: { totalAmount: true },
-        }),
-        { _sum: { totalAmount: 0 } }
-      ),
-
       safeQuery(() => db.product.count({ where: { accountId, isActive: true } }), 0),
-      safeQuery(() => db.transaction.count({ where: { accountId } }), 0),
+      safeQuery(() => db.customer.count({ where: { accountId, isActive: true } }), 0),
+      safeQuery(() => db.supplier.count({ where: { accountId, isActive: true } }), 0),
       safeQuery(() => db.branch.count({ where: { accountId, isActive: true } }), 0),
+      safeQuery(() => db.transaction.count({ where: { accountId } }), 0),
 
       safeQuery(
         () => db.transactionItem.groupBy({
@@ -171,6 +101,7 @@ export async function GET(request: NextRequest) {
           orderBy: { createdAt: 'desc' },
           include: {
             user: { select: { id: true, name: true } },
+            customer: { select: { id: true, name: true } },
           },
         }),
         []
@@ -194,19 +125,6 @@ export async function GET(request: NextRequest) {
         []
       ),
     ])
-
-    // Calculate COGS (costPrice * quantity) — same formula as reports
-    const calcCOGS = (items: Array<{ costPrice: number; quantity: number }>) =>
-      items.reduce((sum, item) => sum + (item.costPrice * item.quantity), 0)
-
-    const todayCOGS = calcCOGS(todayTxItems as any[])
-    const monthCOGS = calcCOGS(monthTxItems as any[])
-    const totalCOGS = calcCOGS(totalTxItems as any[])
-
-    // Combine COGS + purchase expenses for total expense
-    const todayPurchaseTotal = (todayPurchaseExpense as any)._sum?.totalAmount ?? 0
-    const monthPurchaseTotal = (monthPurchaseExpense as any)._sum?.totalAmount ?? 0
-    const totalPurchaseTotal = (totalPurchaseExpense as any)._sum?.totalAmount ?? 0
 
     // Process sales chart data
     const dailyMap = new Map<string, { total: number; count: number }>()
@@ -240,15 +158,11 @@ export async function GET(request: NextRequest) {
         monthSales: (monthSalesResult as any)._sum?.grandTotal ?? 0,
         monthTransactions: (monthSalesResult as any)._count ?? 0,
         totalRevenue: (totalRevenueResult as any)._sum?.grandTotal ?? 0,
-        todayExpense: todayCOGS + todayPurchaseTotal,
-        monthExpense: monthCOGS + monthPurchaseTotal,
-        totalExpense: totalCOGS + totalPurchaseTotal,
-        todayPurchaseExpense: todayPurchaseTotal,
-        monthPurchaseExpense: monthPurchaseTotal,
-        totalPurchaseExpense: totalPurchaseTotal,
         totalProducts,
-        totalTransactions,
+        totalCustomers,
+        totalSuppliers,
         totalBranches,
+        totalTransactions,
         topProducts,
         recentTransactions,
         lowStockProducts: filteredLowStock,

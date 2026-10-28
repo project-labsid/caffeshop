@@ -38,7 +38,7 @@ import { useAuthStore, useSettingsStore } from '@/store';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import dynamic from 'next/dynamic';
-import { cn, apiFetch } from '@/lib/utils';
+import { cn, apiFetch, normalizeRole } from '@/lib/utils';
 
 // Lazy-load sub-pages
 const AccountSettings = dynamic(() => import('./AccountSettings'), { ssr: false });
@@ -175,14 +175,14 @@ const fadeIn = {
 export default function SettingsPage() {
   const [subPage, setSubPage] = useState<SettingsSubPage>(null);
   const { user } = useAuthStore();
-  const role = user?.role;
+  const role = normalizeRole(user?.role);
 
   const goBack = () => setSubPage(null);
 
   // Filter items by role
   const visibleItems = menuItems.filter((item) => {
-    if (item.id === 'users' && role !== 'owner' && role !== 'super_admin') return false;
-    if (item.id === 'reset-data' && role !== 'owner' && role !== 'super_admin') return false;
+    if (item.id === 'users' && role !== 'super_admin' && role !== 'owner') return false;
+    if (item.id === 'reset-data' && role !== 'super_admin' && role !== 'owner') return false;
     return true;
   });
 
@@ -533,7 +533,7 @@ function ResetDataSection({ onBack }: { onBack: () => void }) {
               Konfirmasi Reset Data
             </DialogTitle>
             <DialogDescription>
-              Tindakan ini akan menghapus <strong>SEMUA</strong> data dari sistem. Akun Anda akan tetap tersimpan sebagai Owner, tetapi semua data lainnya akan hilang secara permanen.
+              Tindakan ini akan menghapus <strong>SEMUA</strong> data dari sistem. Akun Anda akan tetap tersimpan sebagai Super Admin, tetapi semua data lainnya akan hilang secara permanen.
             </DialogDescription>
           </DialogHeader>
 

@@ -28,7 +28,7 @@ import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useAuthStore } from '@/store';
-import { apiFetch } from '@/lib/utils';
+import { apiFetch, normalizeRole } from '@/lib/utils';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -45,7 +45,6 @@ const fadeIn = {
 };
 
 const roleLabels: Record<string, string> = {
-  owner: 'Owner',
   super_admin: 'Super Admin',
   admin: 'Admin',
   cashier: 'Kasir',
@@ -256,7 +255,7 @@ export default function AccountSettings({ onBack }: AccountSettingsProps) {
           <div className="mt-4 p-3 bg-[#ffe088]/50 dark:bg-[#2c1810]/20 rounded-lg border border-[#e9c349]/50 dark:border-[#4a2c20]/50">
             <p className="text-xs text-[#4a2c20] dark:text-[#e9c349]">
               ☕ Setiap Coffee Shop memiliki data terpisah. Produk, transaksi, dan pelanggan di toko ini tidak terhubung dengan toko lain.
-              {user?.role === 'owner' || user?.role === 'super_admin' ? ' Sebagai pemilik toko, Anda dapat menambahkan staf melalui menu Pengguna.' : ''}
+              {normalizeRole(user?.role) !== 'cashier' && ' Sebagai pemilik toko, Anda dapat menambahkan staf melalui menu Pengguna.'}
             </p>
           </div>
         </CardContent>

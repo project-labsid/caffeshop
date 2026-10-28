@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { normalizeRole } from '@/lib/utils';
+import { clearQueryCache } from '@/lib/query-client';
 import type { User, Account, PageName, CartItem, PaymentSplit, TaxConfig, ServiceChargeConfig } from '@/types';
 
 interface AuthState {
@@ -70,6 +71,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (typeof window !== 'undefined') {
       localStorage.setItem('pos_user', JSON.stringify(normalized));
     }
+    // Bersihkan cache query: pastikan TIDAK ada data akun lama yang tertinggal
+    clearQueryCache();
     // Redirect cashier to POS page on login
     if (normalized.role === 'cashier') {
       useNavStore.getState().setCurrentPage('pos');
@@ -80,6 +83,9 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (typeof window !== 'undefined') {
       localStorage.removeItem('pos_user');
     }
+    // Bersihkan cache query agar data akun ini tidak tampil
+    // saat login dengan akun lain
+    clearQueryCache();
     set({ user: null, isAuthenticated: false, accountId: null });
   },
   updateUser: (updates) =>

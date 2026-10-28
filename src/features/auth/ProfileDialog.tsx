@@ -27,7 +27,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { useAuthStore } from '@/store';
-import { apiFetch } from '@/lib/utils';
+import { apiFetch, ROLE_LABELS, normalizeRole } from '@/lib/utils';
 
 interface ProfileDialogProps {
   open: boolean;
@@ -166,8 +166,8 @@ export default function ProfileDialog({ open, onOpenChange }: ProfileDialogProps
           </Avatar>
           <div>
             <p className="font-medium">{user?.name || 'Pengguna'}</p>
-            <p className="text-sm text-muted-foreground capitalize">
-              {user?.role === 'owner' ? 'Owner' : user?.role === 'cashir' ? 'Kasir' : user?.role === 'admin' ? 'Admin' : 'Super Admin'}
+            <p className="text-sm text-muted-foreground">
+              {ROLE_LABELS[normalizeRole(user?.role)] ?? user?.role}
             </p>
             {user?.branch && (
               <p className="text-xs text-muted-foreground">{user.branch.name}</p>

@@ -18,6 +18,8 @@ import {
   DollarSign,
   TrendingUp,
   Package,
+  Users,
+  Truck,
   Receipt,
   Wallet,
   Building2,
@@ -242,9 +244,9 @@ export default function DashboardPage() {
     queryKey: ['dashboard'],
     queryFn: async () => {
       const res = await apiFetch('/api/dashboard');
-      if (!res.ok) throw new Error('Gagal memuat data');
+      if (!res.ok) throw new Error('Failed to fetch dashboard');
       const json = await res.json();
-      return json.data;
+      return json.data ?? json;
     },
     refetchInterval: 30_000,
   });
@@ -318,7 +320,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
           icon={DollarSign}
-          label="Pendapatan Hari Ini"
+          label="Penjualan Hari Ini"
           value={formatRupiah(data.todaySales)}
           trend={12.5}
           trendLabel="vs kemarin"
@@ -327,7 +329,7 @@ export default function DashboardPage() {
         />
         <KpiCard
           icon={TrendingUp}
-          label="Pendapatan Bulan Ini"
+          label="Penjualan Bulan Ini"
           value={formatRupiah(data.monthSales)}
           trend={8.2}
           trendLabel="vs bulan lalu"
@@ -344,11 +346,11 @@ export default function DashboardPage() {
           iconColor="text-violet-600"
         />
         <KpiCard
-          icon={Receipt}
-          label="Total Transaksi"
-          value={data.totalTransactions.toLocaleString('id-ID')}
+          icon={Users}
+          label="Total Pelanggan"
+          value={data.totalCustomers.toLocaleString('id-ID')}
           trend={5.4}
-          trendLabel="bulan ini"
+          trendLabel="pelanggan baru"
           iconBg="bg-orange-100"
           iconColor="text-orange-600"
         />
@@ -356,9 +358,9 @@ export default function DashboardPage() {
 
       {/* ── Additional Stats Row ────────────────────────────────────────── */}
       <motion.div className="grid grid-cols-2 gap-4 sm:grid-cols-4" variants={itemVariants}>
+        <MiniStatCard icon={Truck} label="Total Supplier" value={data.totalSuppliers} />
+        <MiniStatCard icon={Receipt} label="Total Transaksi" value={data.totalTransactions.toLocaleString('id-ID')} />
         <MiniStatCard icon={Wallet} label="Pendapatan" value={formatShortRupiah(data.totalRevenue)} />
-        <MiniStatCard icon={Receipt} label="Pengeluaran" value={formatShortRupiah(data.totalExpense ?? 0)} />
-        <MiniStatCard icon={TrendingUp} label="Laba Kotor" value={formatShortRupiah(data.totalRevenue - (data.totalExpense ?? 0))} />
         <MiniStatCard icon={Building2} label="Cabang" value={data.totalBranches ?? 0} />
       </motion.div>
 
@@ -368,7 +370,7 @@ export default function DashboardPage() {
         <motion.div variants={itemVariants}>
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Tren Pendapatan 30 Hari</CardTitle>
+              <CardTitle className="text-base">Tren Penjualan 30 Hari</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-[300px] w-full">
@@ -492,7 +494,7 @@ export default function DashboardPage() {
                             {getStatusBadge(tx.status)}
                           </div>
                           <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                            {tx.customerName ?? 'Pelanggan Umum'} · {formatTime(tx.createdAt)}
+                            {tx.customer?.name ?? 'Pelanggan Umum'} · {formatTime(tx.createdAt)}
                           </p>
                         </div>
                         <p className="ml-3 shrink-0 text-sm font-semibold">
@@ -535,7 +537,7 @@ export default function DashboardPage() {
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-sm font-medium">{product.name}</p>
                             <p className="mt-0.5 text-xs text-muted-foreground">
-                              Stok: <span className="font-medium text-foreground">{product.stock}</span> / {product.minStock}
+                              Stok: <span className="font-medium text-foreground">{product.stock}</span> / {product.minStock} {product.unit}
                             </p>
                           </div>
                           {isCritical ? (

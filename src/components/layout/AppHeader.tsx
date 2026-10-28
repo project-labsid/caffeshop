@@ -23,6 +23,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { useNavStore, useAuthStore } from '@/store';
+import { ROLE_LABELS, normalizeRole } from '@/lib/utils';
 import type { PageName } from '@/types';
 
 const pageTitles: Record<PageName, string> = {
@@ -122,12 +123,7 @@ export default function AppHeader({ onOpenProfile }: AppHeaderProps) {
         .toUpperCase()
     : '??';
 
-  const roleLabel =
-    user?.role === 'cashir'
-      ? 'Kasir'
-      : user?.role === 'admin'
-        ? 'Admin'
-        : 'Super Admin';
+  const roleLabel = ROLE_LABELS[normalizeRole(user?.role)] ?? user?.role ?? '';
 
   const markAllRead = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
