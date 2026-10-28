@@ -16,9 +16,6 @@ import {
   type ColumnDef,
   type SortingState,
 } from '@tanstack/react-table';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import {
   Plus,
@@ -32,11 +29,10 @@ import {
   ChevronsUpDown,
   Loader2,
   Package,
-  ImagePlus,
 } from 'lucide-react';
 import { cn, formatRupiah, apiFetch } from '@/lib/utils';
+import { useNavStore } from '@/store';
 import type { Product, Category, PaginatedResponse } from '@/types';
-import { RupiahInput } from '@/components/ui/rupiah-input';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -52,14 +48,6 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from '@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -84,22 +72,6 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from '@/components/ui/sheet';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -152,21 +124,6 @@ function getColorForName(name: string): string {
   return COLOR_PALETTE[Math.abs(hash) % COLOR_PALETTE.length];
 }
 
-// ─── Form Schema ───────────────────────────────────────────────────────────────
-
-const productFormSchema = z.object({
-  name: z.string().min(2, 'Nama produk minimal 2 karakter'),
-  categoryId: z.string().optional().or(z.literal('')),
-  costPrice: z.coerce.number().min(0, 'Harga modal tidak boleh negatif'),
-  sellPrice: z.coerce.number().min(1, 'Harga jual harus lebih dari 0'),
-  stock: z.coerce.number().int().min(0).default(0),
-  minStock: z.coerce.number().int().min(0).default(5),
-  image: z.string().optional().or(z.literal('')),
-  isActive: z.boolean().default(true),
-});
-
-type ProductFormData = z.infer<typeof productFormSchema>;
-
 // ─── Animation Variants ──────────────────────────────────────────────────────
 
 const containerVariants = {
@@ -214,6 +171,8 @@ function ProductThumbnail({ name, image }: { name: string; image?: string }) {
 
 export default function ProductsPage() {
   const queryClient = useQueryClient();
+  /** Buka halaman form produk terpisah (null = Tambah, id = Edit) */
+  const openProductForm = useNavStore((s) => s.openProductForm);
 
   // ── Filter State ────────────────────────────────────────────────────────────
   const [search, setSearch] = useState('');
@@ -225,26 +184,9 @@ export default function ProductsPage() {
     { id: 'name', desc: false },
   ]);
 
-  // ── Dialog State ────────────────────────────────────────────────────────────
-  const [formOpen, setFormOpen] = useState(false);
+  // ── Dialog State (hanya untuk konfirmasi hapus) ───────────────────────────
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
-
-  // ── Form ───────────────────────────────────────────────────────────────────
-  const form = useForm<ProductFormData>({
-    resolver: zodResolver(productFormSchema),
-    defaultValues: {
-      name: '',
-      categoryId: '',
-      costPrice: 0,
-      sellPrice: 0,
-      stock: 0,
-      minStock: 5,
-      image: '',
-      isActive: true,
-    },
-  });
 
   // ── Queries ────────────────────────────────────────────────────────────────
 
@@ -278,59 +220,6 @@ export default function ProductsPage() {
   });
 
   // ── Mutations ──────────────────────────────────────────────────────────────
-
-  const createMutation = useMutation({
-    mutationFn: async (data: ProductFormData) => {
-      const payload: Record<string, unknown> = { ...data };
-      if (!payload.categoryId) delete payload.categoryId;
-      if (!payload.image) delete payload.image;
-      const res = await apiFetch('/api/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Gagal menambah produk');
-      }
-      return res.json();
-    },
-    onSuccess: () => {
-      toast.success('Produk berhasil ditambahkan');
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      closeFormDialog();
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: async (data: ProductFormData) => {
-      if (!editingProduct) return;
-      const payload: Record<string, unknown> = { ...data };
-      if (!payload.categoryId) payload.categoryId = null;
-      if (!payload.image) payload.image = null;
-      const res = await apiFetch(`/api/products/${editingProduct.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Gagal mengupdate produk');
-      }
-      return res.json();
-    },
-    onSuccess: () => {
-      toast.success('Produk berhasil diperbarui');
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      closeFormDialog();
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    },
-  });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -367,59 +256,10 @@ export default function ProductsPage() {
 
   // ── Handlers ────────────────────────────────────────────────────────────────
 
-  const openAddDialog = useCallback(() => {
-    setEditingProduct(null);
-    form.reset({
-      name: '',
-      categoryId: '',
-      costPrice: 0,
-      sellPrice: 0,
-      stock: 0,
-      minStock: 5,
-      image: '',
-      isActive: true,
-    });
-    setFormOpen(true);
-  }, [form]);
-
-  const openEditDialog = useCallback(
-    (product: Product) => {
-      setEditingProduct(product);
-      form.reset({
-        name: product.name,
-        categoryId: product.categoryId ?? '',
-        costPrice: product.costPrice,
-        sellPrice: product.sellPrice,
-        stock: product.stock,
-        minStock: product.minStock,
-        image: product.image ?? '',
-        isActive: product.isActive,
-      });
-      setFormOpen(true);
-    },
-    [form]
-  );
-
   const openDeleteDialog = useCallback((product: Product) => {
     setDeletingProduct(product);
     setDeleteOpen(true);
   }, []);
-
-  const closeFormDialog = useCallback(() => {
-    setFormOpen(false);
-    setEditingProduct(null);
-  }, []);
-
-  const onSubmitForm = useCallback(
-    (data: ProductFormData) => {
-      if (editingProduct) {
-        updateMutation.mutate(data);
-      } else {
-        createMutation.mutate(data);
-      }
-    },
-    [editingProduct, createMutation, updateMutation]
-  );
 
   const handleDeleteConfirm = useCallback(() => {
     if (deletingProduct) {
@@ -502,7 +342,26 @@ export default function ProductsPage() {
           </div>
         ),
       },
-
+      {
+        accessorKey: 'barcode',
+        header: 'Barcode',
+        size: 120,
+        cell: ({ row }) => (
+          <span className="font-mono text-xs text-muted-foreground">
+            {row.original.barcode || '-'}
+          </span>
+        ),
+      },
+      {
+        accessorKey: 'sku',
+        header: 'SKU',
+        size: 100,
+        cell: ({ row }) => (
+          <span className="font-mono text-xs text-muted-foreground">
+            {row.original.sku || '-'}
+          </span>
+        ),
+      },
       {
         accessorKey: 'category',
         header: 'Kategori',
@@ -591,7 +450,7 @@ export default function ProductsPage() {
               getStockColor(row.original.stock, row.original.minStock)
             )}
           >
-            {row.original.stock}
+            {row.original.stock} {row.original.unit}
           </span>
         ),
       },
@@ -614,7 +473,7 @@ export default function ProductsPage() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => openEditDialog(row.original)}>
+              <DropdownMenuItem onClick={() => openProductForm(row.original.id)}>
                 <Pencil className="size-4" />
                 <span>Edit</span>
               </DropdownMenuItem>
@@ -631,7 +490,7 @@ export default function ProductsPage() {
         ),
       },
     ],
-    [openEditDialog, openDeleteDialog]
+    [openDeleteDialog]
   );
 
   // ── Table Instance ──────────────────────────────────────────────────────────
@@ -647,181 +506,6 @@ export default function ProductsPage() {
     manualPagination: true,
     pageCount: totalPages,
   });
-
-  // ── Form Content (shared between Dialog & Sheet) ─────────────────────────────
-
-  const isMutating = createMutation.isPending || updateMutation.isPending;
-
-  const formContent = (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmitForm)}
-        className="space-y-4 max-h-[60vh] overflow-y-auto pr-1"
-      >
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nama Produk *</FormLabel>
-              <FormControl>
-                <Input placeholder="Masukkan nama produk" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="categoryId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Kategori</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                value={field.value ?? ''}
-              >
-                <FormControl>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Pilih kategori" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="image"
-          render={({ field }) => (
-              <FormItem>
-                <FormLabel>Foto</FormLabel>
-                <div className="flex items-center gap-2">
-                  <FormControl>
-                    <Input placeholder="Nama file foto" {...field} />
-                  </FormControl>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    className="flex-shrink-0"
-                    onClick={() => {
-                      const val = prompt('Masukkan nama file foto:');
-                      if (val !== null) field.onChange(val);
-                    }}
-                  >
-                    <ImagePlus className="size-4" />
-                  </Button>
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="costPrice"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Harga Modal *</FormLabel>
-                <FormControl>
-                  <RupiahInput
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder="0"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="sellPrice"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Harga Jual *</FormLabel>
-                <FormControl>
-                  <RupiahInput
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder="0"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="stock"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Stok</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    min="0"
-                    placeholder="0"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="minStock"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Minimum Stok</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    min="0"
-                    placeholder="5"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <FormField
-          control={form.control}
-          name="isActive"
-          render={({ field }) => (
-            <FormItem className="flex items-center justify-between rounded-lg border p-3">
-              <div className="space-y-0.5">
-                <FormLabel className="text-sm">Status Aktif</FormLabel>
-                <p className="text-xs text-muted-foreground">
-                  Produk aktif akan muncul di kasir
-                </p>
-              </div>
-              <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-      </form>
-    </Form>
-  );
 
   // ── Render ──────────────────────────────────────────────────────────────────
 
@@ -843,7 +527,10 @@ export default function ProductsPage() {
             Kelola daftar produk toko Anda
           </p>
         </div>
-        <Button onClick={openAddDialog} className="bg-primary hover:bg-[#4a2c20]">
+        <Button
+          onClick={() => openProductForm()}
+          className="bg-primary hover:bg-[#4a2c20]"
+        >
           <Plus className="size-4" />
           <span>Tambah Produk</span>
         </Button>
@@ -857,7 +544,7 @@ export default function ProductsPage() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
-            placeholder="Cari nama produk..."
+            placeholder="Cari nama, barcode, atau SKU..."
             value={search}
             onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-9"
@@ -1023,106 +710,6 @@ export default function ProductsPage() {
           </div>
         )}
       </motion.div>
-
-      {/* ── Add/Edit Dialog (Desktop) ───────────────────────────────────────── */}
-      <Dialog open={formOpen && !editingProduct} onOpenChange={setFormOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Tambah Produk Baru</DialogTitle>
-            <DialogDescription>
-              Isi detail produk yang akan ditambahkan ke toko
-            </DialogDescription>
-          </DialogHeader>
-          {formContent}
-          <DialogFooter className="pt-4">
-            <Button
-              variant="outline"
-              onClick={closeFormDialog}
-              disabled={isMutating}
-            >
-              Batal
-            </Button>
-            <Button
-              type="button"
-              onClick={form.handleSubmit(onSubmitForm)}
-              disabled={isMutating}
-              className="bg-primary hover:bg-[#4a2c20]"
-            >
-              {isMutating && <Loader2 className="size-4 animate-spin" />}
-              {isMutating ? 'Menyimpan...' : 'Simpan Produk'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ── Edit Product Dialog (Desktop) ────────────────────────────────────── */}
-      <Dialog open={formOpen && !!editingProduct} onOpenChange={setFormOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Edit Produk</DialogTitle>
-            <DialogDescription>
-              Ubah detail produk {editingProduct?.name}
-            </DialogDescription>
-          </DialogHeader>
-          {formContent}
-          <DialogFooter className="pt-4">
-            <Button
-              variant="outline"
-              onClick={closeFormDialog}
-              disabled={isMutating}
-            >
-              Batal
-            </Button>
-            <Button
-              type="button"
-              onClick={form.handleSubmit(onSubmitForm)}
-              disabled={isMutating}
-              className="bg-primary hover:bg-[#4a2c20]"
-            >
-              {isMutating && <Loader2 className="size-4 animate-spin" />}
-              {isMutating ? 'Menyimpan...' : 'Perbarui Produk'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ── Add/Edit Sheet (Mobile) ───────────────────────────────────────────── */}
-      <Sheet open={formOpen} onOpenChange={setFormOpen}>
-        <SheetContent side="bottom" className="sm:max-h-[85vh] rounded-t-2xl">
-          <SheetHeader>
-            <SheetTitle>
-              {editingProduct ? 'Edit Produk' : 'Tambah Produk Baru'}
-            </SheetTitle>
-            <SheetDescription>
-              {editingProduct
-                ? 'Ubah detail produk'
-                : 'Isi detail produk yang akan ditambahkan'}
-            </SheetDescription>
-          </SheetHeader>
-          <div className="flex-1 overflow-y-auto px-4 pb-4">
-            {formContent}
-          </div>
-          <SheetFooter className="flex-row gap-2 border-t pt-4">
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={closeFormDialog}
-              disabled={isMutating}
-            >
-              Batal
-            </Button>
-            <Button
-              type="button"
-              className="flex-1 bg-primary hover:bg-[#4a2c20]"
-              onClick={form.handleSubmit(onSubmitForm)}
-              disabled={isMutating}
-            >
-              {isMutating && <Loader2 className="size-4 animate-spin" />}
-              {isMutating ? 'Menyimpan...' : 'Simpan'}
-            </Button>
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
 
       {/* ── Delete Confirmation Dialog ────────────────────────────────────────── */}
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>

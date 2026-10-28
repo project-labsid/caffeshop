@@ -14,14 +14,17 @@ interface AuthState {
 interface NavigationState {
   currentPage: PageName;
   sidebarOpen: boolean;
+  /** null = mode Tambah, string = id produk yang sedang diedit */
+  productFormId: string | null;
   setCurrentPage: (page: PageName) => void;
+  openProductForm: (productId?: string | null) => void;
   toggleSidebar: () => void;
   setSidebarOpen: (open: boolean) => void;
 }
 
 interface CartState {
   items: CartItem[];
-  customerName: string | null;
+  customerId: string | null;
   discountTotal: number;
   notes: string;
   isHeld: boolean;
@@ -31,7 +34,7 @@ interface CartState {
   updateQuantity: (productId: string, quantity: number) => void;
   updateItemDiscount: (productId: string, discount: number) => void;
   updateItemNotes: (productId: string, notes: string) => void;
-  setCustomerName: (name: string | null) => void;
+  setCustomerId: (id: string | null) => void;
   setDiscountTotal: (discount: number) => void;
   setNotes: (notes: string) => void;
   setHeld: (held: boolean, transactionId?: string) => void;
@@ -91,7 +94,10 @@ export const useAuthStore = create<AuthState>((set) => ({
 export const useNavStore = create<NavigationState>((set) => ({
   currentPage: 'dashboard',
   sidebarOpen: false,
+  productFormId: null,
   setCurrentPage: (page) => set({ currentPage: page, sidebarOpen: false }),
+  openProductForm: (productId = null) =>
+    set({ currentPage: 'product-form', productFormId: productId, sidebarOpen: false }),
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
 }));
@@ -99,7 +105,7 @@ export const useNavStore = create<NavigationState>((set) => ({
 // Cart Store
 export const useCartStore = create<CartState>((set, get) => ({
   items: [],
-  customerName: null,
+  customerId: null,
   discountTotal: 0,
   notes: '',
   isHeld: false,
@@ -143,7 +149,7 @@ export const useCartStore = create<CartState>((set, get) => ({
         i.product.id === productId ? { ...i, notes } : i
       ),
     })),
-  setCustomerName: (name) => set({ customerName: name }),
+  setCustomerId: (id) => set({ customerId: id }),
   setDiscountTotal: (discount) => set({ discountTotal: discount }),
   setNotes: (notes) => set({ notes }),
   setHeld: (held, transactionId) =>
@@ -151,7 +157,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   clearCart: () =>
     set({
       items: [],
-      customerName: null,
+      customerId: null,
       discountTotal: 0,
       notes: '',
       isHeld: false,
