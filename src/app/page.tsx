@@ -131,20 +131,63 @@ export default function Home() {
   const { currentPage, setCurrentPage } = useNavStore();
   const { setStoreSettings } = useSettingsStore();
   const [mounted, setMounted] = useState(false);
+  const [verifying, setVerifying] = useState(false);
 
-  // Hydrate auth from localStorage
+  // Hydrate auth from localStorage + VERIFY session against server.
+  // Sesi basi (dari database lama/sebelum reset) membuat semua API
+  // gagal 400 "Account ID diperlukan" — maka selalu validasi dulu.
   useEffect(() => {
     const saved = localStorage.getItem('pos_user');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        useAuthStore.getState().login(parsed);
-      } catch {
-        localStorage.removeItem('pos_user');
-      }
+
+    // Tidak ada sesi tersimpan -> langsung tampilkan halaman login
+    if (!saved) {
+      queueMicrotask(() => setMounted(true));
+      return;
     }
-    // Use microtask to avoid synchronous setState warning
-    queueMicrotask(() => setMounted(true));
+
+    let parsed: Record<string, unknown>;
+    try {
+      parsed = JSON.parse(saved);
+    } catch {
+      localStorage.removeItem('pos_user');
+      queueMicrotask(() => setMounted(true));
+      return;
+    }
+
+    // Sesi tidak punya id -> tidak bisa diverifikasi, buang saja
+    if (!parsed?.id) {
+      localStorage.removeItem('pos_user');
+      queueMicrotask(() => setMounted(true));
+      return;
+    }
+
+    // Verifikasi sesi ke server (user masih ada & aktif?)
+    queueMicrotask(() => setVerifying(true));
+    fetch('/api/auth/verify', { headers: { 'x-user-id': String(parsed.id) } })
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          if (json?.data?.id) {
+            // Sesi valid -> simpan data user TERBARU (accountId & role benar)
+            useAuthStore.getState().login(json.data);
+            return;
+          }
+        }
+        // 401 / data tidak lengkap -> sesi basi, hapus & paksa login ulang
+        localStorage.removeItem('pos_user');
+        useAuthStore.getState().logout();
+      })
+      .catch(() => {
+        // Offline / server tidak terjangkau: pakai sesi cache agar
+        // aplikasi tetap bisa dipakai (mis. PWA mode offline)
+        useAuthStore.getState().login(parsed as User);
+      })
+      .finally(() => {
+        queueMicrotask(() => {
+          setMounted(true);
+          setVerifying(false);
+        });
+      });
   }, []);
 
   // Load settings once authenticated
@@ -177,8 +220,8 @@ export default function Home() {
     }
   }, [user, mounted, currentPage, setCurrentPage]);
 
-  // Show nothing during hydration
-  if (!mounted) {
+  // Show nothing during hydration / session verification
+  if (!mounted || verifying) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="space-y-4 w-80">
