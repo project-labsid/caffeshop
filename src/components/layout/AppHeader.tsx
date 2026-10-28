@@ -29,6 +29,7 @@ const pageTitles: Record<PageName, string> = {
   dashboard: 'Dashboard',
   pos: 'Kasir (POS)',
   products: 'Produk',
+  'product-form': 'Form Produk',
   categories: 'Kategori',
   suppliers: 'Supplier',
   customers: 'Pelanggan',
@@ -122,13 +123,11 @@ export default function AppHeader({ onOpenProfile }: AppHeaderProps) {
     : '??';
 
   const roleLabel =
-    user?.role === 'owner'
-      ? 'Owner'
-      : user?.role === 'cashir'
-        ? 'Kasir'
-        : user?.role === 'admin'
-          ? 'Admin'
-          : 'Super Admin';
+    user?.role === 'cashir'
+      ? 'Kasir'
+      : user?.role === 'admin'
+        ? 'Admin'
+        : 'Super Admin';
 
   const markAllRead = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));

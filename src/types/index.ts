@@ -1,4 +1,4 @@
-export type UserRole = 'super_admin' | 'owner' | 'admin' | 'cashir';
+export type UserRole = 'super_admin' | 'admin' | 'cashir';
 
 export interface Account {
   id: string;
@@ -41,11 +41,32 @@ export interface Category {
   productCount?: number;
 }
 
+export interface Supplier {
+  id: string;
+  name: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  isActive: boolean;
+}
+
+export interface Customer {
+  id: string;
+  name: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  memberPoint: number;
+  isActive: boolean;
+}
 
 export interface Product {
   id: string;
   name: string;
+  barcode?: string;
+  sku?: string;
   categoryId?: string;
+  unit: string;
   costPrice: number;
   sellPrice: number;
   stock: number;
@@ -75,7 +96,7 @@ export interface Transaction {
   id: string;
   invoiceNumber: string;
   userId: string;
-  customerName?: string;
+  customerId?: string;
   branchId?: string;
   type: string;
   status: string;
@@ -93,6 +114,7 @@ export interface Transaction {
   completedAt?: string;
   createdAt: string;
   user?: User;
+  customer?: Customer;
   branch?: Branch;
   items?: TransactionItem[];
 }
@@ -100,12 +122,14 @@ export interface Transaction {
 export interface Purchase {
   id: string;
   invoiceNumber: string;
+  supplierId: string;
   userId: string;
   branchId?: string;
   totalAmount: number;
   status: string;
   notes?: string;
   createdAt: string;
+  supplier?: Supplier;
   user?: User;
   items?: PurchaseItem[];
 }
@@ -158,19 +182,12 @@ export interface StoreSetting {
 
 export interface DashboardStats {
   todaySales: number;
-  todayTransactions: number;
   monthSales: number;
-  monthTransactions: number;
   totalRevenue: number;
-  todayExpense: number;
-  monthExpense: number;
-  totalExpense: number;
-  todayPurchaseExpense: number;
-  monthPurchaseExpense: number;
-  totalPurchaseExpense: number;
   totalProducts: number;
+  totalCustomers: number;
+  totalSuppliers: number;
   totalTransactions: number;
-  totalBranches: number;
   topProducts: { productId: string; productName: string; quantity: number; revenue: number }[];
   recentTransactions: Transaction[];
   lowStockProducts: Product[];
@@ -190,7 +207,10 @@ export type PageName =
   | 'dashboard'
   | 'pos'
   | 'products'
+  | 'product-form'
   | 'categories'
+  | 'suppliers'
+  | 'customers'
   | 'transactions'
   | 'purchases'
   | 'stock'
@@ -198,8 +218,7 @@ export type PageName =
   | 'settings'
   | 'tax-settings'
   | 'branches'
-  | 'users'
-  | 'accounts';
+  | 'users';
 
 export interface CartItem {
   product: Product;
